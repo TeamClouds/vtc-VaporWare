@@ -65,7 +65,7 @@ void updateScreen(volatile Atomizer_Info_t atomInfo, volatile uint32_t watts) {
 			break;
 	}
 
-	siprintf(buf, "%3lu.%luW\n%2d.%02do\n%2d.%02dA\n%5dF\n%s\n\n\n\n%d%%\n%s",
+	siprintf(buf, "%3lu.%luW\n%2d.%02do\n%2d.%02dA\n%5luF\n%s\n\n\n\n%d%%\n%s",
 		watts / 1000,
 		watts % 1000 / 100,
 		atomInfo.resistance / 1000,
