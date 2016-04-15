@@ -18,25 +18,17 @@
  * Copyright (C) 2016 kfazz
  */
 
-#include <stdio.h>
 #include <math.h>
+#include <stdbool.h>
 #include <M451Series.h>
-#include <Display.h>
-#include <Font.h>
 #include <Atomizer.h>
 #include <Button.h>
-#include <TimerUtils.h>
-#include <Battery.h>
 
 struct globals {
 	uint16_t volts;
 	uint16_t newVolts;
-	uint16_t displayVolts;
 	uint32_t watts;
-	uint32_t maxTemp;
-	uint8_t sleepTimeout;
 	Atomizer_Info_t atomInfo;
-	double startingResistance;
 } g = {};
 
 uint16_t wattsToVolts(uint32_t watts, uint16_t res) {
@@ -47,144 +39,64 @@ uint16_t wattsToVolts(uint32_t watts, uint16_t res) {
 	return volts * 10;
 }
 
-void sleepDisplay(uint32_t counterIndex) {
-	Display_SetOn(0);
-}
-
-uint32_t cToF(uint8_t temp) {
-    uint32_t celTemp = temp;
-    uint32_t current = g.atomInfo.resistance % 1000 / 10;
-    if (current > g.startingResistance) {
-        celTemp = ((current - g.startingResistance) * .01) / (0.00006 * g.startingResistance);
+void startVaping(uint8_t state) {
+    if (!Atomizer_IsOn() && g.atomInfo.resistance != 0 && Atomizer_GetError() == OK) {
+    	Atomizer_Control(1);
     }
-    return (celTemp * 1.8) + 32;
 }
 
-void updateScreen() {
-	const char *atomState;
-	char buf[100];
-	uint32_t boardTemp;
-	uint16_t battVolts;
-    uint8_t battPerc;
+void buttonRight(uint8_t state) {
+    g.newVolts = wattsToVolts(g.watts + 100, g.atomInfo.resistance);
+    if(g.newVolts <= ATOMIZER_MAX_VOLTS) {
+    	g.watts += 100;
+    	g.volts = g.newVolts;
 
-    // Get battery voltage and charge
-	battVolts = Battery_IsPresent() ? Battery_GetVoltage() : 0;
-	battPerc = Battery_VoltageToPercent(battVolts);
-
-	// Get board temperature
-	boardTemp = Atomizer_ReadBoardTemp();
-	g.maxTemp = cToF(boardTemp);
-
-	// Display info
-	g.displayVolts = Atomizer_IsOn() ? g.atomInfo.voltage : g.volts;
-	switch(Atomizer_GetError()) {
-		case SHORT:
-			atomState = "SHORT";
-			break;
-		case OPEN:
-			atomState = "NO ATOM";
-			break;
-		case WEAK_BATT:
-			atomState = "WEAK BAT";
-			break;
-		case OVER_TEMP:
-			atomState = "TOO HOT";
-			break;
-		default:
-			atomState = Atomizer_IsOn() ? "FIRING" : "";
-			break;
-	}
-	if (g.maxTemp >= 600) {
-	    atomState = "TEMP PRO";
-	}
-	siprintf(buf, "%3lu.%luW\n%2d.%02do\n%2d.%02dA\n%5luF\n%s\n\n\n\n\n%d%%\n%s",
-		g.watts / 1000, g.watts % 1000 / 100,
-		g.atomInfo.resistance / 1000, g.atomInfo.resistance % 1000 / 10,
-		g.atomInfo.current / 1000, g.atomInfo.current % 1000 / 10,
-		g.maxTemp,
-		atomState,
-		battPerc,
-		Battery_IsCharging() & Battery_IsPresent() ? "CHARGING" : "");
-	Display_Clear();
-	Display_PutText(0, 0, buf, FONT_DEJAVU_8PT);
-	Display_Update();
-	if (g.sleepTimeout > 0) {
-	    Timer_DeleteTimer(g.sleepTimeout);
-	    g.sleepTimeout = 0;
-	}
-	g.sleepTimeout = Timer_CreateTimeout(1000, 0, sleepDisplay, 0);
+    	// Set voltage
+    	Atomizer_SetOutputVoltage(g.volts);
+    }
 }
 
-void updateAtomData() {
-	Atomizer_ReadInfo(&g.atomInfo);
-    g.newVolts = wattsToVolts(g.watts, g.atomInfo.resistance);
+void buttonLeft(uint8_t state) {
+    if (g.watts >= 100) {
+    	g.watts -= 100;
+    	g.volts = wattsToVolts(g.watts, g.atomInfo.resistance);
+
+    	// Set voltage
+    	Atomizer_SetOutputVoltage(g.volts);
+    }
+}
+
+uint8_t checkButtonsClear() {
+    return Button_GetState() == BUTTON_MASK_NONE;
 }
 
 int main() {
-    uint8_t btnState;
-	bool buttonsPressed = false;
 
-	// Let's start with 10.0W as the initial value
-	// We keep watts as mW
-	g.watts = 10000;
-	Atomizer_SetOutputVoltage(g.volts);
+	Button_CreateCallback(startVaping, BUTTON_MASK_FIRE);
+	Button_CreateCallback(buttonRight, BUTTON_MASK_RIGHT);
+	Button_CreateCallback(buttonLeft, BUTTON_MASK_LEFT);
+
+	// Let's start with 15.0W as the initial value
+	// We keep g.watts as mW
+	g.watts = 15000;
+
+	// Update info
+    Atomizer_ReadInfo(&g.atomInfo);
 
 	while(1) {
+	    if (checkButtonsClear()) {
+	        // buttons are not pressed
+	        if(Atomizer_IsOn()) {
+                Atomizer_Control(0);
+                updateScreen(g.atomInfo, g.watts); // update to reflect atomizer off.
+            }
+	    } else {
+	    	// Update info
+        	Atomizer_ReadInfo(&g.atomInfo);
+	        updateScreen(g.atomInfo, g.watts);
+	    }
 
-		btnState = Button_GetState();
-
-		if (g.startingResistance == 0) {
-		    g.startingResistance = g.atomInfo.resistance % 1000 / 10;
-		}
-
-		switch(btnState) {
-		    case BUTTON_MASK_FIRE:
-		        if (!Atomizer_IsOn() && g.atomInfo.resistance != 0 && Atomizer_GetError() == OK) {
-		        	Atomizer_Control(1);
-		        }
-
-		        buttonsPressed = true;
-		        break;
-		    case BUTTON_MASK_RIGHT:
-		        g.newVolts = wattsToVolts(g.watts + 100, g.atomInfo.resistance);
-                if(g.newVolts <= ATOMIZER_MAX_VOLTS) {
-                	g.watts += 100;
-                	g.volts = g.newVolts;
-
-                	// Set voltage
-                	Atomizer_SetOutputVoltage(g.volts);
-                	// Slow down increment
-                	Timer_DelayMs(25);
-                }
-                buttonsPressed = true;
-                break;
-		    case BUTTON_MASK_LEFT:
-		        if (g.watts >= 100) {
-		        	g.watts -= 100;
-                	g.volts = wattsToVolts(g.watts, g.atomInfo.resistance);
-
-                	// Set voltage
-                	Atomizer_SetOutputVoltage(g.volts);
-                	// Slow down decrement
-                	Timer_DelayMs(25);
-		        }
-		        buttonsPressed = true;
-		        break;
-		    default:
-		        // No buttons!
-		        if(Atomizer_IsOn()) {
-		            Atomizer_Control(0);
-		        }
-		        if (buttonsPressed) {
-		            updateScreen();
-		        }
-		        buttonsPressed = false;
-		        break;
-		}
-
-		// Update info
-        updateAtomData();
-
+		g.newVolts = wattsToVolts(g.watts, g.atomInfo.resistance);
 		 if(g.newVolts != g.volts) {
              if(Atomizer_IsOn()) {
                  // Update output voltage to correct res variations:
@@ -205,16 +117,11 @@ int main() {
              if(g.newVolts > ATOMIZER_MAX_VOLTS) {
                  g.newVolts = ATOMIZER_MAX_VOLTS;
              }
-             if (g.maxTemp >= 600) {
+             if (g.atomInfo.temperature >= 600) {
                 g.newVolts = g.volts - 100;
              }
              g.volts = g.newVolts;
              Atomizer_SetOutputVoltage(g.volts);
          }
-
-        if (buttonsPressed || Battery_IsCharging()) {
-        	Display_SetOn(1);
-		    updateScreen();
-		}
 	}
 }
