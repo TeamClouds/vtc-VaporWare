@@ -28,6 +28,12 @@
 #include <TimerUtils.h>
 #include <Battery.h>
 
+uint16_t volts, newVolts, displayVolts;
+uint32_t watts, maxTemp;
+uint8_t sleepTimeout;
+Atomizer_Info_t atomInfo;
+double startingResistance;
+
 uint16_t wattsToVolts(uint32_t watts, uint16_t res) {
 	// Units: mV, mW, mOhm
 	// V = sqrt(P * R)
@@ -36,127 +42,174 @@ uint16_t wattsToVolts(uint32_t watts, uint16_t res) {
 	return volts * 10;
 }
 
-int main() {
-	char buf[100];
-	const char *atomState;
-	uint16_t volts, newVolts, battVolts, displayVolts;
-	uint32_t watts;
-	uint8_t btnState, battPerc, boardTemp;
-	Atomizer_Info_t atomInfo;
+void sleepDisplay(uint32_t counterIndex) {
+	Display_SetOn(0);
+}
 
-	// Initialize atomizer info
+uint32_t cToF(uint8_t temp) {
+    uint32_t celTemp = temp;
+    uint32_t current = atomInfo.resistance % 1000 / 10;
+    if (current > startingResistance) {
+        celTemp = ((current - startingResistance) * .01) / (0.00006 * startingResistance);
+    }
+    return (celTemp * 1.8) + 32;
+}
+
+void updateScreen() {
+	const char *atomState;
+	char buf[100];
+	uint32_t boardTemp;
+	uint16_t battVolts;
+    uint8_t battPerc;
+
+    // Get battery voltage and charge
+	battVolts = Battery_IsPresent() ? Battery_GetVoltage() : 0;
+	battPerc = Battery_VoltageToPercent(battVolts);
+
+	// Get board temperature
+	boardTemp = Atomizer_ReadBoardTemp();
+	maxTemp = cToF(boardTemp);
+
+	// Display info
+	displayVolts = Atomizer_IsOn() ? atomInfo.voltage : volts;
+	switch(Atomizer_GetError()) {
+		case SHORT:
+			atomState = "SHORT";
+			break;
+		case OPEN:
+			atomState = "NO ATOM";
+			break;
+		case WEAK_BATT:
+			atomState = "WEAK BAT";
+			break;
+		case OVER_TEMP:
+			atomState = "TOO HOT";
+			break;
+		default:
+			atomState = Atomizer_IsOn() ? "FIRING" : "";
+			break;
+	}
+	if (maxTemp >= 600) {
+	    atomState = "TEMP PRO";
+	}
+	siprintf(buf, "%3lu.%luW\n%2d.%02do\n%2d.%02dA\n%5dF\n%s\n\n\n\n\n%d%%\n%s",
+		watts / 1000, watts % 1000 / 100,
+		atomInfo.resistance / 1000, atomInfo.resistance % 1000 / 10,
+		atomInfo.current / 1000, atomInfo.current % 1000 / 10,
+		maxTemp,
+		atomState,
+		battPerc,
+		Battery_IsCharging() & Battery_IsPresent() ? "CHARGING" : "");
+	Display_Clear();
+	Display_PutText(0, 0, buf, FONT_DEJAVU_8PT);
+	Display_Update();
+	if (sleepTimeout > 0) {
+	    Timer_DeleteTimer(sleepTimeout);
+	    sleepTimeout = 0;
+	}
+	sleepTimeout = Timer_CreateTimeout(1000, 0, sleepDisplay, 0);
+}
+
+void updateAtomData() {
 	Atomizer_ReadInfo(&atomInfo);
+    newVolts = wattsToVolts(watts, atomInfo.resistance);
+}
+
+int main() {
+    uint8_t btnState;
+	bool buttonsPressed = false;
 
 	// Let's start with 10.0W as the initial value
 	// We keep watts as mW
 	watts = 10000;
-	volts = wattsToVolts(watts, atomInfo.resistance);
 	Atomizer_SetOutputVoltage(volts);
 
 	while(1) {
+
 		btnState = Button_GetState();
 
-		// Handle fire button
-		if(!Atomizer_IsOn() && (btnState & BUTTON_MASK_FIRE) &&
-			atomInfo.resistance != 0 && Atomizer_GetError() == OK) {
-			// Power on
-			Atomizer_Control(1);
-		}
-		else if(Atomizer_IsOn() && !(btnState & BUTTON_MASK_FIRE)) {
-			// Power off
-			Atomizer_Control(0);
+		if (startingResistance == 0) {
+		    startingResistance = atomInfo.resistance % 1000 / 10;
 		}
 
-		// Handle plus/minus keys
-		if(btnState & BUTTON_MASK_RIGHT) {
-			newVolts = wattsToVolts(watts + 100, atomInfo.resistance);
+		switch(btnState) {
+		    case BUTTON_MASK_FIRE:
+		        if (!Atomizer_IsOn() && atomInfo.resistance != 0 && Atomizer_GetError() == OK) {
+		        	Atomizer_Control(1);
+		        }
 
-			if(newVolts <= ATOMIZER_MAX_VOLTS) {
-				watts += 100;
-				volts = newVolts;
+		        buttonsPressed = true;
+		        break;
+		    case BUTTON_MASK_RIGHT:
+		        newVolts = wattsToVolts(watts + 100, atomInfo.resistance);
+                if(newVolts <= ATOMIZER_MAX_VOLTS) {
+                	watts += 100;
+                	volts = newVolts;
 
-				// Set voltage
-				Atomizer_SetOutputVoltage(volts);
-				// Slow down increment
-				Timer_DelayMs(25);
-			}
-		}
-		if(btnState & BUTTON_MASK_LEFT && watts >= 100) {
-			watts -= 100;
-			volts = wattsToVolts(watts, atomInfo.resistance);
+                	// Set voltage
+                	Atomizer_SetOutputVoltage(volts);
+                	// Slow down increment
+                	Timer_DelayMs(25);
+                }
+                buttonsPressed = true;
+                break;
+		    case BUTTON_MASK_LEFT:
+		        if (watts >= 100) {
+		        	watts -= 100;
+                	volts = wattsToVolts(watts, atomInfo.resistance);
 
-			// Set voltage
-			Atomizer_SetOutputVoltage(volts);
-			// Slow down decrement
-			Timer_DelayMs(25);
+                	// Set voltage
+                	Atomizer_SetOutputVoltage(volts);
+                	// Slow down decrement
+                	Timer_DelayMs(25);
+		        }
+		        buttonsPressed = true;
+		        break;
+		    default:
+		        // No buttons!
+		        if(Atomizer_IsOn()) {
+		            Atomizer_Control(0);
+		        }
+		        if (buttonsPressed) {
+		            updateScreen();
+		        }
+		        buttonsPressed = false;
+		        break;
 		}
 
 		// Update info
-		// If resistance is zero voltage will be zero
-		Atomizer_ReadInfo(&atomInfo);
-		newVolts = wattsToVolts(watts, atomInfo.resistance);
+        updateAtomData();
 
-		if(newVolts != volts) {
-			if(Atomizer_IsOn()) {
-				// Update output voltage to correct res variations:
-				// If the new voltage is lower, we only correct it in
-				// 10mV steps, otherwise a flake res reading might
-				// make the voltage plummet to zero and stop.
-				// If the new voltage is higher, we push it up by 100mV
-				// to make it hit harder on TC coils, but still keep it
-				// under control.
-				if(newVolts < volts) {
-					newVolts = volts - (volts >= 10 ? 10 : 0);
-				}
-				else {
-					newVolts = volts + 100;
-				}
-			}
+		 if(newVolts != volts) {
+             if(Atomizer_IsOn()) {
+                 // Update output voltage to correct res variations:
+                 // If the new voltage is lower, we only correct it in
+                 // 10mV steps, otherwise a flake res reading might
+                 // make the voltage plummet to zero and stop.
+                 // If the new voltage is higher, we push it up by 100mV
+                 // to make it hit harder on TC coils, but still keep it
+                 // under control.
+                 if(newVolts < volts) {
+                     newVolts = volts - (volts >= 10 ? 10 : 0);
+                 }
+                 else {
+                     newVolts = volts + 100;
+                 }
+             }
 
-			if(newVolts > ATOMIZER_MAX_VOLTS) {
-				newVolts = ATOMIZER_MAX_VOLTS;
-			}
-			volts = newVolts;
-			Atomizer_SetOutputVoltage(volts);
+             if(newVolts > ATOMIZER_MAX_VOLTS) {
+                 newVolts = ATOMIZER_MAX_VOLTS;
+             }
+             if (maxTemp >= 600) {
+                newVolts = volts - 100;
+             }
+             volts = newVolts;
+             Atomizer_SetOutputVoltage(volts);
+         }
+
+        if (buttonsPressed || Battery_IsCharging()) {
+        	Display_SetOn(1);
+		    updateScreen();
 		}
-
-		// Get battery voltage and charge
-		battVolts = Battery_IsPresent() ? Battery_GetVoltage() : 0;
-		battPerc = Battery_VoltageToPercent(battVolts);
-
-		// Get board temperature
-		boardTemp = Atomizer_ReadBoardTemp();
-
-		// Display info
-		displayVolts = Atomizer_IsOn() ? atomInfo.voltage : volts;
-		switch(Atomizer_GetError()) {
-			case SHORT:
-				atomState = "SHORT";
-				break;
-			case OPEN:
-				atomState = "NO ATOM";
-				break;
-			case WEAK_BATT:
-				atomState = "WEAK BAT";
-				break;
-			case OVER_TEMP:
-				atomState = "TOO HOT";
-				break;
-			default:
-				atomState = Atomizer_IsOn() ? "FIRING" : "";
-				break;
-		}
-		siprintf(buf, "P:%3lu.%luW\nV:%2d.%02dV\nR:%2d.%02do\nI:%2d.%02dA\nT:%5dC\n%s\n\nBattery:\n%d%%\n%s",
-			watts / 1000, watts % 1000 / 100,
-			displayVolts / 1000, displayVolts % 1000 / 10,
-			atomInfo.resistance / 1000, atomInfo.resistance % 1000 / 10,
-			atomInfo.current / 1000, atomInfo.current % 1000 / 10,
-			boardTemp,
-			atomState,
-			battPerc,
-			Battery_IsCharging() ? "CHARGING" : "");
-		Display_Clear();
-		Display_PutText(0, 0, buf, FONT_DEJAVU_8PT);
-		Display_Update();
 	}
 }
