@@ -664,6 +664,23 @@ void Atomizer_ReadInfo(Atomizer_Info_t *info) {
 	else {
 		Atomizer_Sample(0, &info->voltage, &info->current, &info->resistance);
 	}
+	Atomizer_EstimateCoilTemp(&info->resistance, &info->temperature);
+}
+
+void Atomizer_EstimateCoilTemp(uint16_t resistance, uint32_t *temperature) {
+    uint8_t boardTemp = Atomizer_ReadBoardTemp();
+    uint32_t baseRes = Atomizer_baseRes % 1000 /10;
+    if (resistance != baseRes) {
+        // TODO: make suck less
+        uint32_t current = resistance % 1000 / 10;
+        if (current > Atomizer_baseRes) {
+            boardTemp += ((current - baseRes) * .01) / (0.00006 * baseRes);
+        }
+        // TODO: give options other than just F
+        *temperature = (boardTemp * 1.8) + 32;
+    } else {
+        *temperature = boardTemp;
+    }
 }
 
 uint8_t Atomizer_ReadBoardTemp() {

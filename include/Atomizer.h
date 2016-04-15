@@ -48,6 +48,10 @@ typedef struct {
 	 * Output current in mA, measured at the atomizer.
 	 */
 	uint16_t current;
+	/**
+	 * Estimated Coil Temp
+	 */
+	 uint32_t temperature;
 } Atomizer_Info_t;
 
 /**
@@ -124,6 +128,14 @@ Atomizer_Error_t Atomizer_GetError();
  * @param info Info structure to fill.
  */
 void Atomizer_ReadInfo(Atomizer_Info_t *info);
+
+/**
+ * Estimates coil temp
+ *
+ * @return temperature, in °F.
+ *
+ */
+void Atomizer_EstimateCoilTemp(uint16_t resistance, uint32_t *temperature);
 
 /**
  * Reads the DC/DC converter temperature.
