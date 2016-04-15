@@ -24,6 +24,8 @@
 #include <Atomizer.h>
 #include <Button.h>
 
+void updateScreen(volatile Atomizer_Info_t atomInfo, volatile uint32_t watts);
+
 struct globals {
 	uint16_t volts;
 	uint16_t newVolts;
