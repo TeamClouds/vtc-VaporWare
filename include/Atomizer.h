@@ -135,7 +135,7 @@ void Atomizer_ReadInfo(Atomizer_Info_t *info);
  * @return temperature, in °F.
  *
  */
-void Atomizer_EstimateCoilTemp(uint16_t resistance, uint32_t *temperature);
+void Atomizer_EstimateCoilTemp(uint16_t resistance, uint16_t tcr, uint32_t *temperature);
 
 /**
  * Reads the DC/DC converter temperature.
