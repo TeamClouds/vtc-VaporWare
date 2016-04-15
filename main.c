@@ -28,11 +28,16 @@
 #include <TimerUtils.h>
 #include <Battery.h>
 
-uint16_t volts, newVolts, displayVolts;
-uint32_t watts, maxTemp;
-uint8_t sleepTimeout;
-Atomizer_Info_t atomInfo;
-double startingResistance;
+struct globals {
+	uint16_t volts;
+	uint16_t newVolts;
+	uint16_t displayVolts;
+	uint32_t watts;
+	uint32_t maxTemp;
+	uint8_t sleepTimeout;
+	Atomizer_Info_t atomInfo;
+	double startingResistance;
+} g = {};
 
 uint16_t wattsToVolts(uint32_t watts, uint16_t res) {
 	// Units: mV, mW, mOhm
@@ -48,9 +53,9 @@ void sleepDisplay(uint32_t counterIndex) {
 
 uint32_t cToF(uint8_t temp) {
     uint32_t celTemp = temp;
-    uint32_t current = atomInfo.resistance % 1000 / 10;
-    if (current > startingResistance) {
-        celTemp = ((current - startingResistance) * .01) / (0.00006 * startingResistance);
+    uint32_t current = g.atomInfo.resistance % 1000 / 10;
+    if (current > g.startingResistance) {
+        celTemp = ((current - g.startingResistance) * .01) / (0.00006 * g.startingResistance);
     }
     return (celTemp * 1.8) + 32;
 }
@@ -68,10 +73,10 @@ void updateScreen() {
 
 	// Get board temperature
 	boardTemp = Atomizer_ReadBoardTemp();
-	maxTemp = cToF(boardTemp);
+	g.maxTemp = cToF(boardTemp);
 
 	// Display info
-	displayVolts = Atomizer_IsOn() ? atomInfo.voltage : volts;
+	g.displayVolts = Atomizer_IsOn() ? g.atomInfo.voltage : g.volts;
 	switch(Atomizer_GetError()) {
 		case SHORT:
 			atomState = "SHORT";
@@ -89,30 +94,30 @@ void updateScreen() {
 			atomState = Atomizer_IsOn() ? "FIRING" : "";
 			break;
 	}
-	if (maxTemp >= 600) {
+	if (g.maxTemp >= 600) {
 	    atomState = "TEMP PRO";
 	}
 	siprintf(buf, "%3lu.%luW\n%2d.%02do\n%2d.%02dA\n%5luF\n%s\n\n\n\n\n%d%%\n%s",
-		watts / 1000, watts % 1000 / 100,
-		atomInfo.resistance / 1000, atomInfo.resistance % 1000 / 10,
-		atomInfo.current / 1000, atomInfo.current % 1000 / 10,
-		maxTemp,
+		g.watts / 1000, g.watts % 1000 / 100,
+		g.atomInfo.resistance / 1000, g.atomInfo.resistance % 1000 / 10,
+		g.atomInfo.current / 1000, g.atomInfo.current % 1000 / 10,
+		g.maxTemp,
 		atomState,
 		battPerc,
 		Battery_IsCharging() & Battery_IsPresent() ? "CHARGING" : "");
 	Display_Clear();
 	Display_PutText(0, 0, buf, FONT_DEJAVU_8PT);
 	Display_Update();
-	if (sleepTimeout > 0) {
-	    Timer_DeleteTimer(sleepTimeout);
-	    sleepTimeout = 0;
+	if (g.sleepTimeout > 0) {
+	    Timer_DeleteTimer(g.sleepTimeout);
+	    g.sleepTimeout = 0;
 	}
-	sleepTimeout = Timer_CreateTimeout(1000, 0, sleepDisplay, 0);
+	g.sleepTimeout = Timer_CreateTimeout(1000, 0, sleepDisplay, 0);
 }
 
 void updateAtomData() {
-	Atomizer_ReadInfo(&atomInfo);
-    newVolts = wattsToVolts(watts, atomInfo.resistance);
+	Atomizer_ReadInfo(&g.atomInfo);
+    g.newVolts = wattsToVolts(g.watts, g.atomInfo.resistance);
 }
 
 int main() {
@@ -121,45 +126,45 @@ int main() {
 
 	// Let's start with 10.0W as the initial value
 	// We keep watts as mW
-	watts = 10000;
-	Atomizer_SetOutputVoltage(volts);
+	g.watts = 10000;
+	Atomizer_SetOutputVoltage(g.volts);
 
 	while(1) {
 
 		btnState = Button_GetState();
 
-		if (startingResistance == 0) {
-		    startingResistance = atomInfo.resistance % 1000 / 10;
+		if (g.startingResistance == 0) {
+		    g.startingResistance = g.atomInfo.resistance % 1000 / 10;
 		}
 
 		switch(btnState) {
 		    case BUTTON_MASK_FIRE:
-		        if (!Atomizer_IsOn() && atomInfo.resistance != 0 && Atomizer_GetError() == OK) {
+		        if (!Atomizer_IsOn() && g.atomInfo.resistance != 0 && Atomizer_GetError() == OK) {
 		        	Atomizer_Control(1);
 		        }
 
 		        buttonsPressed = true;
 		        break;
 		    case BUTTON_MASK_RIGHT:
-		        newVolts = wattsToVolts(watts + 100, atomInfo.resistance);
-                if(newVolts <= ATOMIZER_MAX_VOLTS) {
-                	watts += 100;
-                	volts = newVolts;
+		        g.newVolts = wattsToVolts(g.watts + 100, g.atomInfo.resistance);
+                if(g.newVolts <= ATOMIZER_MAX_VOLTS) {
+                	g.watts += 100;
+                	g.volts = g.newVolts;
 
                 	// Set voltage
-                	Atomizer_SetOutputVoltage(volts);
+                	Atomizer_SetOutputVoltage(g.volts);
                 	// Slow down increment
                 	Timer_DelayMs(25);
                 }
                 buttonsPressed = true;
                 break;
 		    case BUTTON_MASK_LEFT:
-		        if (watts >= 100) {
-		        	watts -= 100;
-                	volts = wattsToVolts(watts, atomInfo.resistance);
+		        if (g.watts >= 100) {
+		        	g.watts -= 100;
+                	g.volts = wattsToVolts(g.watts, g.atomInfo.resistance);
 
                 	// Set voltage
-                	Atomizer_SetOutputVoltage(volts);
+                	Atomizer_SetOutputVoltage(g.volts);
                 	// Slow down decrement
                 	Timer_DelayMs(25);
 		        }
@@ -180,7 +185,7 @@ int main() {
 		// Update info
         updateAtomData();
 
-		 if(newVolts != volts) {
+		 if(g.newVolts != g.volts) {
              if(Atomizer_IsOn()) {
                  // Update output voltage to correct res variations:
                  // If the new voltage is lower, we only correct it in
@@ -189,22 +194,22 @@ int main() {
                  // If the new voltage is higher, we push it up by 100mV
                  // to make it hit harder on TC coils, but still keep it
                  // under control.
-                 if(newVolts < volts) {
-                     newVolts = volts - (volts >= 10 ? 10 : 0);
+                 if(g.newVolts < g.volts) {
+                     g.newVolts = g.volts - (g.volts >= 10 ? 10 : 0);
                  }
                  else {
-                     newVolts = volts + 100;
+                     g.newVolts = g.volts + 100;
                  }
              }
 
-             if(newVolts > ATOMIZER_MAX_VOLTS) {
-                 newVolts = ATOMIZER_MAX_VOLTS;
+             if(g.newVolts > ATOMIZER_MAX_VOLTS) {
+                 g.newVolts = ATOMIZER_MAX_VOLTS;
              }
-             if (maxTemp >= 600) {
-                newVolts = volts - 100;
+             if (g.maxTemp >= 600) {
+                g.newVolts = g.volts - 100;
              }
-             volts = newVolts;
-             Atomizer_SetOutputVoltage(volts);
+             g.volts = g.newVolts;
+             Atomizer_SetOutputVoltage(g.volts);
          }
 
         if (buttonsPressed || Battery_IsCharging()) {
