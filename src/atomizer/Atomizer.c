@@ -663,8 +663,6 @@ void Atomizer_ReadInfo(Atomizer_Info_t *info) {
 	            info->base_resistance = Atomizer_baseRes;
 		    info->base_temperature = Atomizer_ReadBoardTemp();
 		}
-		if (!info->tcr)
-		    info->tcr = 600;
 		info->resistance = Atomizer_baseRes;
 	}
 	else {
@@ -675,7 +673,7 @@ void Atomizer_ReadInfo(Atomizer_Info_t *info) {
 
 void Atomizer_EstimateCoilTemp(Atomizer_Info_t *info) {
     uint32_t boardTemp = Atomizer_ReadBoardTemp();
-    if (info->resistance != info->base_resistance) {
+    if (info->resistance != info->base_resistance && info->tcr) {
         // TODO: make suck less
         uint32_t baseRes = info->base_resistance;
         uint32_t current = info->resistance;
