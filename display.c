@@ -28,25 +28,22 @@
 #include <Button.h>
 #include "main.h"
 extern struct globals g;
+
+// To whom it may concern
+// Calling things like Button state here are really bad
+// You should not do that
+// Vapers need to vape, potatos need to potate
+// If you get button state in this file you wont be able to vape
+// Horrible things will happen to your house.
+
+// NOTES:
+// Evic VTC mini X-MAX = 116
+
 void sleepDisplay(uint32_t counterIndex) {
 	Display_SetOn(0);
 }
 
-
-inline void getMenuDumbText(char *buff) {
-    siprintf(buff, "Herro");
-}
-
-void showMenu() {
-    char buff[8];
-	Display_Clear();
-    getMenuDumbText(buff);
-	Display_PutText(0, 60, buff, FONT_DEJAVU_8PT);
-	Display_Update();
-}
-
-
-inline void getTemperature(char *buff, uint32_t temperature) {
+inline void printNumber(char *buff, uint32_t temperature) {
     siprintf(buff, "%lu", temperature);
 }
 
@@ -54,27 +51,30 @@ inline void getPercent(char *buff, uint8_t percent) {
     siprintf(buff, "%d%%", percent);
 }
 
-inline void getState(char *buff, char *state, uint8_t intstate) {
-    siprintf(buff, "%s(%i)", state, intstate);
+inline void getString(char *buff, char *state) {
+    siprintf(buff, "%s", state);
 }
 
-inline void getResistance(char *buff, uint32_t resistance) {
-	siprintf(buff, "%3lu.%luO",
-		resistance / 1000,
-		resistance % 1000 / 10);
+inline void getFloating(char *buff, uint32_t floating) {
+	siprintf(buff, "%3lu.%lu",
+		floating / 1000,
+		floating % 1000 / 10);
 }
-
-inline void getWatts(char *buff, uint32_t watts) {
-	siprintf(buff, "%3lu.%luW",
-		watts / 1000,
-		watts % 1000 / 100);
-}
-
 
 void updateScreen(struct globals *g) {
 	char *atomState;
 	uint16_t battVolts;
     uint8_t battPerc;
+
+    if (Atomizer_IsOn()) {
+        if (!Display_IsFlipped()) {
+            Display_Flip();
+        }
+    } else {
+        if (Display_IsFlipped()) {
+            Display_Flip();
+        }
+    }
 
     Display_SetOn(1);
 
@@ -109,33 +109,29 @@ void updateScreen(struct globals *g) {
 	Display_Clear();
 
     char buff[8];
-    getTemperature(buff, g->atomInfo.temperature);
+    printNumber(buff, g->atomInfo.temperature);
 	Display_PutText(0, 0, buff, FONT_DEJAVU_8PT);
 
-    getTemperature(buff, g->atomInfo.base_temperature);
+    printNumber(buff, g->atomInfo.base_temperature);
 	Display_PutText(0, 10, buff, FONT_DEJAVU_8PT);
 
-    getWatts(buff, g->watts);
+    getFloating(buff, g->watts);
 	Display_PutText(0, 20, buff, FONT_DEJAVU_8PT);
 
-    getResistance(buff, g->atomInfo.resistance);
+    getFloating(buff, g->atomInfo.resistance);
 	Display_PutText(0, 30, buff, FONT_DEJAVU_8PT);
 
-	getResistance(buff, g->atomInfo.base_resistance);
+	getFloating(buff, g->atomInfo.base_resistance);
     Display_PutText(0, 40, buff, FONT_DEJAVU_8PT);
-
-// NEVER FUCKING CALL FUNCTIONS HERE YOU FUCKING FUCK
-//    getState(buff, atomState, Button_GetState());
-//	Display_PutText(0, 50, buff, FONT_DEJAVU_8PT);
 
     getPercent(buff, battPerc);
 	Display_PutText(0, 60, buff, FONT_DEJAVU_8PT);
 
-    getTemperature(buff, g->vapeCnt);
+    printNumber(buff, g->vapeCnt);
 	Display_PutText(0, 70, buff, FONT_DEJAVU_8PT);
 
-    getTemperature(buff, g->whatever);
-	Display_PutText(0, 80, buff, FONT_DEJAVU_8PT);
+    getString(buff, atomState);
+    Display_PutText(0, 116, buff, FONT_DEJAVU_8PT);
 
 	Display_Update();
 
