@@ -38,7 +38,7 @@ void updateScreen(struct globals *g);
 void getString(char *buff, char *state);
 
 int load_settings(void) {
-    s.mode = VARIABLE_WATTAGE;
+    s.mode = 0;
     return 1;
 }
 
