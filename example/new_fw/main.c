@@ -149,6 +149,8 @@ void setupButtons() {
     g.minus = Button_CreateCallback(buttonLeft, BUTTON_MASK_LEFT);
 }
 
+void (*__vape)(void) = &vape;
+
 int main() {
     int i = 0;
 
@@ -171,7 +173,7 @@ int main() {
     while(1) {
 
         if (fireButtonPressed) {
-            vape();
+            __vape();
         }
         while(g.atomInfo.resistance - g.atomInfo.base_resistance > 10) {
             Atomizer_ReadInfo(&g.atomInfo);
