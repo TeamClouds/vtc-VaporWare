@@ -31,6 +31,29 @@ volatile int fireButtonPressed = 0;
 struct globals g = {};
 struct settings s = {};
 
+struct vapeMaterials vapeMaterialList[] = {
+    {
+        .typeMask = KANTHAL,
+        .name = "KA",
+        .tcr = 0,
+    },
+    {
+        .typeMask = NICKEL,
+        .name = "NI",
+        .tcr = 620,
+    },
+    {
+        .typeMask = TITANIUM,
+        .name = "NI",
+        .tcr = 350,
+    },
+    {
+        .typeMask = STAINLESS,
+        .name = "SS",
+        .tcr = 105,
+    },
+};
+
 // ALWAYS init it a sane mode
 void (*__init)(void);
 void (*__vape)(void);
