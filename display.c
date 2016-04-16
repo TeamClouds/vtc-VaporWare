@@ -51,7 +51,7 @@ inline void getPercent(char *buff, uint8_t percent) {
     siprintf(buff, "%d%%", percent);
 }
 
-inline void getString(char *buff, char *state) {
+void getString(char *buff, char *state) {
     siprintf(buff, "%s", state);
 }
 
