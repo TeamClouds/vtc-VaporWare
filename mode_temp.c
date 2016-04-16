@@ -16,7 +16,8 @@ struct IntPID {
 } I = {};
 
 void initPid() {
-    for (int i = 0; i < PIDLEN; i++)
+    int i;
+    for (i = 0; i < PIDLEN; i++)
         I.Rvals[i] = 0;   
     I.Rave = 0;
     I.i = 0;
@@ -42,6 +43,7 @@ int32_t getNext(int32_t c_temp) {
     diffError = I.Rvals[i] - I.Rvals[l];
 
     I.i++;
+    I.i %= PIDLEN;
 
     /* */
 
@@ -56,7 +58,7 @@ int32_t getNext(int32_t c_temp) {
 }
 
 void tempInit() {
-    I.P = 10;
+    I.P = 40;
     I.I = 5;
     I.D = 5;
     I.Max = 60000; // Never fire over 60 watts
@@ -88,14 +90,32 @@ void tempFire() {
         g.newVolts = wattsToVolts(g.watts, g.atomInfo.resistance);
 
         if(g.newVolts != g.volts || !g.volts) {
-            if(g.newVolts > ATOMIZER_MAX_VOLTS) {
-                g.newVolts = ATOMIZER_MAX_VOLTS;
-            }
+                    if(Atomizer_IsOn()) {
 
-            g.volts = g.newVolts;
+                        // Update output voltage to correct res variations:
+                        // If the new voltage is lower, we only correct it in
+                        // 10mV steps, otherwise a flake res reading might
+                        // make the voltage plummet to zero and stop.
+                        // If the new voltage is higher, we push it up by 100mV
+                        // to make it hit harder on TC coils, but still keep it
+                        // under control.
+                        if(g.newVolts < g.volts) {
+                            g.newVolts = g.volts - (g.volts >= 10 ? 10 : 0);
+                        }
+                        else {
+                            g.newVolts = g.volts + 100;
+                        }
 
-            Atomizer_SetOutputVoltage(g.volts);
-        }
+                    }
+
+                    if(g.newVolts > ATOMIZER_MAX_VOLTS) {
+                        g.newVolts = ATOMIZER_MAX_VOLTS;
+                    }
+
+                    g.volts = g.newVolts;
+
+                    Atomizer_SetOutputVoltage(g.volts);
+                }
         g.vapeCnt++;
         updateScreen(&g);
     }
