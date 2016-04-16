@@ -19,111 +19,169 @@
  */
 
 #include <math.h>
-#include <stdbool.h>
+#include <stdio.h>
 #include <M451Series.h>
 #include <Atomizer.h>
 #include <Button.h>
+#include <TimerUtils.h>
 
-void updateScreen(volatile Atomizer_Info_t atomInfo, volatile uint32_t watts);
+#include "main.h"
+struct globals g = {};
+void updateScreen(struct globals *g);
+void showMenu();
 
-struct globals {
-	uint16_t volts;
-	uint16_t newVolts;
-	uint32_t watts;
-	Atomizer_Info_t atomInfo;
-} g = {};
-
-uint16_t wattsToVolts(uint32_t watts, uint16_t res) {
-	// Units: mV, mW, mOhm
-	// V = sqrt(P * R)
-	// Round to nearest multiple of 10
-	uint16_t volts = (sqrt(watts * res) + 5) / 10;
-	return volts * 10;
-}
-
-void startVaping(uint8_t state) {
-    if (!Atomizer_IsOn() && g.atomInfo.resistance != 0 && Atomizer_GetError() == OK) {
-    	Atomizer_Control(1);
-    }
-}
-
-void buttonRight(uint8_t state) {
-    g.newVolts = wattsToVolts(g.watts + 100, g.atomInfo.resistance);
-    if(g.newVolts <= ATOMIZER_MAX_VOLTS) {
-    	g.watts += 100;
-    	g.volts = g.newVolts;
-
-    	// Set voltage
-    	Atomizer_SetOutputVoltage(g.volts);
-    }
-}
-
-void buttonLeft(uint8_t state) {
-    if (g.watts >= 100) {
-    	g.watts -= 100;
-    	g.volts = wattsToVolts(g.watts, g.atomInfo.resistance);
-
-    	// Set voltage
-    	Atomizer_SetOutputVoltage(g.volts);
-    }
-}
 
 uint8_t checkButtonsClear() {
     return Button_GetState() == BUTTON_MASK_NONE;
 }
 
-int main() {
+uint16_t wattsToVolts(uint32_t watts, uint16_t res) {
+    // Units: mV, mW, mOhm
+    // V = sqrt(P * R)
+    // Round to nearest multiple of 10
+    uint16_t volts = (sqrt(watts * res) + 5) / 10;
 
-	Button_CreateCallback(startVaping, BUTTON_MASK_FIRE);
-	Button_CreateCallback(buttonRight, BUTTON_MASK_RIGHT);
-	Button_CreateCallback(buttonLeft, BUTTON_MASK_LEFT);
+    return volts * 10;
+}
 
-	// Let's start with 15.0W as the initial value
-	// We keep g.watts as mW
-	g.watts = 15000;
+volatile int fireButtonPressed = 0;
 
-	// Update info
-    Atomizer_ReadInfo(&g.atomInfo);
+void vape() {
+    g.vapeCnt++;
+    while (fireButtonPressed) {
+        // Handle fire button
+        if(!Atomizer_IsOn() && g.atomInfo.resistance != 0 && Atomizer_GetError() == OK) {
+            // Power on
+            Atomizer_Control(1);
+        }
 
-	while(1) {
-	    if (checkButtonsClear()) {
-	        // buttons are not pressed
-	        if(Atomizer_IsOn()) {
-                Atomizer_Control(0);
-                updateScreen(g.atomInfo, g.watts); // update to reflect atomizer off.
+        // Update info
+        // If resistance is zero voltage will be zero
+        Atomizer_ReadInfo(&g.atomInfo);
+
+        g.newVolts = wattsToVolts(g.watts, g.atomInfo.resistance);
+
+        if(g.newVolts != g.volts || !g.volts) {
+            if(Atomizer_IsOn()) {
+
+                // Update output voltage to correct res variations:
+                // If the new voltage is lower, we only correct it in
+                // 10mV steps, otherwise a flake res reading might
+                // make the voltage plummet to zero and stop.
+                // If the new voltage is higher, we push it up by 100mV
+                // to make it hit harder on TC coils, but still keep it
+                // under control.
+                if(g.newVolts < g.volts) {
+                    g.newVolts = g.volts - (g.volts >= 10 ? 10 : 0);
+                }
+                else {
+                    g.newVolts = g.volts + 100;
+                }
+
             }
-	    } else {
-	    	// Update info
-        	Atomizer_ReadInfo(&g.atomInfo);
-	        updateScreen(g.atomInfo, g.watts);
-	    }
 
-		g.newVolts = wattsToVolts(g.watts, g.atomInfo.resistance);
-		 if(g.newVolts != g.volts) {
-             if(Atomizer_IsOn()) {
-                 // Update output voltage to correct res variations:
-                 // If the new voltage is lower, we only correct it in
-                 // 10mV steps, otherwise a flake res reading might
-                 // make the voltage plummet to zero and stop.
-                 // If the new voltage is higher, we push it up by 100mV
-                 // to make it hit harder on TC coils, but still keep it
-                 // under control.
-                 if(g.newVolts < g.volts) {
-                     g.newVolts = g.volts - (g.volts >= 10 ? 10 : 0);
-                 }
-                 else {
-                     g.newVolts = g.volts + 100;
-                 }
-             }
+            if(g.newVolts > ATOMIZER_MAX_VOLTS) {
+                g.newVolts = ATOMIZER_MAX_VOLTS;
+            }
 
-             if(g.newVolts > ATOMIZER_MAX_VOLTS) {
-                 g.newVolts = ATOMIZER_MAX_VOLTS;
-             }
-             if (g.atomInfo.temperature >= 600) {
-                g.newVolts = g.volts - 100;
-             }
-             g.volts = g.newVolts;
-             Atomizer_SetOutputVoltage(g.volts);
-         }
-	}
+            g.volts = g.newVolts;
+
+            Atomizer_SetOutputVoltage(g.volts);
+        }
+        g.vapeCnt++;
+        updateScreen(&g);
+    }
+    if(Atomizer_IsOn())
+        Atomizer_Control(0);
+    g.vapeCnt = 0;
+}
+
+void startVaping(uint32_t counterIndex) {
+   if(g.buttonCnt < 3) {
+       if(Button_GetState() & BUTTON_MASK_FIRE) {
+          fireButtonPressed = 1;
+          g.buttonCnt = 0;
+       }
+   } else {
+       showMenu();
+       g.buttonCnt = 0;
+   }
+}
+
+void buttonFire(uint8_t state) {
+   g.whatever++;
+   if (state & BUTTON_MASK_FIRE) {
+       if(g.fireTimer)
+           Timer_DeleteTimer(g.fireTimer);
+       g.fireTimer = Timer_CreateTimeout(200, 0, startVaping, 3);
+       g.buttonCnt++;
+   } else {
+       fireButtonPressed = 0;
+   }
+}
+
+void buttonRight(uint8_t state) {
+    updateScreen(&g);
+    if(state & BUTTON_MASK_RIGHT) {
+        g.newVolts = wattsToVolts(g.watts + 100, g.atomInfo.resistance);
+        if(g.newVolts <= ATOMIZER_MAX_VOLTS) {
+            g.watts += 100;
+            g.volts = g.newVolts;
+
+            // Set voltage
+            Atomizer_SetOutputVoltage(g.volts);
+        }
+    }
+}
+
+void buttonLeft(uint8_t state) {
+    updateScreen(&g);
+    if (state & BUTTON_MASK_LEFT) {
+        if (g.watts >= 100) {
+            g.watts -= 100;
+            g.volts = wattsToVolts(g.watts, g.atomInfo.resistance);
+
+            // Set voltage
+            Atomizer_SetOutputVoltage(g.volts);
+        }
+    }
+}
+
+
+void setupButtons() {
+    g.fire = Button_CreateCallback(buttonFire, BUTTON_MASK_FIRE);
+    g.plus = Button_CreateCallback(buttonRight, BUTTON_MASK_RIGHT);
+    g.minus = Button_CreateCallback(buttonLeft, BUTTON_MASK_LEFT);
+}
+
+int main() {
+    int i = 0;
+
+    setupButtons();
+
+    // Let's start with 15.0W as the initial value
+    // We keep g.watts as mW
+    Atomizer_ReadInfo(&g.atomInfo);
+    g.watts = 15000;
+    g.volts = wattsToVolts(g.watts, g.atomInfo.resistance);
+    Atomizer_SetOutputVoltage(g.volts);
+
+    // Initialize atomizer info
+    do {
+        Atomizer_ReadInfo(&g.atomInfo);
+        updateScreen(&g);
+        i++;
+    } while(i < 100 && g.atomInfo.resistance == 0) ;
+
+    while(1) {
+
+        if (fireButtonPressed) {
+            vape();
+        }
+        while(g.atomInfo.resistance - g.atomInfo.base_resistance > 10) {
+            Atomizer_ReadInfo(&g.atomInfo);
+            updateScreen(&g);
+        }
+
+    }
 }
