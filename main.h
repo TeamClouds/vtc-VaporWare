@@ -17,6 +17,11 @@ struct globals {
 	uint8_t whatever;
 };
 
+enum {
+    VARIABLE_WATTAGE,
+    MAX_MODE
+};
+
 struct settings {
 	uint8_t mode;
 };
