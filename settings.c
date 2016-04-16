@@ -117,11 +117,15 @@ void buttonSettingFire(uint8_t state) {
        		}
        	    setVapeMaterial(&vapeMaterialList[s.materialIndex]);
        	} else if (selectorY == 20) {
-       		// TODO read modes dynamically
-       		if (2 == s.mode) {
+       		s.mode++;
+       		if (!g.vapeModes[s.mode]) {
        			s.mode = 0;
-       		} else {
+       		}
+       		if (!(s.material->typeMask & g.vapeModes[s.mode]->supportedMaterials)) {
        			s.mode++;
+       		}
+       		if (!g.vapeModes[s.mode]) {
+       			s.mode = 0;
        		}
        		setVapeMode(s.mode);
        	} else if (selectorY == 100) {
