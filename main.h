@@ -24,6 +24,14 @@ enum {
 	MAX_MATERIAL
 };
 
+struct vapeMaterials {
+	int8_t typeMask;
+	char name[3];
+	uint16_t tcr;
+};
+
+extern struct vapeMaterials vapeMaterialList[];
+
 struct vapeMode {
 	int8_t index;
 	int8_t controlType;
