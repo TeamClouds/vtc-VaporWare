@@ -137,7 +137,8 @@ int main() {
     REGISTER_MODE(variableVoltage);
     REGISTER_MODE(variableWattage);
 
-    setVapeMode(0);
+    setVapeMode(s.mode);
+    setVapeMaterial(s.material);
 
     // Let's start with 15.0W as the initial value
     // We keep g.watts as mW
