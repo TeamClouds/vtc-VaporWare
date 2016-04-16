@@ -43,7 +43,7 @@ uint16_t wattsToVolts(uint32_t watts, uint16_t res) {
 
 volatile int fireButtonPressed = 0;
 
-void vape() {
+void wattFire() {
     g.vapeCnt++;
     while (fireButtonPressed) {
         // Handle fire button
@@ -151,7 +151,7 @@ void setupButtons() {
     g.minus = Button_CreateCallback(buttonLeft, BUTTON_MASK_LEFT);
 }
 
-void (*__vape)(void) = &vape;
+void (*__vape)(void) = &wattFire;
 
 int main() {
     int i = 0;
