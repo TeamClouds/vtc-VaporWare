@@ -47,6 +47,7 @@ struct vapeMode {
 /* Settings */
 struct settings {
 	uint8_t mode;
+	uint32_t targetTemperature;
 	struct vapeMaterials *material;
 };
 
