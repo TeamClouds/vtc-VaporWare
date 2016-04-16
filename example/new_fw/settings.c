@@ -31,7 +31,7 @@ uint16_t selectorX = 0;
 uint16_t toggleItem = 0;
 uint16_t showItemToggle = 0;
 const char *strings[] = {"one","two","three"};
-const uint8_t *settings[100];
+uint8_t settings[100];
 
 void setupButtons();
 void updateScreen(struct globals *g);
