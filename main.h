@@ -16,9 +16,21 @@ enum {
 	MAX_CONTROL
 };
 
+enum {
+	KANTHAL = 1 << 0,
+	NICKEL = 1 << 1,
+	TITANIUM = 1 << 2,
+	STAINLESS = 1 << 3,
+	MAX_MATERIAL
+};
+
 struct vapeMode {
 	int8_t index;
 	int8_t controlType;
+	char name[8];
+	int8_t supportedMaterials;
+	uint32_t maxSetting;
+	void (*init)(void);
 	void (*fire)(void);
 	void (*increase)(void);
 	void (*decrease)(void);
@@ -41,7 +53,7 @@ uint32_t voltsToWatts(uint16_t volts, uint16_t res);
 /* Ugly Globals */
 struct globals {
 	Atomizer_Info_t atomInfo;
-	struct vapeMode vapeModes[MODE_COUNT];
+	struct vapeMode *vapeModes[MODE_COUNT];
 	uint32_t watts;
 	uint16_t volts;
 	uint16_t newVolts;

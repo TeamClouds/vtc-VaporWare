@@ -1,6 +1,10 @@
 #include <stdint.h>
 #include "main.h"
 
+void voltInit() {
+    // Voltage don't need no init
+}
+
 void voltFire() {
     g.vapeCnt++;
     while (fireButtonPressed) {

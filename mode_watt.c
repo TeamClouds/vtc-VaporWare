@@ -1,6 +1,10 @@
 #include <stdint.h>
 #include "main.h"
 
+void wattInit() {
+
+}
+
 void wattFire() {
     g.vapeCnt++;
     while (fireButtonPressed) {
