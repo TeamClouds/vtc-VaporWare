@@ -30,11 +30,6 @@ struct globals g = {};
 void updateScreen(struct globals *g);
 void showMenu();
 
-
-uint8_t checkButtonsClear() {
-    return Button_GetState() == BUTTON_MASK_NONE;
-}
-
 uint16_t wattsToVolts(uint32_t watts, uint16_t res) {
     // Units: mV, mW, mOhm
     // V = sqrt(P * R)
