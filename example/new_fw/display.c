@@ -109,14 +109,24 @@ void updateScreen(struct globals *g) {
 	Display_Clear();
 
     char buff[8];
-    printNumber(buff, g->atomInfo.temperature);
-	Display_PutText(0, 0, buff, FONT_DEJAVU_8PT);
 
-    printNumber(buff, g->atomInfo.base_temperature);
-	Display_PutText(0, 10, buff, FONT_DEJAVU_8PT);
+    if (g->vapeModes[s.mode]->controlType == TEMP_CONTROL) {
+    	if (Atomizer_IsOn()) {
+    	    printNumber(buff, g->atomInfo.temperature);
+    		Display_PutText(0, 0, buff, FONT_DEJAVU_8PT);
+    	} else {
+            printNumber(buff, s.targetTemperature);
+        	Display_PutText(0, 0, buff, FONT_DEJAVU_8PT);
+    	}
+        getFloating(buff, g->watts);
+    	Display_PutText(0, 20, buff, FONT_DEJAVU_8PT);
+    } else if (g->vapeModes[s.mode]->controlType == WATT_CONTROL) {
+        getFloating(buff, g->watts);
+    	Display_PutText(0, 0, buff, FONT_DEJAVU_8PT);
 
-    getFloating(buff, g->watts);
-	Display_PutText(0, 20, buff, FONT_DEJAVU_8PT);
+	    printNumber(buff, g->atomInfo.temperature);
+		Display_PutText(0, 20, buff, FONT_DEJAVU_8PT);
+    }
 
     getFloating(buff, g->atomInfo.resistance);
 	Display_PutText(0, 30, buff, FONT_DEJAVU_8PT);
