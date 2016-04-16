@@ -33,11 +33,16 @@ uint16_t showItemToggle = 0;
 const char *strings[] = {"one","two","three"};
 uint8_t settings[100];
 
+
+const char *headers[] = {"Type", "Mode", "Exit"};
+
+
 void setupButtons();
 
 int load_settings(void) {
     s.mode = 2;
-    s.material = &vapeMaterialList[1];
+    s.materialIndex = 1;
+    s.material = &vapeMaterialList[s.materialIndex];
     return 1;
 }
 
@@ -71,6 +76,20 @@ void buildHeaderAndChildren(uint8_t starting, char *buff) {
     Display_PutText(15, starting+10, buff, FONT_DEJAVU_8PT);
 }
 
+void printSettingsItem(uint8_t starting, char *buff, char *header, char *string) {
+    getString(buff, header);
+    Display_PutText(10, starting, buff, FONT_DEJAVU_8PT);
+
+    getString(buff, string);
+    Display_PutText(15, starting+10, buff, FONT_DEJAVU_8PT);
+}
+
+
+void buildExit(uint8_t starting, char *buff) {
+    getString(buff, "EXIT");
+    Display_PutText(10, starting, buff, FONT_DEJAVU_8PT);
+}
+
 void buildMenu() {
     char buff[8];
 
@@ -78,47 +97,42 @@ void buildMenu() {
     getSelector(buff);
     Display_PutText(0, selectorY, buff, FONT_DEJAVU_8PT);
 
-    buildHeaderAndChildren(0, buff);
-    buildHeaderAndChildren(20, buff);
-    buildHeaderAndChildren(40, buff);
-    buildHeaderAndChildren(60, buff);
-    buildHeaderAndChildren(80, buff);
-    buildHeaderAndChildren(100, buff);
+    printSettingsItem(0, buff, headers[0], s.material->name);
+    printSettingsItem(20, buff, headers[1],  g.vapeModes[s.mode]->name);
+
+    buildExit(100, buff);
 
     Display_Update();
-}
-
-void exitSettings(uint32_t counterIndex) {
-    if(g.buttonCnt < 5) {
-        if(Button_GetState() & BUTTON_MASK_FIRE) {
-            // TODO change things
-            uint8_t currIndex = settings[selectorY];
-            if (selectorX == 2) {
-                currIndex = 0;
-            } else {
-                currIndex++;
-            }
-            settings[selectorY] = currIndex;
-            buildMenu();
-         }
-    } else {
-        disableButtons();
-        setupButtons();
-        updateScreen(&g);
-        g.buttonCnt = 0;
-    }
 }
 
 void buttonSettingFire(uint8_t state) {
    // To things
    if (state & BUTTON_MASK_FIRE) {
-       if(g.fireTimer)
-           Timer_DeleteTimer(g.fireTimer);
-       g.fireTimer = Timer_CreateTimeout(200, 0, exitSettings, 5);
-       g.buttonCnt++;
-   } else {
-       // debounce
-       fireButtonPressed = 0;
+       if(Button_GetState() & BUTTON_MASK_FIRE) {
+       	if (selectorY == 0) {
+       		if (s.materialIndex == 3) {
+       			s.materialIndex = 0;
+       		} else {
+       			s.materialIndex++;
+       		}
+       	    setVapeMaterial(&vapeMaterialList[s.materialIndex]);
+       	} else if (selectorY == 20) {
+       		// TODO read modes dynamically
+       		if (2 == s.mode) {
+       			s.mode = 0;
+       		} else {
+       			s.mode++;
+       		}
+       		setVapeMode(s.mode);
+       	} else if (selectorY == 100) {
+               disableButtons();
+               setupButtons();
+               updateScreen(&g);
+               g.buttonCnt = 0;
+               return;
+       	}
+        buildMenu();
+        }
    }
 }
 
@@ -151,6 +165,7 @@ void setupSettingsButtons() {
 }
 
 void showMenu() {
+	g.buttonCnt = 0;
     disableButtons();
     setupSettingsButtons();
     buildMenu();
