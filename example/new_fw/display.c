@@ -127,7 +127,7 @@ void updateScreen(struct globals *g) {
     getPercent(buff, battPerc);
 	Display_PutText(0, 60, buff, FONT_DEJAVU_8PT);
 
-    printNumber(buff, g->vapeCnt);
+    getString(buff, s.material->name);
 	Display_PutText(0, 70, buff, FONT_DEJAVU_8PT);
 
     getString(buff, atomState);
