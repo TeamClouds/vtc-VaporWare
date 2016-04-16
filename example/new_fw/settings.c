@@ -37,6 +37,7 @@ void setupButtons();
 
 int load_settings(void) {
     s.mode = 0;
+    s.material = &vapeMaterialList[1];
     return 1;
 }
 
