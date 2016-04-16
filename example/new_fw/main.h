@@ -44,6 +44,8 @@ struct vapeMode {
 	void (*decrease)(void);
 };
 
+void getModesByMaterial(uint8_t materialMask, int8_t *modes, int8_t *cnt);
+
 /* Settings */
 struct settings {
 	uint8_t mode;
