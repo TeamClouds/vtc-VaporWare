@@ -27,6 +27,8 @@
 
 #include "main.h"
 struct globals g = {};
+struct settings s = {};
+
 void updateScreen(struct globals *g);
 void showMenu();
 
@@ -153,7 +155,7 @@ void (*__vape)(void) = &vape;
 
 int main() {
     int i = 0;
-
+    load_settings();
     setupButtons();
 
     // Let's start with 15.0W as the initial value
