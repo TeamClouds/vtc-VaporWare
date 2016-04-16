@@ -50,6 +50,7 @@ void getModesByMaterial(uint8_t materialMask, int8_t *modes, int8_t *cnt);
 struct settings {
 	uint8_t mode;
 	uint32_t targetTemperature;
+	uint8_t materialIndex;
 	struct vapeMaterials *material;
 };
 
