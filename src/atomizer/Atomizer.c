@@ -680,7 +680,7 @@ void Atomizer_EstimateCoilTemp(Atomizer_Info_t *info) {
         uint32_t baseRes = info->base_resistance % 1000 /10;
         uint32_t current = info->resistance % 1000 / 10;
         if (current > info->base_resistance) {
-            boardTemp = ((float)(current - baseRes) * 100000) / (info->tcr * baseRes);
+            boardTemp = (((float)(current / baseRes) - 1.0) / (info->tcr)) * 100000;
         }
         // TODO: give options other than just F
         info->temperature = info->base_temperature + (boardTemp * 1.8) + 32;

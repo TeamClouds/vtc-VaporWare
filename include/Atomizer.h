@@ -51,7 +51,7 @@ typedef struct {
 	/**
 	 * Temperature resistance was measured at
 	 */
-	uint32_t base_temperature;
+	uint8_t base_temperature;
 	/**
 	 * Output current in mA, measured at the atomizer.
 	 */
@@ -59,7 +59,7 @@ typedef struct {
 	/**
 	 * Estimated Coil Temp
 	 */
-	uint32_t temperature;
+	uint8_t temperature;
 	/**
 	 * Coil TCR
 	 */
