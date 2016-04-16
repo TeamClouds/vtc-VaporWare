@@ -17,8 +17,6 @@
  * Copyright (C) 2016 ReservedField
  * Copyright (C) 2016 kfazz
  */
-
-#include <math.h>
 #include <stdio.h>
 #include <M451Series.h>
 #include <Atomizer.h>
@@ -26,91 +24,28 @@
 #include <TimerUtils.h>
 
 #include "main.h"
+#include "mode_watt.h"
+
+volatile int fireButtonPressed = 0;
 struct globals g = {};
 struct settings s = {};
 
 void updateScreen(struct globals *g);
 void showMenu();
 
-uint16_t wattsToVolts(uint32_t watts, uint16_t res) {
-    // Units: mV, mW, mOhm
-    // V = sqrt(P * R)
-    // Round to nearest multiple of 10
-    uint16_t volts = (sqrt(watts * res) + 5) / 10;
+// ALWAYS init it a sane mode
+void (*__vape)(void);
+void (*__up)(void);
+void (*__down)(void);
 
-    return volts * 10;
+void setVapeMode(struct vapeMode *newMode) {
+    if(newMode->controlType >= MAX_MODE)
+        return;
+
+    __vape = newMode->fire;
+    __up = newMode->increase;
+    __down = newMode->decrease;
 }
-
-volatile int fireButtonPressed = 0;
-
-void wattFire() {
-    g.vapeCnt++;
-    while (fireButtonPressed) {
-        // Handle fire button
-        if(!Atomizer_IsOn() && g.atomInfo.resistance != 0 && Atomizer_GetError() == OK) {
-            // Power on
-            Atomizer_Control(1);
-        }
-
-        // Update info
-        // If resistance is zero voltage will be zero
-        Atomizer_ReadInfo(&g.atomInfo);
-
-        g.newVolts = wattsToVolts(g.watts, g.atomInfo.resistance);
-
-        if(g.newVolts != g.volts || !g.volts) {
-            if(Atomizer_IsOn()) {
-
-                // Update output voltage to correct res variations:
-                // If the new voltage is lower, we only correct it in
-                // 10mV steps, otherwise a flake res reading might
-                // make the voltage plummet to zero and stop.
-                // If the new voltage is higher, we push it up by 100mV
-                // to make it hit harder on TC coils, but still keep it
-                // under control.
-                if(g.newVolts < g.volts) {
-                    g.newVolts = g.volts - (g.volts >= 10 ? 10 : 0);
-                }
-                else {
-                    g.newVolts = g.volts + 100;
-                }
-
-            }
-
-            if(g.newVolts > ATOMIZER_MAX_VOLTS) {
-                g.newVolts = ATOMIZER_MAX_VOLTS;
-            }
-
-            g.volts = g.newVolts;
-
-            Atomizer_SetOutputVoltage(g.volts);
-        }
-        g.vapeCnt++;
-        updateScreen(&g);
-    }
-    if(Atomizer_IsOn())
-        Atomizer_Control(0);
-    g.vapeCnt = 0;
-}
-
-void wattUp() {
-    g.newVolts = wattsToVolts(g.watts + 100, g.atomInfo.resistance);
-    if(g.newVolts <= ATOMIZER_MAX_VOLTS) {
-        g.watts += 100;
-        g.volts = g.newVolts;
-    }
-}
-
-void wattDown() {
-    if (g.watts >= 100) {
-        g.watts -= 100;
-        g.volts = wattsToVolts(g.watts, g.atomInfo.resistance);
-    }
-}
-
-void (*__vape)(void) = &wattFire;
-void (*__up)(void) = &wattUp;
-void (*__down)(void) = &wattDown;
 
 void startVaping(uint32_t counterIndex) {
    if(g.buttonCnt < 3) {
@@ -162,6 +97,9 @@ void setupButtons() {
 
 int main() {
     int i = 0;
+    __vape = variableWattage.fire;
+    __up = variableWattage.increase;
+    __down = variableWattage.decrease;
     load_settings();
     setupButtons();
 
