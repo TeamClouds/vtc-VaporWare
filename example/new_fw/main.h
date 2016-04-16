@@ -25,6 +25,7 @@ struct vapeMode {
 /* Settings */
 enum {
     VARIABLE_WATTAGE,
+    VARIABLE_VOLTAGE,
     MAX_MODE
 };
 
@@ -38,15 +39,8 @@ int load_settings(void);
 
 
 /* Helpers */
-static uint16_t wattsToVolts(uint32_t watts, uint16_t res) {
-    // Units: mV, mW, mOhm
-    // V = sqrt(P * R)
-    // Round to nearest multiple of 10
-    uint16_t volts = (sqrt(watts * res) + 5) / 10;
-
-    return volts * 10;
-}
-
+uint16_t wattsToVolts(uint32_t watts, uint16_t res);
+uint32_t voltsToWatts(uint16_t volts, uint16_t res);
 
 /* Ugly Globals */
 struct globals {
@@ -65,6 +59,10 @@ struct globals {
 };
 
 volatile extern int fireButtonPressed;
-
 extern struct globals g;
+
+/* Display */
+void updateScreen(struct globals *g);
+void showMenu();
+
 #endif

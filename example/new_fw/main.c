@@ -25,13 +25,11 @@
 
 #include "main.h"
 #include "mode_watt.h"
+#include "mode_volt.h"
 
 volatile int fireButtonPressed = 0;
 struct globals g = {};
 struct settings s = {};
-
-void updateScreen(struct globals *g);
-void showMenu();
 
 // ALWAYS init it a sane mode
 void (*__vape)(void);
