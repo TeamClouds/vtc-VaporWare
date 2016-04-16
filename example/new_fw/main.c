@@ -32,17 +32,22 @@ struct globals g = {};
 struct settings s = {};
 
 // ALWAYS init it a sane mode
+void (*__init)(void);
 void (*__vape)(void);
 void (*__up)(void);
 void (*__down)(void);
 
-void setVapeMode(struct vapeMode *newMode) {
-    if(newMode->controlType >= MODE_COUNT)
+void setVapeMode(int newMode) {
+    if(newMode >= MODE_COUNT)
         return;
 
-    __vape = newMode->fire;
-    __up = newMode->increase;
-    __down = newMode->decrease;
+    __vape = g.vapeModes[newMode]->fire;
+    __up = g.vapeModes[newMode]->increase;
+    __down = g.vapeModes[newMode]->decrease;
+    if(g.vapeModes[newMode]->init) {
+        __init = g.vapeModes[newMode]->init;
+	__init();
+    }
 }
 
 void startVaping(uint32_t counterIndex) {
@@ -92,14 +97,17 @@ void setupButtons() {
     g.minus = Button_CreateCallback(buttonLeft, BUTTON_MASK_LEFT);
 }
 
+#define REGISTER_MODE(X) g.vapeModes[X.index] = &X
 
 int main() {
     int i = 0;
-    __vape = variableWattage.fire;
-    __up = variableWattage.increase;
-    __down = variableWattage.decrease;
     load_settings();
     setupButtons();
+
+    REGISTER_MODE(variableVoltage);
+    REGISTER_MODE(variableWattage);
+
+    setVapeMode(0);
 
     // Let's start with 15.0W as the initial value
     // We keep g.watts as mW

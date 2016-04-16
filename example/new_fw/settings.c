@@ -34,8 +34,6 @@ const char *strings[] = {"one","two","three"};
 uint8_t settings[100];
 
 void setupButtons();
-void updateScreen(struct globals *g);
-void getString(char *buff, char *state);
 
 int load_settings(void) {
     s.mode = 0;
