@@ -1,6 +1,8 @@
 #ifndef __GLOBALS_H
 #define __GLOBALS_H
 
+#include <Atomizer.h>
+
 struct globals {
 	uint16_t volts;
 	uint16_t newVolts;
@@ -14,5 +16,13 @@ struct globals {
 	uint8_t vapeCnt;
 	uint8_t whatever;
 };
+
+struct settings {
+	uint8_t mode;
+};
+
+extern struct settings s;
+
+int load_settings(void);
 
 #endif
