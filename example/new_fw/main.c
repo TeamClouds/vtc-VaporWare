@@ -45,7 +45,7 @@ struct vapeMaterials vapeMaterialList[] = {
     },
     {
         .typeMask = TITANIUM,
-        .name = "NI",
+        .name = "TI",
         .tcr = 350,
     },
     {
