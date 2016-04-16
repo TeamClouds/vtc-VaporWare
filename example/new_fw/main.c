@@ -64,6 +64,8 @@ void setVapeMode(int newMode) {
     if(newMode >= MODE_COUNT)
         return;
 
+    s.mode = newMode;
+
     __vape = g.vapeModes[newMode]->fire;
     __up = g.vapeModes[newMode]->increase;
     __down = g.vapeModes[newMode]->decrease;
@@ -71,6 +73,11 @@ void setVapeMode(int newMode) {
         __init = g.vapeModes[newMode]->init;
 	__init();
     }
+}
+
+void setVapeMaterial(struct vapeMaterials *material) {
+    s.material = material;
+    g.atomInfo.tcr = material->tcr;
 }
 
 void startVaping(uint32_t counterIndex) {
