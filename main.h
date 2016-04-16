@@ -5,6 +5,9 @@
 #include <stdint.h>
 #include <math.h>
 
+// TODO: Make this match reality later
+#define MODE_COUNT 8
+
 /* Vape Mode */
 enum {
 	WATT_CONTROL,
@@ -21,14 +24,7 @@ struct vapeMode {
 	void (*decrease)(void);
 };
 
-
 /* Settings */
-enum {
-    VARIABLE_WATTAGE,
-    VARIABLE_VOLTAGE,
-    MAX_MODE
-};
-
 struct settings {
 	uint8_t mode;
 };
@@ -45,7 +41,7 @@ uint32_t voltsToWatts(uint16_t volts, uint16_t res);
 /* Ugly Globals */
 struct globals {
 	Atomizer_Info_t atomInfo;
-	struct vapeMode vapeModes[MAX_MODE];
+	struct vapeMode vapeModes[MODE_COUNT];
 	uint32_t watts;
 	uint16_t volts;
 	uint16_t newVolts;

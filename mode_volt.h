@@ -8,7 +8,7 @@ void voltDown(void);
 
 struct vapeMode variableVoltage = {
     .index = 1,
-    .controlType = VARIABLE_VOLTAGE,
+    .controlType = VOLT_CONTROL,
     .fire = &voltFire,
     .increase = &voltUp,
     .decrease = &voltDown,

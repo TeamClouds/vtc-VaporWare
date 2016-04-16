@@ -8,7 +8,7 @@ void wattDown(void);
 
 struct vapeMode variableWattage = {
     .index = 0,
-    .controlType = VARIABLE_WATTAGE,
+    .controlType = WATT_CONTROL,
     .fire = &wattFire,
     .increase = &wattUp,
     .decrease = &wattDown,

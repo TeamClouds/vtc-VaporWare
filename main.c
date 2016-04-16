@@ -37,7 +37,7 @@ void (*__up)(void);
 void (*__down)(void);
 
 void setVapeMode(struct vapeMode *newMode) {
-    if(newMode->controlType >= MAX_MODE)
+    if(newMode->controlType >= MODE_COUNT)
         return;
 
     __vape = newMode->fire;
