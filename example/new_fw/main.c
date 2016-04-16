@@ -26,6 +26,7 @@
 #include "main.h"
 #include "mode_watt.h"
 #include "mode_volt.h"
+#include "mode_temp.h"
 
 volatile int fireButtonPressed = 0;
 struct globals g = {};
@@ -136,6 +137,7 @@ int main() {
 
     REGISTER_MODE(variableVoltage);
     REGISTER_MODE(variableWattage);
+    REGISTER_MODE(variableTemp);
 
     setVapeMode(s.mode);
     setVapeMaterial(s.material);
