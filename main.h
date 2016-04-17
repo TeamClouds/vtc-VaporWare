@@ -86,6 +86,8 @@ extern struct globals g;
 
 /* Display */
 void updateScreen(struct globals *g);
+
+extern void (*updateScreenTimed)(struct globals *g);
 void getString(char *buff, char *state);
 void showMenu();
 

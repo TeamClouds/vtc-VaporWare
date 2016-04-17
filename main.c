@@ -61,6 +61,12 @@ void (*__vape)(void);
 void (*__up)(void);
 void (*__down)(void);
 
+void (*updateScreenTimed)(struct globals *g) = &updateScreen;
+
+void screenTimeCallback(uint32_t a) {
+    updateScreenTimed(&g);
+}
+
 void setVapeMode(int newMode) {
     if(newMode >= MODE_COUNT)
         return;
@@ -106,7 +112,6 @@ void buttonFire(uint8_t state) {
 }
 
 void buttonRight(uint8_t state) {
-    updateScreen(&g);
     if(state & BUTTON_MASK_RIGHT) {
         __up();
         Atomizer_SetOutputVoltage(g.volts);
@@ -114,7 +119,6 @@ void buttonRight(uint8_t state) {
 }
 
 void buttonLeft(uint8_t state) {
-    updateScreen(&g);
     if (state & BUTTON_MASK_LEFT) {
         __down();
 	Atomizer_SetOutputVoltage(g.volts);
@@ -148,11 +152,10 @@ int main() {
     g.watts = 15000;
     g.volts = wattsToVolts(g.watts, g.atomInfo.resistance);
     Atomizer_SetOutputVoltage(g.volts);
-
+    Timer_CreateTimeout(100, 1, screenTimeCallback, 3);
     // Initialize atomizer info
     do {
         Atomizer_ReadInfo(&g.atomInfo);
-        updateScreen(&g);
         i++;
     } while(i < 100 && g.atomInfo.resistance == 0) ;
 
@@ -163,7 +166,6 @@ int main() {
         }
         while(g.atomInfo.resistance - g.atomInfo.base_resistance > 10) {
             Atomizer_ReadInfo(&g.atomInfo);
-            updateScreen(&g);
         }
 
     }
