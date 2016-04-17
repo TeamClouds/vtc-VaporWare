@@ -196,21 +196,21 @@ int main() {
     __screenOff();
 
     while(1) {
-
+        g.charging = Battery_IsCharging();
         if (gv.fireButtonPressed) {
             __vape();
         }
         if (gv.shouldShowMenu) {
             showMenu();
-        } else if (gv.screenState) {
+        } else if (gv.screenState || g.charging) {
             Display_SetOn(1);
             updateScreen(&g);
-        } else if (gv.screenState <= 1) {
-            Timer_DelayUs(100);
+        } else if (gv.screenState <= 1 && !g.charging) {
+            Timer_DelayMs(100);
             Display_Clear();
             Display_SetOn(0);
             c_screenState = gv.screenState;
         }
-        Timer_DelayUs(33);
+        Timer_DelayUs(666);
     }
 }
