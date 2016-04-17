@@ -71,6 +71,7 @@ struct globals {
 	uint32_t watts;
 	uint16_t volts;
 	uint16_t newVolts;
+	uint8_t charging;
 	uint8_t fire;
 	uint8_t fireTimer;
 	uint8_t minus;
