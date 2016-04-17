@@ -85,8 +85,8 @@ void printSettingsItem(uint8_t starting, char *buff, char *header, char *string)
 }
 
 
-void buildExit(uint8_t starting, char *buff) {
-    getString(buff, "EXIT");
+void printHeader(uint8_t starting, char *buff, char *text) {
+    getString(buff, text);
     Display_PutText(10, starting, buff, FONT_DEJAVU_8PT);
 }
 
@@ -100,7 +100,8 @@ void buildMenu() {
     printSettingsItem(0, buff, headers[0], s.material->name);
     printSettingsItem(20, buff, headers[1],  g.vapeModes[s.mode]->name);
 
-    buildExit(100, buff);
+    printHeader(80, buff, "Reboot");
+    printHeader(100, buff, "Exit");
 
     Display_Update();
 }
@@ -128,6 +129,8 @@ void buttonSettingFire(uint8_t state) {
        			s.mode = 0;
        		}
        		setVapeMode(s.mode);
+       	} else if (selectorY == 80) {
+       		reboot();
        	} else if (selectorY == 100) {
                disableButtons();
                setupButtons();
@@ -140,8 +143,15 @@ void buttonSettingFire(uint8_t state) {
    }
 }
 
+void reboot() {
+    /* Unlock protected registers */
+    SYS_UnlockReg();
+
+    SYS_ResetChip();
+}
+
 void buttonSettingRight(uint8_t state) {
-   if (state & BUTTON_MASK_RIGHT) {
+   if (!(state & BUTTON_MASK_RIGHT)) {
         if (selectorY+20 > 100) {
             selectorY = 0;
         } else {
@@ -152,7 +162,7 @@ void buttonSettingRight(uint8_t state) {
 }
 
 void buttonSettingLeft(uint8_t state) {
-   if (state & BUTTON_MASK_LEFT) {
+   if (!(state & BUTTON_MASK_LEFT)) {
         if (selectorY-20 < 0) {
             selectorY = 100;
         } else {
