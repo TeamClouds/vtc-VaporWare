@@ -131,7 +131,6 @@ void buttonSettingFire(uint8_t state) {
        	} else if (selectorY == 100) {
                disableButtons();
                setupButtons();
-               updateScreen(&g);
                g.buttonCnt = 0;
                return;
        	}
