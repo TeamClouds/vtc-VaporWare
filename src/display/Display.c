@@ -225,6 +225,20 @@ void Display_PutPixels(int x, int y, const uint8_t *bitmap, int w, int h) {
 	}
 }
 
+void Display_PutLine(int x0, int y0, int x1, int y1) {
+	  int dx = abs(x1-x0), sx = x0<x1 ? 1 : -1;
+	  int dy = abs(y1-y0), sy = y0<y1 ? 1 : -1;
+	  int err = (dx>dy ? dx : -dy)/2, e2;
+
+	  for(;;){
+		Display_BitCopy(&Display_framebuf[(x0) * (DISPLAY_HEIGHT / 8)], 1, y0, 20);
+	    if (x0==x1 && y0==y1) break;
+	    e2 = err;
+	    if (e2 >-dx) { err -= dy; x0 += sx; }
+	    if (e2 < dy) { err += dx; y0 += sy; }
+	  }
+}
+
 void Display_PutText(int x, int y, const char *txt, const Font_Info_t *font) {
 	int i, curX, charIdx;
 	const uint8_t *charPtr;

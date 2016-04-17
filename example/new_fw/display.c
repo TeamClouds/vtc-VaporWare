@@ -86,30 +86,29 @@ void updateScreen(struct globals *g) {
 	// Display info
 	switch(Atomizer_GetError()) {
 		case SHORT:
-			atomState = "SHORT";
+			atomState = "Short";
 			break;
 		case OPEN:
-			atomState = "NO ATOM";
+			atomState = "Atomizer";
 			break;
 		case WEAK_BATT:
-			atomState = "WEAK BAT";
+			atomState = "Battery";
 			break;
 		case OVER_TEMP:
-			atomState = "TOO HOT";
+			atomState = "Too Hot";
 			break;
 		default:
-			if (g->atomInfo.temperature >= 600) {
-        	    atomState = "PROTECT";
+			if (g->atomInfo.temperature >= s.targetTemperature) {
+        	    atomState = "Protect";
         	} else {
-        		atomState = Atomizer_IsOn() ? "FIRING" : "";
+        		atomState = Battery_IsCharging() & Battery_IsPresent() ? "Charging" : "";
         	}
 			break;
 	}
-
-	//Battery_IsCharging() & Battery_IsPresent() ? "CHARGING" : ""
 	Display_Clear();
 
-    char buff[8];
+    char buff[9];
+    Display_PutLine(0, 24, 63, 24);
 
     if (g->vapeModes[s.mode]->controlType == TEMP_CONTROL) {
     	if (Atomizer_IsOn()) {
@@ -119,12 +118,12 @@ void updateScreen(struct globals *g) {
             printNumber(buff, s.targetTemperature);
         	Display_PutText(0, 0, buff, FONT_LARGE);
     	}
-        printNumber(buff, 10);
-    	Display_PutText(48, 2, buff, FONT_DEJAVU_8PT);
+    	// TODO put type of temp here
+        //printNumber(buff, 10);
+    	//Display_PutText(48, 2, buff, FONT_DEJAVU_8PT);
+
         getString(buff, s.material->name);
     	Display_PutText(48, 15, buff, FONT_DEJAVU_8PT);
-
-
 
         getFloating(buff, g->watts);
     	Display_PutText(0, 40, buff, FONT_DEJAVU_8PT);
@@ -147,25 +146,10 @@ void updateScreen(struct globals *g) {
     getPercent(buff, battPerc);
 	Display_PutText(0, 70, buff, FONT_DEJAVU_8PT);
 
-    getString(buff, s.material->name);
-	Display_PutText(0, 80, buff, FONT_DEJAVU_8PT);
-
-
-    printNumber(buff, g->maxTemp);
-	Display_PutText(0, 90, buff, FONT_DEJAVU_8PT);
-
-    printNumber(buff, g->minTemp);
-	Display_PutText(0, 100, buff, FONT_DEJAVU_8PT);
-
-    printNumber(buff, gv.screenState);
-        Display_PutText(0, 100, buff, FONT_DEJAVU_8PT);
-
     getString(buff, atomState);
     Display_PutText(0, 110, buff, FONT_DEJAVU_8PT);
 
 	Display_Update();
-
-	//Timer_CreateTimeout(1000, 0, sleepDisplay, 0);
 }
 
 
