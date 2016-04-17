@@ -17,19 +17,30 @@
  * Copyright (C) 2016 ReservedField
  */
 
-#ifndef EVICSDK_FONT_H
-#define EVICSDK_FONT_H
+#ifndef EVICSDK_FONT_10X18_H
+#define EVICSDK_FONT_10X18_H
 
+#include <stdint.h>
 #include <Font_Data.h>
-#include <Font_DejaVuSansMono_8pt.h>
-#include <font_10x18.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define FONT_DEJAVU_8PT (&Font_DejaVuSansMono_8pt_FontInfo)
-#define FONT_LARGE (&fontdata_10x18_fontinfo)
+/**
+ * Character bitmaps for DejaVu Sans Mono 8pt.
+ */
+extern const uint8_t fontdata_10x18[];
+
+/**
+ * Character descriptors for DejaVu Sans Mono 8pt.
+ */
+extern const Font_CharInfo_t fontdata_10x18_Descriptors[];
+
+/**
+ * Font information for DejaVu Sans Mono 8pt.
+ */
+extern const Font_Info_t fontdata_10x18_fontinfo;
 
 #ifdef __cplusplus
 }

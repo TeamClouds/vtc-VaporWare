@@ -56,7 +56,7 @@ void getString(char *buff, char *state) {
 }
 
 inline void getFloating(char *buff, uint32_t floating) {
-	siprintf(buff, "%3lu.%lu",
+	siprintf(buff, "%3lu.%02lu",
 		floating / 1000,
 		floating % 1000 / 10);
 }
@@ -113,42 +113,51 @@ void updateScreen(struct globals *g) {
     if (g->vapeModes[s.mode]->controlType == TEMP_CONTROL) {
     	if (Atomizer_IsOn()) {
     	    printNumber(buff, g->atomInfo.temperature);
-    		Display_PutText(0, 0, buff, FONT_DEJAVU_8PT);
+    		Display_PutText(0, 0, buff, FONT_LARGE);
     	} else {
             printNumber(buff, s.targetTemperature);
-        	Display_PutText(0, 0, buff, FONT_DEJAVU_8PT);
+        	Display_PutText(0, 0, buff, FONT_LARGE);
     	}
+        printNumber(buff, 10);
+    	Display_PutText(48, 2, buff, FONT_DEJAVU_8PT);
+        getString(buff, s.material->name);
+    	Display_PutText(48, 15, buff, FONT_DEJAVU_8PT);
+
+
+
         getFloating(buff, g->watts);
-    	Display_PutText(0, 20, buff, FONT_DEJAVU_8PT);
+    	Display_PutText(0, 40, buff, FONT_DEJAVU_8PT);
+
+
     } else if (g->vapeModes[s.mode]->controlType == WATT_CONTROL) {
         getFloating(buff, g->watts);
     	Display_PutText(0, 0, buff, FONT_DEJAVU_8PT);
 
 	    printNumber(buff, g->atomInfo.temperature);
-		Display_PutText(0, 20, buff, FONT_DEJAVU_8PT);
+		Display_PutText(0, 40, buff, FONT_DEJAVU_8PT);
     }
 
     getFloating(buff, g->atomInfo.resistance);
-	Display_PutText(0, 30, buff, FONT_DEJAVU_8PT);
+	Display_PutText(0, 50, buff, FONT_DEJAVU_8PT);
 
 	getFloating(buff, g->atomInfo.base_resistance);
-    Display_PutText(0, 40, buff, FONT_DEJAVU_8PT);
+    Display_PutText(0, 60, buff, FONT_DEJAVU_8PT);
 
     getPercent(buff, battPerc);
-	Display_PutText(0, 60, buff, FONT_DEJAVU_8PT);
+	Display_PutText(0, 70, buff, FONT_DEJAVU_8PT);
 
     getString(buff, s.material->name);
-	Display_PutText(0, 70, buff, FONT_DEJAVU_8PT);
+	Display_PutText(0, 80, buff, FONT_DEJAVU_8PT);
 
 
     printNumber(buff, g->maxTemp);
-	Display_PutText(0, 80, buff, FONT_DEJAVU_8PT);
-
-    printNumber(buff, g->minTemp);
 	Display_PutText(0, 90, buff, FONT_DEJAVU_8PT);
 
+    printNumber(buff, g->minTemp);
+	Display_PutText(0, 100, buff, FONT_DEJAVU_8PT);
+
     getString(buff, atomState);
-    Display_PutText(0, 116, buff, FONT_DEJAVU_8PT);
+    Display_PutText(0, 110, buff, FONT_DEJAVU_8PT);
 
 	Display_Update();
 
