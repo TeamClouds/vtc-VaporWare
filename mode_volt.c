@@ -21,6 +21,7 @@ void voltFire() {
         g.watts = voltsToWatts(g.volts, g.atomInfo.resistance);
 
         g.vapeCnt++;
+        updateScreen(&g);
     }
 
     if(Atomizer_IsOn())

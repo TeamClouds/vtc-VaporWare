@@ -129,6 +129,7 @@ void tempFire() {
                     Atomizer_SetOutputVoltage(g.volts);
                 }
         g.vapeCnt++;
+        updateScreen(&g);
     }
     if(Atomizer_IsOn())
         Atomizer_Control(0);
