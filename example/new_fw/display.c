@@ -140,6 +140,13 @@ void updateScreen(struct globals *g) {
     getString(buff, s.material->name);
 	Display_PutText(0, 70, buff, FONT_DEJAVU_8PT);
 
+
+    printNumber(buff, g->maxTemp);
+	Display_PutText(0, 80, buff, FONT_DEJAVU_8PT);
+
+    printNumber(buff, g->minTemp);
+	Display_PutText(0, 90, buff, FONT_DEJAVU_8PT);
+
     getString(buff, atomState);
     Display_PutText(0, 116, buff, FONT_DEJAVU_8PT);
 
