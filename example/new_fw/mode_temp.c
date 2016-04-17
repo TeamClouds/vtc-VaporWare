@@ -74,7 +74,7 @@ void tempFire() {
    
     initPid();
 
-    while (fireButtonPressed) {
+    while (gv.fireButtonPressed) {
         // Handle fire button
         if(!Atomizer_IsOn() && g.atomInfo.resistance != 0 && Atomizer_GetError() == OK) {
             // Power on
