@@ -49,6 +49,7 @@ void getModesByMaterial(uint8_t materialMask, int8_t *modes, int8_t *cnt);
 /* Settings */
 struct settings {
 	uint8_t mode;
+	uint16_t screenTimeout;
 	uint32_t targetTemperature;
 	uint8_t materialIndex;
 	struct vapeMaterials *material;
@@ -74,15 +75,21 @@ struct globals {
 	uint8_t fireTimer;
 	uint8_t minus;
 	uint8_t plus;
-	uint8_t buttonCnt;
 	uint8_t vapeCnt;
 	uint8_t whatever;
 	uint32_t maxTemp;
 	uint32_t minTemp;
 };
-
-volatile extern int fireButtonPressed;
 extern struct globals g;
+
+struct globalVols {
+	volatile uint8_t fireButtonPressed;
+	volatile uint8_t screenState;
+	volatile uint8_t buttonCnt;
+	volatile uint8_t shouldShowMenu;
+	volatile int8_t screenOffTimer;
+};
+extern volatile struct globalVols gv;
 
 /* Display */
 void updateScreen(struct globals *g);
