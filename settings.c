@@ -41,6 +41,7 @@ void setupButtons();
 
 int load_settings(void) {
     s.mode = 2;
+    s.screenTimeout = 30; // 100s of s
     s.materialIndex = 1;
     s.material = &vapeMaterialList[s.materialIndex];
     return 1;
@@ -58,7 +59,7 @@ inline void getSelector(char *buff) {
 }
 
 void disableButtons() {
-    g.buttonCnt = 0;
+    gv.buttonCnt = 0;
     Button_DeleteCallback(g.fire);
     Button_DeleteCallback(g.plus);
     Button_DeleteCallback(g.minus);
@@ -135,7 +136,8 @@ void buttonSettingFire(uint8_t state) {
                disableButtons();
                setupButtons();
                updateScreen(&g);
-               g.buttonCnt = 0;
+               gv.buttonCnt = 0;
+               gv.shouldShowMenu = 0;
                return;
        	}
         buildMenu();
@@ -179,7 +181,7 @@ void setupSettingsButtons() {
 }
 
 void showMenu() {
-	g.buttonCnt = 0;
+	gv.buttonCnt = 0;
     disableButtons();
     setupSettingsButtons();
     buildMenu();

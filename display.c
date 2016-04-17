@@ -40,7 +40,6 @@ extern struct globals g;
 // Evic VTC mini X-MAX = 116
 
 void sleepDisplay(uint32_t counterIndex) {
-	Display_SetOn(0);
 }
 
 inline void printNumber(char *buff, uint32_t temperature) {
@@ -66,6 +65,9 @@ void updateScreen(struct globals *g) {
 	uint16_t battVolts;
     uint8_t battPerc;
 
+    if (!gv.screenState)
+        return;
+
     if (Atomizer_IsOn()) {
         if (!Display_IsFlipped()) {
             Display_Flip();
@@ -76,7 +78,6 @@ void updateScreen(struct globals *g) {
         }
     }
 
-    Display_SetOn(1);
 
     // Get battery voltage and charge
 	battVolts = Battery_IsPresent() ? Battery_GetVoltage() : 0;
@@ -155,6 +156,9 @@ void updateScreen(struct globals *g) {
 
     printNumber(buff, g->minTemp);
 	Display_PutText(0, 100, buff, FONT_DEJAVU_8PT);
+
+    printNumber(buff, gv.screenState);
+        Display_PutText(0, 100, buff, FONT_DEJAVU_8PT);
 
     getString(buff, atomState);
     Display_PutText(0, 110, buff, FONT_DEJAVU_8PT);
