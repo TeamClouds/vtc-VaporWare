@@ -90,7 +90,7 @@ void buildExit(uint8_t starting, char *buff) {
     Display_PutText(10, starting, buff, FONT_DEJAVU_8PT);
 }
 
-void buildMenu(struct globals *h) {
+void buildMenu() {
     char buff[8];
 
     Display_Clear();
@@ -132,9 +132,9 @@ void buttonSettingFire(uint8_t state) {
                disableButtons();
                setupButtons();
                g.buttonCnt = 0;
-               updateScreenTimed = &updateScreen;
                return;
        	}
+        buildMenu();
         }
    }
 }
@@ -146,6 +146,7 @@ void buttonSettingRight(uint8_t state) {
         } else {
             selectorY += 20;
         }
+        buildMenu();
     }
 }
 
@@ -156,6 +157,7 @@ void buttonSettingLeft(uint8_t state) {
         } else {
             selectorY -= 20;
         }
+        buildMenu();
     }
 }
 
@@ -169,5 +171,5 @@ void showMenu() {
 	g.buttonCnt = 0;
     disableButtons();
     setupSettingsButtons();
-    updateScreenTimed = &buildMenu;
+    buildMenu();
 }
