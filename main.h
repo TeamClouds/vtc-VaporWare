@@ -77,6 +77,8 @@ struct globals {
 	uint8_t buttonCnt;
 	uint8_t vapeCnt;
 	uint8_t whatever;
+	uint32_t maxTemp;
+	uint32_t minTemp;
 };
 
 volatile extern int fireButtonPressed;

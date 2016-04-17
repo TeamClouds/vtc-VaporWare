@@ -58,9 +58,9 @@ int32_t getNext(int32_t c_temp) {
 }
 
 void tempInit() {
-    I.P = 40;
-    I.I = 5;
-    I.D = 5;
+    I.P = 150;
+    I.I = 90;
+    I.D = 0;
     I.Max = 60000; // Never fire over 60 watts
     I.Min = 0;
 
@@ -85,6 +85,18 @@ void tempFire() {
         // If resistance is zero voltage will be zero
         Atomizer_ReadInfo(&g.atomInfo);
         
+        if (g.atomInfo.temperature > s.targetTemperature) {
+        	if (g.atomInfo.temperature > g.maxTemp) {
+        		g.maxTemp = g.atomInfo.temperature;
+        	}
+
+        }
+        if (g.maxTemp) {
+        	if (g.atomInfo.temperature < g.minTemp || !g.minTemp) {
+        		g.minTemp = g.atomInfo.temperature;
+        	}
+        }
+
 	g.watts = getNext(g.atomInfo.temperature);
 
         g.newVolts = wattsToVolts(g.watts, g.atomInfo.resistance);
