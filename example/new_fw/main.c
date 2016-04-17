@@ -22,14 +22,19 @@
 #include <Atomizer.h>
 #include <Button.h>
 #include <TimerUtils.h>
+#include <Display.h>
 
 #include "main.h"
 #include "mode_watt.h"
 #include "mode_volt.h"
 #include "mode_temp.h"
 
-volatile int fireButtonPressed = 0;
 struct globals g = {};
+volatile struct globalVols gv = {
+    .fireButtonPressed = 0,
+    .screenState = 1,
+    .screenOffTimer = -1,
+};
 struct settings s = {};
 
 struct vapeMaterials vapeMaterialList[] = {
@@ -81,43 +86,69 @@ void setVapeMaterial(struct vapeMaterials *material) {
     g.atomInfo.tcr = material->tcr;
 }
 
+inline void __screenOff(void);
+
+void screenOffTimeout(uint32_t c) {
+    gv.screenState--;
+    if(gv.screenState >= 1)
+        __screenOff();
+    return 0;
+}
+
+inline void screenOn() {
+    gv.screenState = s.screenTimeout;
+}
+
+inline void __screenOff() {
+    if(gv.screenOffTimer >= 0)
+        Timer_DeleteTimer(gv.screenOffTimer);
+    gv.screenOffTimer = Timer_CreateTimeout(100, 0, screenOffTimeout, 9);
+}
+
 void startVaping(uint32_t counterIndex) {
-   if(g.buttonCnt < 3) {
+   if(gv.buttonCnt < 3) {
        if(Button_GetState() & BUTTON_MASK_FIRE) {
-          fireButtonPressed = 1;
-          g.buttonCnt = 0;
+          gv.fireButtonPressed = 1;
+          gv.buttonCnt = 0;
        }
    } else {
-       showMenu();
-       g.buttonCnt = 0;
+       gv.shouldShowMenu = 1;
+       gv.buttonCnt = 0;
    }
+   return 0;
 }
 
 void buttonFire(uint8_t state) {
+   screenOn();
    g.whatever++;
    if (state & BUTTON_MASK_FIRE) {
        if(g.fireTimer)
            Timer_DeleteTimer(g.fireTimer);
        g.fireTimer = Timer_CreateTimeout(200, 0, startVaping, 3);
-       g.buttonCnt++;
+       gv.buttonCnt++;
    } else {
-       fireButtonPressed = 0;
+       __screenOff();
+       gv.fireButtonPressed = 0;
    }
 }
 
 void buttonRight(uint8_t state) {
-    updateScreen(&g);
+    screenOn();
     if(state & BUTTON_MASK_RIGHT) {
         __up();
         Atomizer_SetOutputVoltage(g.volts);
+    } else {
+        __screenOff();
     }
 }
 
 void buttonLeft(uint8_t state) {
-    updateScreen(&g);
+   screenOn();
     if (state & BUTTON_MASK_LEFT) {
         __down();
 	Atomizer_SetOutputVoltage(g.volts);
+    } else {
+        __screenOff();
     }
 }
 
@@ -132,6 +163,7 @@ void setupButtons() {
 
 int main() {
     int i = 0;
+    int c_screenState = -1;
     load_settings();
     setupButtons();
 
@@ -155,15 +187,29 @@ int main() {
         updateScreen(&g);
         i++;
     } while(i < 100 && g.atomInfo.resistance == 0) ;
+        
+    while(g.atomInfo.resistance - g.atomInfo.base_resistance > 10) {
+        Atomizer_ReadInfo(&g.atomInfo);
+        updateScreen(&g);
+    }
+
+    __screenOff();
 
     while(1) {
 
-        if (fireButtonPressed) {
+        if (gv.fireButtonPressed) {
             __vape();
         }
-        while(g.atomInfo.resistance - g.atomInfo.base_resistance > 10) {
-            Atomizer_ReadInfo(&g.atomInfo);
+        if (gv.shouldShowMenu) {
+            showMenu();
+        } else if (gv.screenState) {
+            Display_SetOn(1);
             updateScreen(&g);
+        } else if (gv.screenState <= 1) {
+            Timer_DelayUs(100);
+            Display_Clear();
+            Display_SetOn(0);
+            c_screenState = gv.screenState;
         }
 
     }
