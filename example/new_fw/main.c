@@ -112,8 +112,14 @@ void startVaping(uint32_t counterIndex) {
           gv.buttonCnt = 0;
        }
    } else {
-       gv.shouldShowMenu = 1;
-       gv.buttonCnt = 0;
+	   if (!(Button_GetState() & BUTTON_MASK_FIRE)) {
+		   gv.shouldShowMenu = 1;
+	       gv.buttonCnt = 0;
+	   } else {
+	       gv.fireButtonPressed = 1;
+	       gv.buttonCnt = 0;
+
+	   }
    }
    return 0;
 }
