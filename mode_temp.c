@@ -59,9 +59,9 @@ int32_t getNext(int32_t c_temp, int32_t c_fire) {
 }
 
 void tempInit() {
-    I.P = 50;
-    I.I = 20;
-    I.D = 0;
+    I.P = s.pidP;
+    I.I = s.pidI;
+    I.D = s.pidD;
     I.Max = 60000; // Never fire over 60 watts
     I.Min = 0;
 

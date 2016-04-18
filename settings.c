@@ -47,8 +47,10 @@ int load_settings(void) {
     s.mode = 2;
     s.screenTimeout = 30; // 100s of s
     s.materialIndex = 1;
-    s.material = &vapeMaterialList[s.materialIndex];
     s.tempScaleType = 1;
+    s.pidP = 50;
+    s.pidI = 20;
+    s.pidD = 0;
     return 1;
 }
 
@@ -92,7 +94,7 @@ void buildMenu() {
     getSelector(buff);
     Display_PutText(0, items[currentItem], buff, FONT_DEJAVU_8PT);
 
-    printSettingsItem(0, buff, headers[0], s.material->name);
+    printSettingsItem(0, buff, headers[0], vapeMaterialList[s.materialIndex].name);
     printSettingsItem(20, buff, headers[1],  g.vapeModes[s.mode]->name);
     printSettingsItem(40, buff, headers[2],  tempScaleType[s.tempScaleType]);
 
@@ -121,7 +123,7 @@ void buttonSettingFire(uint8_t state) {
        		if (!g.vapeModes[s.mode]) {
        			s.mode = 0;
        		}
-       		if (!(s.material->typeMask & g.vapeModes[s.mode]->supportedMaterials)) {
+       		if (!(vapeMaterialList[s.materialIndex].typeMask & g.vapeModes[s.mode]->supportedMaterials)) {
        			s.mode++;
        		}
        		if (!g.vapeModes[s.mode]) {
