@@ -60,6 +60,16 @@ inline void getFloating(char *buff, uint32_t floating) {
 		floating % 1000 / 10);
 }
 
+void printTemperature(char *buff, uint32_t temp) {
+	if (s.tempScaleType == 0) {
+		temp = (temp - 32) * .5556;
+	} else if (s.tempScaleType == 1) {
+		// TODO
+	}
+	printNumber(buff, temp);
+
+}
+
 void updateScreen(struct globals *g) {
 	char *atomState;
 	uint16_t battVolts;
@@ -112,15 +122,14 @@ void updateScreen(struct globals *g) {
 
     if (g->vapeModes[s.mode]->controlType == TEMP_CONTROL) {
     	if (Atomizer_IsOn()) {
-    	    printNumber(buff, g->atomInfo.temperature);
-    		Display_PutText(0, 0, buff, FONT_LARGE);
+    		printTemperature(buff, g->atomInfo.temperature);
     	} else {
-            printNumber(buff, s.targetTemperature);
-        	Display_PutText(0, 0, buff, FONT_LARGE);
+    		printTemperature(buff, s.targetTemperature);
     	}
+		Display_PutText(0, 0, buff, FONT_LARGE);
     	// TODO put type of temp here
-        //printNumber(buff, 10);
-    	//Display_PutText(48, 2, buff, FONT_DEJAVU_8PT);
+		getString(buff, tempScaleType[s.tempScaleType]);
+    	Display_PutText(48, 2, buff, FONT_DEJAVU_8PT);
 
         getString(buff, s.material->name);
     	Display_PutText(48, 15, buff, FONT_DEJAVU_8PT);
@@ -154,5 +163,7 @@ void updateScreen(struct globals *g) {
 
 	Display_Update();
 }
+
+
 
 

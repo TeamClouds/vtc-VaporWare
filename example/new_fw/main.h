@@ -53,7 +53,10 @@ struct settings {
 	uint32_t targetTemperature;
 	uint8_t materialIndex;
 	struct vapeMaterials *material;
+	uint8_t tempScaleType;
 };
+
+extern const char *tempScaleType[];
 
 extern struct settings s;
 
