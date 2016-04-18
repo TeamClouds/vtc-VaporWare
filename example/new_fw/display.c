@@ -146,6 +146,9 @@ void updateScreen(struct globals *g) {
     getPercent(buff, battPerc);
 	Display_PutText(0, 70, buff, FONT_DEJAVU_8PT);
 
+	getFloating(buff, Battery_GetVoltage());
+    Display_PutText(0, 80, buff, FONT_DEJAVU_8PT);
+
     getString(buff, atomState);
     Display_PutText(0, 110, buff, FONT_DEJAVU_8PT);
 
