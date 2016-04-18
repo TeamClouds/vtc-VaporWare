@@ -35,7 +35,7 @@ const char *strings[] = {"one","two","three"};
 uint8_t settings[100];
 
 const char *headers[] = {"Type", "Mode", "Scale", "Reboot", "Exit"};
-const char *tempScaleType[] = {"C", "F"};
+const char *tempScaleType[] = {"C", "F", "K"};
 
 uint8_t ITEM_COUNT = 5;
 // Array of selections
@@ -132,7 +132,7 @@ void buttonSettingFire(uint8_t state) {
        		setVapeMode(s.mode);
     		break;
     	case 2:
-       		if (s.tempScaleType == 1) {
+       		if (s.tempScaleType == 2) {
        			s.tempScaleType = 0;
        		} else {
        			s.tempScaleType++;
