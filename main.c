@@ -81,8 +81,9 @@ void setVapeMode(int newMode) {
     }
 }
 
-void setVapeMaterial(struct vapeMaterials *material) {
-    s.material = material;
+void setVapeMaterial(int index) {
+    struct vapeMaterials *material = &vapeMaterialList[index];
+    s.materialIndex = index;
     g.atomInfo.tcr = material->tcr;
 }
 
@@ -90,8 +91,11 @@ inline void __screenOff(void);
 
 void screenOffTimeout(uint32_t c) {
     gv.screenState--;
-    if(gv.screenState >= 1)
+    if(gv.screenState >= 1) {
         __screenOff();
+    } else {
+        gv.buttonCnt = 0;
+    }
     return 0;
 }
 
@@ -178,7 +182,7 @@ int main() {
     REGISTER_MODE(variableTemp);
 
     setVapeMode(s.mode);
-    setVapeMaterial(s.material);
+    setVapeMaterial(s.materialIndex);
 
     // Let's start with 15.0W as the initial value
     // We keep g.watts as mW
