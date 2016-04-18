@@ -27,7 +27,6 @@
 #include <Battery.h>
 #include <Button.h>
 #include "main.h"
-extern struct globals g;
 
 // To whom it may concern
 // Calling things like Button state here are really bad
