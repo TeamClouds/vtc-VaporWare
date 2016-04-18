@@ -34,11 +34,12 @@ uint8_t currentItem = 0;
 const char *strings[] = {"one","two","three"};
 uint8_t settings[100];
 
-const char *headers[] = {"Type", "Mode", "Exit"};
+const char *headers[] = {"Type", "Mode", "Scale", "Reboot", "Exit"};
+const char *tempScaleType[] = {"C", "F"};
 
-uint8_t ITEM_COUNT = 4;
+uint8_t ITEM_COUNT = 5;
 // Array of selections
- uint8_t items[4] = { 0, 20, 100, 110};
+ uint8_t items[5] = { 0, 20, 40, 100, 110};
 
 void setupButtons();
 
@@ -47,12 +48,14 @@ int load_settings(void) {
     s.screenTimeout = 30; // 100s of s
     s.materialIndex = 1;
     s.material = &vapeMaterialList[s.materialIndex];
+    s.tempScaleType = 1;
     return 1;
 }
 
 inline void getMenuToggle(char *buff, char *data) {
     siprintf(buff, "%s", data);
 }
+
 inline void getSelector(char *buff) {
      siprintf(buff, "*");
 }
@@ -86,17 +89,16 @@ void buildMenu() {
 
     Display_PutLine(0, 90, 63, 90);
 
-
     getSelector(buff);
     Display_PutText(0, items[currentItem], buff, FONT_DEJAVU_8PT);
 
-
-
     printSettingsItem(0, buff, headers[0], s.material->name);
     printSettingsItem(20, buff, headers[1],  g.vapeModes[s.mode]->name);
+    printSettingsItem(40, buff, headers[2],  tempScaleType[s.tempScaleType]);
 
-    printHeader(100, buff, "Reboot");
-    printHeader(110, buff, "Exit");
+    // Print reboot and standard stuff
+    printHeader(100, buff, headers[3]);
+    printHeader(110, buff, headers[4]);
 
     Display_Update();
 }
@@ -128,9 +130,16 @@ void buttonSettingFire(uint8_t state) {
        		setVapeMode(s.mode);
     		break;
     	case 2:
-       		reboot();
+       		if (s.tempScaleType == 1) {
+       			s.tempScaleType = 0;
+       		} else {
+       			s.tempScaleType++;
+       		}
     		break;
     	case 3:
+       		reboot();
+    		break;
+    	case 4:
             disableButtons();
             setupButtons();
             updateScreen(&g);
