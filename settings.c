@@ -116,7 +116,7 @@ void buttonSettingFire(uint8_t state) {
        		} else {
        			s.materialIndex++;
        		}
-       	    setVapeMaterial(&vapeMaterialList[s.materialIndex]);
+       	    setVapeMaterial(s.materialIndex);
     		break;
     	case 1:
        		s.mode++;
