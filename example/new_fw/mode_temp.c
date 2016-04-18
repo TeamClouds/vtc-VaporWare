@@ -27,7 +27,7 @@ void setTarget(int32_t ttemp) {
     I.targetTemp = ttemp;
 }
 
-int32_t getNext(int32_t c_temp) {
+int32_t getNext(int32_t c_temp, int32_t c_fire) {
     int32_t error = I.targetTemp - c_temp;
     int32_t aveError;
     int32_t diffError;
@@ -35,7 +35,7 @@ int32_t getNext(int32_t c_temp) {
     int l = I.i > 0 ? I.i - 1 : PIDLEN;
 
     I.Rave -= I.Rvals[i];
-    I.Rvals[i] = I.targetTemp - c_temp;
+    I.Rvals[i] = error;
     I.Rave += I.Rvals[i];
 
     aveError = I.Rave / PIDLEN;
@@ -47,19 +47,20 @@ int32_t getNext(int32_t c_temp) {
 
     /* */
 
-    int32_t next = I.P * error + 
-                   I.I * aveError +
-	           I.D * diffError;
-    
-    if (next > I.Max) next = I.Max;
-    if (next < I.Min) next = I.Min;
+    int32_t next = I.P * error / 1000 + 
+                   I.I * aveError / 1000 +
+	           I.D * diffError / 1000;
+    next += c_fire;
 
+    if (next > 60000) next = 60000;
+    if( next <  1000) next = 1000;
+    // TODO: there needs to be 'scaling' to scale dT to dW    
     return next;
 }
 
 void tempInit() {
-    I.P = 150;
-    I.I = 90;
+    I.P = 175;
+    I.I = 20;
     I.D = 0;
     I.Max = 60000; // Never fire over 60 watts
     I.Min = 0;
@@ -71,9 +72,9 @@ void tempInit() {
 void tempFire() {
     g.vapeCnt++;
     setTarget(s.targetTemperature);
-   
+    uint16_t prev_res = g.atomInfo.resistance;
     initPid();
-
+    g.watts = 15000; // Start Firing at 15 watts.
     while (gv.fireButtonPressed) {
         // Handle fire button
         if(!Atomizer_IsOn() && g.atomInfo.resistance != 0 && Atomizer_GetError() == OK) {
@@ -97,8 +98,7 @@ void tempFire() {
         	}
         }
 
-	g.watts = getNext(g.atomInfo.temperature);
-
+        
         g.newVolts = wattsToVolts(g.watts, g.atomInfo.resistance);
 
         if(g.newVolts != g.volts || !g.volts) {
@@ -129,7 +129,11 @@ void tempFire() {
                     Atomizer_SetOutputVoltage(g.volts);
                 }
         g.vapeCnt++;
-        updateScreen(&g);
+        Atomizer_ReadInfo(&g.atomInfo);
+	// TODO: We might need a short sleep here?
+        g.watts = getNext(g.atomInfo.temperature, g.watts);
+        if(!g.vapeCnt % 10)
+            updateScreen(&g);
     }
     if(Atomizer_IsOn())
         Atomizer_Control(0);
