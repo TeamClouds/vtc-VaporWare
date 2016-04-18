@@ -192,7 +192,7 @@ int main() {
         Atomizer_ReadInfo(&g.atomInfo);
         updateScreen(&g);
     }
-
+    screenOn();
     __screenOff();
 
     while(1) {
