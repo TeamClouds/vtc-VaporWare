@@ -145,6 +145,7 @@ void buttonSettingFire(uint8_t state) {
             updateScreen(&g);
             gv.buttonCnt = 0;
             gv.shouldShowMenu = 0;
+            currentItem = 0;
             return;
     		break;
     	}
