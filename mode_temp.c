@@ -59,7 +59,7 @@ int32_t getNext(int32_t c_temp, int32_t c_fire) {
 }
 
 void tempInit() {
-    I.P = 175;
+    I.P = 100;
     I.I = 20;
     I.D = 0;
     I.Max = 60000; // Never fire over 60 watts
@@ -98,7 +98,11 @@ void tempFire() {
         	}
         }
 
-        
+        // Don't allow firing > 1 ohm in temp mode.
+        if (g.atomInfo.resistance > 1000) {
+            g.watts = 0;
+        }
+ 
         g.newVolts = wattsToVolts(g.watts, g.atomInfo.resistance);
 
         if(g.newVolts != g.volts || !g.volts) {
