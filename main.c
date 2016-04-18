@@ -209,7 +209,6 @@ int main() {
         } else if (gv.screenState || g.charging) {
             Display_SetOn(1);
             updateScreen(&g);
-            Atomizer_ReadInfo(&g.atomInfo);
         } else if (gv.screenState <= 1 && !g.charging) {
             Timer_DelayMs(100);
             Display_Clear();
