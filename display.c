@@ -60,10 +60,15 @@ inline void getFloating(char *buff, uint32_t floating) {
 }
 
 void printTemperature(char *buff, uint32_t temp) {
-	if (s.tempScaleType == 0) {
+	switch (s.tempScaleType) {
+	case 0:
 		temp = (temp - 32) * .5556;
-	} else if (s.tempScaleType == 1) {
-		// TODO
+		break;
+	case 1:
+		break;
+	case 2:
+		temp = (temp + 459.67) * 5/9;
+		break;
 	}
 	printNumber(buff, temp);
 
@@ -73,6 +78,8 @@ void updateScreen(struct globals *g) {
 	char *atomState;
 	uint16_t battVolts;
     uint8_t battPerc;
+    char buff[9];
+    uint8_t atomizerOn = Atomizer_IsOn();
 
     if (!gv.screenState)
         return;
@@ -86,7 +93,6 @@ void updateScreen(struct globals *g) {
             Display_Flip();
         }
     }
-
 
     // Get battery voltage and charge
 	battVolts = Battery_IsPresent() ? Battery_GetVoltage() : 0;
@@ -108,19 +114,22 @@ void updateScreen(struct globals *g) {
 			break;
 		default:
 			if (g->atomInfo.temperature >= s.targetTemperature) {
-        	    atomState = "Protect";
+        	    atomState = "Temp Max";
+        	} else if (Battery_IsCharging() & Battery_IsPresent()) {
+        		atomState = "Charging";
+        	} else if (!Battery_IsPresent()){
+        		atomState = "No Bat";
         	} else {
-        		atomState = Battery_IsCharging() & Battery_IsPresent() ? "Charging" : "";
+        		atomState = "Firing";
         	}
 			break;
 	}
 	Display_Clear();
 
-    char buff[9];
     Display_PutLine(0, 24, 63, 24);
 
     if (g->vapeModes[s.mode]->controlType == TEMP_CONTROL) {
-    	if (Atomizer_IsOn()) {
+    	if (atomizerOn) {
     		printTemperature(buff, g->atomInfo.temperature);
     	} else {
     		printTemperature(buff, s.targetTemperature);
@@ -132,33 +141,32 @@ void updateScreen(struct globals *g) {
 
         getString(buff, vapeMaterialList[s.materialIndex].name);
     	Display_PutText(48, 15, buff, FONT_DEJAVU_8PT);
-
-        getFloating(buff, g->watts);
-    	Display_PutText(0, 40, buff, FONT_DEJAVU_8PT);
-
-
     } else if (g->vapeModes[s.mode]->controlType == WATT_CONTROL) {
         getFloating(buff, g->watts);
     	Display_PutText(0, 0, buff, FONT_DEJAVU_8PT);
-
-	    printNumber(buff, g->atomInfo.temperature);
-		Display_PutText(0, 40, buff, FONT_DEJAVU_8PT);
     }
 
-    getFloating(buff, g->atomInfo.resistance);
-	Display_PutText(0, 50, buff, FONT_DEJAVU_8PT);
+    getString(buff, atomState);
+    Display_PutText(0, 35, buff, FONT_DEJAVU_8PT);
 
-	getFloating(buff, g->atomInfo.base_resistance);
-    Display_PutText(0, 60, buff, FONT_DEJAVU_8PT);
 
     getPercent(buff, battPerc);
-	Display_PutText(0, 70, buff, FONT_DEJAVU_8PT);
+	Display_PutText(0, 48, buff, FONT_DEJAVU_8PT);
 
 	getFloating(buff, Battery_GetVoltage());
-    Display_PutText(0, 80, buff, FONT_DEJAVU_8PT);
+    Display_PutText(15, 48, buff, FONT_DEJAVU_8PT);
 
-    getString(buff, atomState);
-    Display_PutText(0, 110, buff, FONT_DEJAVU_8PT);
+    getFloating(buff, g->watts);
+	Display_PutText(0, 100, buff, FONT_DEJAVU_8PT);
+
+    if (atomizerOn) {
+		getFloating(buff, g->atomInfo.resistance);
+    } else {
+		getFloating(buff, g->atomInfo.base_resistance);
+    }
+	Display_PutText(0, 110, buff, FONT_DEJAVU_8PT);
+
+
 
 	Display_Update();
 }
