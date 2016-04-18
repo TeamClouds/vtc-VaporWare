@@ -90,8 +90,11 @@ inline void __screenOff(void);
 
 void screenOffTimeout(uint32_t c) {
     gv.screenState--;
-    if(gv.screenState >= 1)
+    if(gv.screenState >= 1) {
         __screenOff();
+    } else {
+        gv.buttonCnt = 0;
+    }
     return 0;
 }
 
