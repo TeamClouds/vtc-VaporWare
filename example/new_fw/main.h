@@ -52,8 +52,10 @@ struct settings {
 	uint16_t screenTimeout;
 	uint32_t targetTemperature;
 	uint8_t materialIndex;
-	struct vapeMaterials *material;
 	uint8_t tempScaleType;
+	uint32_t pidP;
+ 	uint32_t pidI;
+	uint32_t pidD;
 };
 
 extern const char *tempScaleType[];

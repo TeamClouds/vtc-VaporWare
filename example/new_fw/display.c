@@ -130,7 +130,7 @@ void updateScreen(struct globals *g) {
 		getString(buff, tempScaleType[s.tempScaleType]);
     	Display_PutText(48, 2, buff, FONT_DEJAVU_8PT);
 
-        getString(buff, s.material->name);
+        getString(buff, vapeMaterialList[s.materialIndex].name);
     	Display_PutText(48, 15, buff, FONT_DEJAVU_8PT);
 
         getFloating(buff, g->watts);
