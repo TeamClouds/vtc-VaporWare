@@ -211,6 +211,6 @@ int main() {
             Display_SetOn(0);
             c_screenState = gv.screenState;
         }
-        Timer_DelayUs(666);
+        Timer_DelayMs(66);
     }
 }
