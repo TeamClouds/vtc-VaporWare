@@ -72,7 +72,6 @@ void tempInit() {
 void tempFire() {
     g.vapeCnt++;
     setTarget(s.targetTemperature);
-    uint16_t prev_res = g.atomInfo.resistance;
     initPid();
     g.watts = 15000; // Start Firing at 15 watts.
     while (gv.fireButtonPressed) {

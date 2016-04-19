@@ -21,11 +21,13 @@
 #include <M451Series.h>
 #include <Atomizer.h>
 #include <Button.h>
+#include <Battery.h>
 #include <TimerUtils.h>
 #include <Display.h>
 #include <USB_VirtualCOM.h>
 
 #include "main.h"
+#include "communication.h"
 #include "mode_watt.h"
 #include "mode_volt.h"
 #include "mode_temp.h"
@@ -97,7 +99,6 @@ void screenOffTimeout(uint32_t c) {
     } else {
         gv.buttonCnt = 0;
     }
-    return 0;
 }
 
 inline void screenOn() {
@@ -119,26 +120,17 @@ void startVaping(uint32_t counterIndex) {
           gv.buttonCnt = 0;
        }
    } else {
-	   if (!(Button_GetState() & BUTTON_MASK_FIRE)) {
-		   gv.shouldShowMenu = 1;
-	       gv.buttonCnt = 0;
-	   } else {
-	       gv.fireButtonPressed = 1;
-	       gv.buttonCnt = 0;
-
-	   }
+       gv.shouldShowMenu = 1;
+       gv.buttonCnt = 0;
    }
-   return 0;
 }
 
 void buttonFire(uint8_t state) {
    screenOn();
-   g.whatever++;
    if (state & BUTTON_MASK_FIRE) {
-       if(g.fireTimer)
-           Timer_DeleteTimer(g.fireTimer);
-       Timer_DeleteTimer(gv.screenOffTimer);
-       g.fireTimer = Timer_CreateTimeout(200, 0, startVaping, 3);
+       if(gv.fireTimer)
+           Timer_DeleteTimer(gv.fireTimer);
+       gv.fireTimer = Timer_CreateTimeout(200, 0, startVaping, 3);
        gv.buttonCnt++;
    } else {
        screenOn();
@@ -151,7 +143,6 @@ void buttonRight(uint8_t state) {
     screenOn();
     if(state & BUTTON_MASK_RIGHT) {
         __up();
-        Atomizer_SetOutputVoltage(g.volts);
     } else {
         __screenOff();
     }
@@ -161,7 +152,6 @@ void buttonLeft(uint8_t state) {
    screenOn();
     if (state & BUTTON_MASK_LEFT) {
         __down();
-	Atomizer_SetOutputVoltage(g.volts);
     } else {
         __screenOff();
     }
@@ -178,7 +168,6 @@ void setupButtons() {
 
 int main() {
     int i = 0;
-    int c_screenState = -1;
     load_settings();
     setupButtons();
 
@@ -226,8 +215,7 @@ int main() {
             Timer_DelayMs(100);
             Display_Clear();
             Display_SetOn(0);
-            c_screenState = gv.screenState;
         }
-        Timer_DelayMs(66);
+        Timer_DelayMs(66); // 15fps
     }
 }
