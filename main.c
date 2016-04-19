@@ -112,6 +112,8 @@ inline void __screenOff() {
 void startVaping(uint32_t counterIndex) {
    if(gv.buttonCnt < 3) {
        if(Button_GetState() & BUTTON_MASK_FIRE) {
+          Timer_DeleteTimer(gv.screenOffTimer);
+          gv.screenOffTimer = 5;
           gv.fireButtonPressed = 1;
           gv.buttonCnt = 0;
        }
