@@ -1,4 +1,8 @@
+#include <stdio.h>
 #include <stdint.h>
+
+#include <USB_VirtualCOM.h>
+
 #include "main.h"
 
 #define PIDLEN 10
@@ -46,7 +50,6 @@ int32_t getNext(int32_t c_temp, int32_t c_fire) {
     I.i %= PIDLEN;
 
     /* */
-
     int32_t next = I.P * error / 1000 + 
                    I.I * aveError / 1000 +
 	           I.D * diffError / 1000;
@@ -54,6 +57,11 @@ int32_t getNext(int32_t c_temp, int32_t c_fire) {
 
     if (next > 60000) next = 60000;
     if( next <  1000) next = 1000;
+    
+    char buff[63];
+    siprintf(buff, "PID|%ld,%ld,%ld,%d\r\n", I.targetTemp, c_temp, next, g.atomInfo.resistance);
+    USB_VirtualCOM_SendString(buff);
+    
     // TODO: there needs to be 'scaling' to scale dT to dW    
     return next;
 }
