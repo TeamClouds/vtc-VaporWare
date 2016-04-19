@@ -44,7 +44,6 @@ uint8_t ITEM_COUNT = 5;
 void setupButtons();
 
 int load_settings(void) {
-    s.fromRom = 0;
     s.mode = 2;
     s.screenTimeout = 30; // 100s of s
     s.materialIndex = 1;
