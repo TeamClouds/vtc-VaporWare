@@ -32,54 +32,55 @@
 #include "mode_volt.h"
 #include "mode_temp.h"
 
-struct globals g = {};
+struct globals g = { };
+
 volatile struct globalVols gv = {
     .fireButtonPressed = 0,
     .screenState = 1,
     .screenOffTimer = -1,
 };
-struct settings s = {};
+struct settings s = { };
 
 struct vapeMaterials vapeMaterialList[] = {
     {
-        .typeMask = KANTHAL,
-        .name = "KA",
-        .tcr = 0,
-    },
+     .typeMask = KANTHAL,
+     .name = "KA",
+     .tcr = 0,
+     },
     {
-        .typeMask = NICKEL,
-        .name = "NI",
-        .tcr = 620,
-    },
+     .typeMask = NICKEL,
+     .name = "NI",
+     .tcr = 620,
+     },
     {
-        .typeMask = TITANIUM,
-        .name = "TI",
-        .tcr = 350,
-    },
+     .typeMask = TITANIUM,
+     .name = "TI",
+     .tcr = 350,
+     },
     {
-        .typeMask = STAINLESS,
-        .name = "SS",
-        .tcr = 105,
-    },
+     .typeMask = STAINLESS,
+     .name = "SS",
+     .tcr = 105,
+     },
 };
 
 // ALWAYS init it a sane mode
-void (*__init)(void);
-void (*__vape)(void);
-void (*__up)(void);
-void (*__down)(void);
+void (*__init) (void);
+void (*__vape) (void);
+void (*__up) (void);
+void (*__down) (void);
 
 void setVapeMode(int newMode) {
-    if(newMode >= MODE_COUNT)
-        return;
+    if (newMode >= MODE_COUNT)
+	return;
 
     s.mode = newMode;
 
     __vape = g.vapeModes[newMode]->fire;
     __up = g.vapeModes[newMode]->increase;
     __down = g.vapeModes[newMode]->decrease;
-    if(g.vapeModes[newMode]->init) {
-        __init = g.vapeModes[newMode]->init;
+    if (g.vapeModes[newMode]->init) {
+	__init = g.vapeModes[newMode]->init;
 	__init();
     }
 }
@@ -94,10 +95,10 @@ inline void __screenOff(void);
 
 void screenOffTimeout(uint32_t c) {
     gv.screenState--;
-    if(gv.screenState >= 1) {
-        __screenOff();
+    if (gv.screenState >= 1) {
+	__screenOff();
     } else {
-        gv.buttonCnt = 0;
+	gv.buttonCnt = 0;
     }
 }
 
@@ -106,54 +107,54 @@ inline void screenOn() {
 }
 
 inline void __screenOff() {
-    if(gv.screenOffTimer >= 0)
-        Timer_DeleteTimer(gv.screenOffTimer);
+    if (gv.screenOffTimer >= 0)
+	Timer_DeleteTimer(gv.screenOffTimer);
     gv.screenOffTimer = Timer_CreateTimeout(100, 0, screenOffTimeout, 9);
 }
 
 void startVaping(uint32_t counterIndex) {
-   if(gv.buttonCnt < 3) {
-       if(Button_GetState() & BUTTON_MASK_FIRE) {
-          Timer_DeleteTimer(gv.screenOffTimer);
-          gv.screenOffTimer = 5;
-          gv.fireButtonPressed = 1;
-          gv.buttonCnt = 0;
-       }
-   } else {
-       gv.shouldShowMenu = 1;
-       gv.buttonCnt = 0;
-   }
+    if (gv.buttonCnt < 3) {
+	if (Button_GetState() & BUTTON_MASK_FIRE) {
+	    Timer_DeleteTimer(gv.screenOffTimer);
+	    gv.screenOffTimer = 5;
+	    gv.fireButtonPressed = 1;
+	    gv.buttonCnt = 0;
+	}
+    } else {
+	gv.shouldShowMenu = 1;
+	gv.buttonCnt = 0;
+    }
 }
 
 void buttonFire(uint8_t state) {
-   screenOn();
-   if (state & BUTTON_MASK_FIRE) {
-       if(gv.fireTimer)
-           Timer_DeleteTimer(gv.fireTimer);
-       gv.fireTimer = Timer_CreateTimeout(200, 0, startVaping, 3);
-       gv.buttonCnt++;
-   } else {
-       screenOn();
-       __screenOff();
-       gv.fireButtonPressed = 0;
-   }
+    screenOn();
+    if (state & BUTTON_MASK_FIRE) {
+	if (gv.fireTimer)
+	    Timer_DeleteTimer(gv.fireTimer);
+	gv.fireTimer = Timer_CreateTimeout(200, 0, startVaping, 3);
+	gv.buttonCnt++;
+    } else {
+	screenOn();
+	__screenOff();
+	gv.fireButtonPressed = 0;
+    }
 }
 
 void buttonRight(uint8_t state) {
     screenOn();
-    if(state & BUTTON_MASK_RIGHT) {
-        __up();
+    if (state & BUTTON_MASK_RIGHT) {
+	__up();
     } else {
-        __screenOff();
+	__screenOff();
     }
 }
 
 void buttonLeft(uint8_t state) {
-   screenOn();
+    screenOn();
     if (state & BUTTON_MASK_LEFT) {
-        __down();
+	__down();
     } else {
-        __screenOff();
+	__screenOff();
     }
 }
 
@@ -189,36 +190,37 @@ int main() {
 
     // Initialize atomizer info
     do {
-        Atomizer_ReadInfo(&g.atomInfo);
-        updateScreen(&g);
-        i++;
-    } while(i < 100 && g.atomInfo.resistance == 0) ;
-        
-    while(g.atomInfo.resistance - g.atomInfo.base_resistance > 10) {
-        Atomizer_ReadInfo(&g.atomInfo);
-        updateScreen(&g);
+	Atomizer_ReadInfo(&g.atomInfo);
+	updateScreen(&g);
+	i++;
+    }
+    while (i < 100 && g.atomInfo.resistance == 0);
+
+    while (g.atomInfo.resistance - g.atomInfo.base_resistance > 10) {
+	Atomizer_ReadInfo(&g.atomInfo);
+	updateScreen(&g);
     }
     screenOn();
     __screenOff();
 
     if (!s.fromRom)
-        gv.shouldShowMenu = 1;
+	gv.shouldShowMenu = 1;
 
-    while(1) {
-        g.charging = Battery_IsCharging();
-        if (gv.fireButtonPressed) {
-            __vape();
-        }
-        if (gv.shouldShowMenu) {
-            showMenu();
-        } else if (gv.screenState || g.charging) {
-            Display_SetOn(1);
-            updateScreen(&g);
-        } else if (gv.screenState <= 1 && !g.charging) {
-            Timer_DelayMs(100);
-            Display_Clear();
-            Display_SetOn(0);
-        }
-        Timer_DelayMs(66); // 15fps
+    while (1) {
+	g.charging = Battery_IsCharging();
+	if (gv.fireButtonPressed) {
+	    __vape();
+	}
+	if (gv.shouldShowMenu) {
+	    showMenu();
+	} else if (gv.screenState || g.charging) {
+	    Display_SetOn(1);
+	    updateScreen(&g);
+	} else if (gv.screenState <= 1 && !g.charging) {
+	    Timer_DelayMs(100);
+	    Display_Clear();
+	    Display_SetOn(0);
+	}
+	Timer_DelayMs(66);	// 15fps
     }
 }
