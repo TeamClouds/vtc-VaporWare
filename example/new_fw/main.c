@@ -27,6 +27,7 @@
 #include <USB_VirtualCOM.h>
 
 #include "main.h"
+#include "communication.h"
 #include "mode_watt.h"
 #include "mode_volt.h"
 #include "mode_temp.h"
