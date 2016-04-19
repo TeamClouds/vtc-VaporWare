@@ -136,9 +136,11 @@ void buttonFire(uint8_t state) {
    if (state & BUTTON_MASK_FIRE) {
        if(g.fireTimer)
            Timer_DeleteTimer(g.fireTimer);
+       Timer_DeleteTimer(gv.screenOffTimer);
        g.fireTimer = Timer_CreateTimeout(200, 0, startVaping, 3);
        gv.buttonCnt++;
    } else {
+       screenOn();
        __screenOff();
        gv.fireButtonPressed = 0;
    }
@@ -218,7 +220,6 @@ int main() {
         if (gv.shouldShowMenu) {
             showMenu();
         } else if (gv.screenState || g.charging) {
-            screenOn();
             Display_SetOn(1);
             updateScreen(&g);
         } else if (gv.screenState <= 1 && !g.charging) {
