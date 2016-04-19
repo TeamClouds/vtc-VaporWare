@@ -218,6 +218,7 @@ int main() {
         if (gv.shouldShowMenu) {
             showMenu();
         } else if (gv.screenState || g.charging) {
+            screenOn();
             Display_SetOn(1);
             updateScreen(&g);
         } else if (gv.screenState <= 1 && !g.charging) {
