@@ -50,6 +50,7 @@ void setVapeMaterial(int index);
 
 /* Settings */
 struct settings {
+	uint8_t fromRom;
 	uint8_t mode;
 	uint16_t screenTimeout;
 	uint32_t targetTemperature;
