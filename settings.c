@@ -24,6 +24,7 @@
 #include <Font.h>
 #include <TimerUtils.h>
 #include <Button.h>
+#include <USB_VirtualCOM.h>
 #include "main.h"
 
 uint16_t selectorY = 0;
@@ -34,12 +35,12 @@ uint8_t currentItem = 0;
 const char *strings[] = {"one","two","three"};
 uint8_t settings[100];
 
-const char *headers[] = {"Type", "Mode", "Scale", "Reboot", "Exit"};
+const char *headers[] = {"Type", "Mode", "Scale", "Reboot", "Exit", "USB"};
 const char *tempScaleType[] = {"C", "F", "K"};
 
-uint8_t ITEM_COUNT = 5;
+uint8_t ITEM_COUNT = 6;
 // Array of selections
- uint8_t items[5] = { 0, 20, 40, 100, 110};
+ uint8_t items[6] = { 0, 20, 40, 80, 100, 110};
 
 void setupButtons();
 
@@ -99,6 +100,7 @@ void buildMenu() {
     printSettingsItem(40, buff, headers[2],  tempScaleType[s.tempScaleType]);
 
     // Print reboot and standard stuff
+    printHeader(80, buff, headers[5]);
     printHeader(100, buff, headers[3]);
     printHeader(110, buff, headers[4]);
 
@@ -139,9 +141,13 @@ void buttonSettingFire(uint8_t state) {
        		}
     		break;
     	case 3:
-       		reboot();
+    		// Send string over the virtual COM port
+    		USB_VirtualCOM_SendString("Hello, It's me.\r\n");
     		break;
     	case 4:
+       		reboot();
+    		break;
+    	case 5:
             disableButtons();
             setupButtons();
             updateScreen(&g);
