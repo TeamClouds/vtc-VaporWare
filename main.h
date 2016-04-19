@@ -48,6 +48,7 @@ void getModesByMaterial(uint8_t materialMask, int8_t *modes, int8_t *cnt);
 
 /* Settings */
 struct settings {
+	uint8_t fromRom;
 	uint8_t mode;
 	uint16_t screenTimeout;
 	uint32_t targetTemperature;
