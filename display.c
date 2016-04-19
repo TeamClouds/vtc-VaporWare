@@ -138,7 +138,7 @@ void updateScreen(struct globals *g) {
     	}
 		Display_PutText(0, 0, buff, FONT_LARGE);
     	// TODO put type of temp here
-		getString(buff, tempScaleType[s.tempScaleType]);
+		getString(buff, (char *)tempScaleType[s.tempScaleType]);
     	Display_PutText(48, 2, buff, FONT_DEJAVU_8PT);
 
         getString(buff, vapeMaterialList[s.materialIndex].name);
