@@ -164,7 +164,6 @@ void buttonSettingFire(uint8_t state) {
             return;
     		break;
     	}
-        buildMenu();
         }
    }
 }
@@ -176,7 +175,6 @@ void buttonSettingRight(uint8_t state) {
         } else {
             currentItem++;
         }
-        buildMenu();
     }
 }
 
@@ -187,7 +185,6 @@ void buttonSettingLeft(uint8_t state) {
         } else {
             currentItem--;
         }
-        buildMenu();
     }
 }
 
@@ -203,5 +200,6 @@ void showMenu() {
     setupSettingsButtons();
     while(gv.shouldShowMenu) {
         buildMenu();
+        Timer_DelayMs(66); //15fps
     }
 }
