@@ -117,15 +117,22 @@ void buildMenu() {
 void buttonSettingFire(uint8_t state) {
    // To things
    if (state & BUTTON_MASK_FIRE) {
-       if(Button_GetState() & BUTTON_MASK_FIRE) {
-    	switch(currentItem) {
+       gv.fireButtonPressed = 1;
+   } else {
+       gv.fireButtonPressed = 0;
+   }
+}
+
+void handleFireButton() {
+        gv.fireButtonPressed = 0; //Always clear this so no chance of bouncing
+ 	switch(currentItem) {
     	case 0:
        		if (s.materialIndex == 3) {
        			s.materialIndex = 0;
        		} else {
        			s.materialIndex++;
        		}
-       	    setVapeMaterial(s.materialIndex);
+                setVapeMaterial(s.materialIndex);
     		break;
     	case 1:
        		s.mode++;
@@ -162,10 +169,8 @@ void buttonSettingFire(uint8_t state) {
             gv.shouldShowMenu = 0;
             currentItem = 0;
             return;
-    		break;
+    	    break;
     	}
-        }
-   }
 }
 
 void buttonSettingRight(uint8_t state) {
@@ -199,6 +204,8 @@ void showMenu() {
     disableButtons();
     setupSettingsButtons();
     while(gv.shouldShowMenu) {
+        if(gv.fireButtonPressed) 
+            handleFireButton();
         buildMenu();
         Timer_DelayMs(66); //15fps
     }
