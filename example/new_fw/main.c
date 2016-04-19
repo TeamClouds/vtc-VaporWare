@@ -201,6 +201,9 @@ int main() {
     screenOn();
     __screenOff();
 
+    if (!s.fromRom)
+        gv.shouldShowMenu = 1;
+
     while(1) {
         g.charging = Battery_IsCharging();
         if (gv.fireButtonPressed) {
