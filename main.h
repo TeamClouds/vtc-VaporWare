@@ -78,17 +78,16 @@ struct globals {
 	uint16_t newVolts;
 	uint8_t charging;
 	uint8_t fire;
-	uint8_t fireTimer;
 	uint8_t minus;
 	uint8_t plus;
 	uint8_t vapeCnt;
-	uint8_t whatever;
 	uint32_t maxTemp;
 	uint32_t minTemp;
 };
 extern struct globals g;
 
 struct globalVols {
+	volatile uint8_t fireTimer;
 	volatile uint8_t fireButtonPressed;
 	volatile uint8_t screenState;
 	volatile uint8_t buttonCnt;
