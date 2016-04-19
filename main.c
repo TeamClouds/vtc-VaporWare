@@ -113,6 +113,8 @@ inline void __screenOff() {
 void startVaping(uint32_t counterIndex) {
    if(gv.buttonCnt < 3) {
        if(Button_GetState() & BUTTON_MASK_FIRE) {
+          Timer_DeleteTimer(gv.screenOffTimer);
+          gv.screenOffTimer = 5;
           gv.fireButtonPressed = 1;
           gv.buttonCnt = 0;
        }
@@ -135,9 +137,11 @@ void buttonFire(uint8_t state) {
    if (state & BUTTON_MASK_FIRE) {
        if(g.fireTimer)
            Timer_DeleteTimer(g.fireTimer);
+       Timer_DeleteTimer(gv.screenOffTimer);
        g.fireTimer = Timer_CreateTimeout(200, 0, startVaping, 3);
        gv.buttonCnt++;
    } else {
+       screenOn();
        __screenOff();
        gv.fireButtonPressed = 0;
    }

@@ -113,15 +113,17 @@ void updateScreen(struct globals *g) {
 			atomState = "Too Hot";
 			break;
 		default:
-			if (g->atomInfo.temperature >= s.targetTemperature) {
+			if (gv.fireButtonPressed && g->atomInfo.temperature >= s.targetTemperature) {
         	    atomState = "Temp Max";
-        	} else if (Battery_IsCharging() & Battery_IsPresent()) {
+        	} else if (!gv.fireButtonPressed && Battery_IsCharging() & Battery_IsPresent()) {
         		atomState = "Charging";
         	} else if (!Battery_IsPresent()){
         		atomState = "No Bat";
-        	} else {
+        	} else if (gv.fireButtonPressed) {
         		atomState = "Firing";
-        	}
+        	} else {
+                        atomState = "";
+                }
 			break;
 	}
 	Display_Clear();
