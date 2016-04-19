@@ -8,33 +8,33 @@ void voltInit() {
 void voltFire() {
     g.vapeCnt++;
     while (gv.fireButtonPressed) {
-        // Handle fire button
-        if(!Atomizer_IsOn() && g.atomInfo.resistance != 0 && Atomizer_GetError() == OK) {
-            // Power on
-            Atomizer_Control(1);
-        }
+	// Handle fire button
+	if (!Atomizer_IsOn() && g.atomInfo.resistance != 0
+	    && Atomizer_GetError() == OK) {
+	    // Power on
+	    Atomizer_Control(1);
+	}
+	// Update info
+	// If resistance is zero voltage will be zero
+	Atomizer_ReadInfo(&g.atomInfo);
 
-        // Update info
-        // If resistance is zero voltage will be zero
-        Atomizer_ReadInfo(&g.atomInfo);
+	Atomizer_SetOutputVoltage(g.volts);
 
-        Atomizer_SetOutputVoltage(g.volts);
-
-        g.vapeCnt++;
-        updateScreen(&g);
+	g.vapeCnt++;
+	updateScreen(&g);
     }
 
-    if(Atomizer_IsOn())
-        Atomizer_Control(0);
+    if (Atomizer_IsOn())
+	Atomizer_Control(0);
     g.vapeCnt = 0;
 }
 
 void voltUp() {
     g.newVolts = g.volts + 100;
-    if(g.newVolts <= ATOMIZER_MAX_VOLTS) {
-        g.volts = g.newVolts;
+    if (g.newVolts <= ATOMIZER_MAX_VOLTS) {
+	g.volts = g.newVolts;
     } else {
-        g.volts = ATOMIZER_MAX_VOLTS;
+	g.volts = ATOMIZER_MAX_VOLTS;
     }
     g.watts = voltsToWatts(g.volts, g.atomInfo.resistance);
 }
@@ -42,10 +42,9 @@ void voltUp() {
 void voltDown() {
     g.newVolts = g.volts - 100;
     if (g.volts >= 0) {
-        g.volts = g.newVolts;
+	g.volts = g.newVolts;
     } else {
-        g.volts = 0;
+	g.volts = 0;
     }
     g.watts = voltsToWatts(g.volts, g.atomInfo.resistance);
 }
-
