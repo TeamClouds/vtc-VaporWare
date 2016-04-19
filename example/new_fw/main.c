@@ -119,26 +119,17 @@ void startVaping(uint32_t counterIndex) {
           gv.buttonCnt = 0;
        }
    } else {
-	   if (!(Button_GetState() & BUTTON_MASK_FIRE)) {
-		   gv.shouldShowMenu = 1;
-	       gv.buttonCnt = 0;
-	   } else {
-	       gv.fireButtonPressed = 1;
-	       gv.buttonCnt = 0;
-
-	   }
+       gv.shouldShowMenu = 1;
+       gv.buttonCnt = 0;
    }
-   return 0;
 }
 
 void buttonFire(uint8_t state) {
    screenOn();
-   g.whatever++;
    if (state & BUTTON_MASK_FIRE) {
-       if(g.fireTimer)
-           Timer_DeleteTimer(g.fireTimer);
-       Timer_DeleteTimer(gv.screenOffTimer);
-       g.fireTimer = Timer_CreateTimeout(200, 0, startVaping, 3);
+       if(gv.fireTimer)
+           Timer_DeleteTimer(gv.fireTimer);
+       gv.fireTimer = Timer_CreateTimeout(200, 0, startVaping, 3);
        gv.buttonCnt++;
    } else {
        screenOn();
@@ -151,7 +142,6 @@ void buttonRight(uint8_t state) {
     screenOn();
     if(state & BUTTON_MASK_RIGHT) {
         __up();
-        Atomizer_SetOutputVoltage(g.volts);
     } else {
         __screenOff();
     }
@@ -161,7 +151,6 @@ void buttonLeft(uint8_t state) {
    screenOn();
     if (state & BUTTON_MASK_LEFT) {
         __down();
-	Atomizer_SetOutputVoltage(g.volts);
     } else {
         __screenOff();
     }
