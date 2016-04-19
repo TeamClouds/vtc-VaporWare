@@ -18,7 +18,7 @@ void voltFire() {
         // If resistance is zero voltage will be zero
         Atomizer_ReadInfo(&g.atomInfo);
 
-        g.watts = voltsToWatts(g.volts, g.atomInfo.resistance);
+        Atomizer_SetOutputVoltage(g.volts);
 
         g.vapeCnt++;
         updateScreen(&g);
