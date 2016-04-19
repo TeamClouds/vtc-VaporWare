@@ -21,6 +21,7 @@
 #include <M451Series.h>
 #include <Atomizer.h>
 #include <Button.h>
+#include <Battery.h>
 #include <TimerUtils.h>
 #include <Display.h>
 #include <USB_VirtualCOM.h>
@@ -97,7 +98,6 @@ void screenOffTimeout(uint32_t c) {
     } else {
         gv.buttonCnt = 0;
     }
-    return 0;
 }
 
 inline void screenOn() {
@@ -167,7 +167,6 @@ void setupButtons() {
 
 int main() {
     int i = 0;
-    int c_screenState = -1;
     load_settings();
     setupButtons();
 
@@ -215,8 +214,7 @@ int main() {
             Timer_DelayMs(100);
             Display_Clear();
             Display_SetOn(0);
-            c_screenState = gv.screenState;
         }
-        Timer_DelayMs(66);
+        Timer_DelayMs(66); // 15fps
     }
 }

@@ -55,6 +55,12 @@ int load_settings(void) {
     return 1;
 }
 
+void reboot() {
+    /* Unlock protected registers */
+    SYS_UnlockReg();
+    SYS_ResetChip();
+}
+
 inline void getMenuToggle(char *buff, char *data) {
     siprintf(buff, "%s", data);
 }
@@ -95,14 +101,14 @@ void buildMenu() {
     getSelector(buff);
     Display_PutText(0, items[currentItem], buff, FONT_DEJAVU_8PT);
 
-    printSettingsItem(0, buff, headers[0], vapeMaterialList[s.materialIndex].name);
-    printSettingsItem(20, buff, headers[1],  g.vapeModes[s.mode]->name);
-    printSettingsItem(40, buff, headers[2],  tempScaleType[s.tempScaleType]);
+    printSettingsItem(0, buff, (char *)headers[0], vapeMaterialList[s.materialIndex].name);
+    printSettingsItem(20, buff, (char *)headers[1],  g.vapeModes[s.mode]->name);
+    printSettingsItem(40, buff, (char *)headers[2],  (char *)tempScaleType[s.tempScaleType]);
 
     // Print reboot and standard stuff
-    printHeader(80, buff, headers[5]);
-    printHeader(100, buff, headers[3]);
-    printHeader(110, buff, headers[4]);
+    printHeader(80, buff, (char *)headers[5]);
+    printHeader(100, buff, (char *)headers[3]);
+    printHeader(110, buff, (char *)headers[4]);
 
     Display_Update();
 }
@@ -160,12 +166,6 @@ void buttonSettingFire(uint8_t state) {
         buildMenu();
         }
    }
-}
-
-void reboot() {
-    /* Unlock protected registers */
-    SYS_UnlockReg();
-    SYS_ResetChip();
 }
 
 void buttonSettingRight(uint8_t state) {
