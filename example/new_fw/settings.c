@@ -31,7 +31,7 @@ uint16_t selectorY = 0;
 uint16_t selectorX = 0;
 uint16_t toggleItem = 0;
 uint16_t showItemToggle = 0;
-uint8_t currentItem = 0;
+volatile uint8_t currentItem = 0;
 const char *strings[] = {"one","two","three"};
 uint8_t settings[100];
 
