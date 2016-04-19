@@ -198,8 +198,10 @@ void setupSettingsButtons() {
 }
 
 void showMenu() {
-	gv.buttonCnt = 0;
+    gv.buttonCnt = 0;
     disableButtons();
     setupSettingsButtons();
-    buildMenu();
+    while(gv.shouldShowMenu) {
+        buildMenu();
+    }
 }
