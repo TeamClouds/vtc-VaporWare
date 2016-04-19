@@ -23,6 +23,7 @@
 #include <Button.h>
 #include <TimerUtils.h>
 #include <Display.h>
+#include <USB_VirtualCOM.h>
 
 #include "main.h"
 #include "mode_watt.h"
@@ -184,12 +185,14 @@ int main() {
     setVapeMode(s.mode);
     setVapeMaterial(s.materialIndex);
 
+    Communication_Init();
     // Let's start with 15.0W as the initial value
     // We keep g.watts as mW
     Atomizer_ReadInfo(&g.atomInfo);
     g.watts = 15000;
     g.volts = wattsToVolts(g.watts, g.atomInfo.resistance);
     Atomizer_SetOutputVoltage(g.volts);
+
 
     // Initialize atomizer info
     do {
