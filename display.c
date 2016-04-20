@@ -90,7 +90,7 @@ void updateScreen(struct globals *g) {
         Display_Clear();
         // update the battery percent all the time if
         // we are charging
-        getPercent(buff, gv.batteryPercent);
+        getPercent(buff, g->batteryPercent);
         uint8_t size = strlen(buff);
         Display_PutText((DISPLAY_WIDTH/2)-((8*size)/2),
             (DISPLAY_HEIGHT/2)-12, buff, FONT_DEJAVU_8PT);
@@ -174,7 +174,7 @@ void updateScreen(struct globals *g) {
     getString(buff, atomState);
     Display_PutText(0, 35, buff, FONT_DEJAVU_8PT);
 
-    getPercent(buff, gv.batteryPercent);
+    getPercent(buff, g->batteryPercent);
     Display_PutText(0, 48, buff, FONT_DEJAVU_8PT);
 
     getFloating(buff, Battery_GetVoltage());

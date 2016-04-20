@@ -255,6 +255,36 @@ void buildMenu() {
     Display_Update();
 }
 
+void buttonSettingRight(uint8_t state) {
+    if (!(state & BUTTON_MASK_RIGHT)) {
+	if (currentItem + 1 > ITEM_COUNT - 1) {
+	    currentItem = 0;
+	} else {
+	    currentItem++;
+	}
+    }
+}
+
+void buttonSettingLeft(uint8_t state) {
+    if (!(state & BUTTON_MASK_LEFT)) {
+	if (currentItem - 1 < 0) {
+	    currentItem = ITEM_COUNT - 1;
+	} else {
+	    currentItem--;
+	}
+    }
+}
+
+void registerSettingsMovement() {
+    g.plus = Button_CreateCallback(buttonSettingRight, BUTTON_MASK_RIGHT);
+    g.minus = Button_CreateCallback(buttonSettingLeft, BUTTON_MASK_LEFT);
+}
+
+void deregisterSettingsMovement() {
+    Button_DeleteCallback(g.plus);
+    Button_DeleteCallback(g.minus);
+}
+
 void buttonSettingFire(uint8_t state) {
     // To things
     if (state & BUTTON_MASK_FIRE) {
@@ -320,36 +350,6 @@ void handleFireButton() {
 	return;
 	break;
     }
-}
-
-void buttonSettingRight(uint8_t state) {
-    if (!(state & BUTTON_MASK_RIGHT)) {
-	if (currentItem + 1 > ITEM_COUNT - 1) {
-	    currentItem = 0;
-	} else {
-	    currentItem++;
-	}
-    }
-}
-
-void buttonSettingLeft(uint8_t state) {
-    if (!(state & BUTTON_MASK_LEFT)) {
-	if (currentItem - 1 < 0) {
-	    currentItem = ITEM_COUNT - 1;
-	} else {
-	    currentItem--;
-	}
-    }
-}
-
-void deregisterSettingsMovement() {
-    Button_DeleteCallback(g.plus);
-    Button_DeleteCallback(g.minus);
-}
-
-void registerSettingsMovement() {
-    g.plus = Button_CreateCallback(buttonSettingRight, BUTTON_MASK_RIGHT);
-    g.minus = Button_CreateCallback(buttonSettingLeft, BUTTON_MASK_LEFT);
 }
 
 void setupSettingsButtons() {
