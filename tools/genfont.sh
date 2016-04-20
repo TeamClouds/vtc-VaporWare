@@ -1,11 +1,10 @@
 #!/bin/sh
 
-if [[ $# -eq 0 ]]
-  then
+if [ $# -eq 0 ] ;  then
     echo "No arguments supplied;, usage: genfont.sh <location of font> <output point size>"
 fi
 
-if [[ -z $LIST ]] ; then
+if [ -z $LIST ] ; then
     echo "defaulting to 0-9 font list"
     LIST=`seq 0 9`
 fi
@@ -16,9 +15,9 @@ SIZE=$2
 echo "bitmap data\n\n"
 
 for i in $LIST; do
-    echo "  //$i"
+    echo "//$i"
     # at the end, we remove the last 4 bytes to clear out the extra curly brace
-    convert -font $FONT -pointsize $SIZE -rotate 270 -flip -endian LSB label:$i xbm:- | grep '0x\w\w' | head -c-4
+    convert -font $FONT -pointsize $SIZE -rotate 270 -flip -endian LSB label:$i xbm:- | grep -o '0x\w\w' | awk '{ if (NR%8==0) printf $1 ", \n"; else printf $1 ", "; }'
     echo "\n";
 done
 
