@@ -57,6 +57,10 @@ inline void getFloating(char *buff, uint32_t floating) {
     siprintf(buff, "%3lu.%02lu", floating / 1000, floating % 1000 / 10);
 }
 
+inline void getFloatingTenth(char *buff, uint32_t floating) {
+    siprintf(buff, "%3lu.%lu", floating / 1000, floating % 1000 / 10);
+}
+
 void printTemperature(char *buff, uint32_t temp) {
     switch (s.tempScaleType) {
     case 0:
@@ -130,27 +134,37 @@ void updateScreen(struct globals *g) {
 
     Display_PutLine(0, 24, 63, 24);
 
-    if (g->vapeModes[s.mode]->controlType == TEMP_CONTROL) {
-	if (atomizerOn) {
-	    printTemperature(buff, g->atomInfo.temperature);
-	} else {
-	    printTemperature(buff, s.targetTemperature);
-	}
-	Display_PutText(0, 0, buff, FONT_LARGE);
-	// TODO put type of temp here
-	getString(buff, (char *) tempScaleType[s.tempScaleType]);
-	Display_PutText(48, 2, buff, FONT_DEJAVU_8PT);
+    switch (g->vapeModes[s.mode]->controlType) {
+    case TEMP_CONTROL:
+        if (atomizerOn) {
+            printTemperature(buff, g->atomInfo.temperature);
+        } else {
+            printTemperature(buff, s.targetTemperature);
+        }
+	    Display_PutText(0, 0, buff, FONT_LARGE);
+	    getString(buff, (char *) tempScaleType[s.tempScaleType]);
+	    Display_PutText(48, 2, buff, FONT_DEJAVU_8PT);
+        break;
+    case WATT_CONTROL:
+        getFloatingTenth(buff, g->watts);
+	    Display_PutText(0, 10, buff, FONT_DEJAVU_8PT);
+	    getString(buff, "W");
+	    Display_PutText(48, 2, buff, FONT_DEJAVU_8PT);
+        break;
+    case VOLT_CONTROL:
+        getFloatingTenth(buff, g->volts);
+        Display_PutText(0, 10, buff, FONT_DEJAVU_8PT);
+	    getString(buff, "V");
+	    Display_PutText(48, 2, buff, FONT_DEJAVU_8PT);
+        break;
+    }
 
+	// Material
 	getString(buff, vapeMaterialList[s.materialIndex].name);
 	Display_PutText(48, 15, buff, FONT_DEJAVU_8PT);
-    } else if (g->vapeModes[s.mode]->controlType == WATT_CONTROL) {
-	getFloating(buff, g->watts);
-	Display_PutText(0, 0, buff, FONT_DEJAVU_8PT);
-    }
 
     getString(buff, atomState);
     Display_PutText(0, 35, buff, FONT_DEJAVU_8PT);
-
 
     getPercent(buff, battPerc);
     Display_PutText(0, 48, buff, FONT_DEJAVU_8PT);
@@ -167,8 +181,6 @@ void updateScreen(struct globals *g) {
 	getFloating(buff, g->atomInfo.base_resistance);
     }
     Display_PutText(0, 110, buff, FONT_DEJAVU_8PT);
-
-
 
     Display_Update();
 }
