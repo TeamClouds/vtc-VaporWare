@@ -32,6 +32,12 @@ void Communication_Command(char *buffer) {
     case 's':
         dumpSettings(buffer, response);
         break;
+    case 'U':
+        SYS_UnlockReg();
+        SYS_CLEAR_RST_SOURCE(SYS_RSTSTS_PORF_Msk | SYS_RSTSTS_PINRF_Msk);
+        FMC_SELECT_NEXT_BOOT(1);
+        NVIC_SystemReset();
+        break;
     default:
         response[0] = '~';
         break;
