@@ -221,7 +221,13 @@ int main() {
             uint8_t C = 0;
             i += USB_VirtualCOM_Read(&C,1);
             rcmd[i - 1] = C;
-            if (rcmd[i - 1] == '\n') {
+            /* This should be updatedto eat all control chars */
+            if (rcmd[i - 1] == '\r') {
+                // eat \r
+                rcmd[i - 1] = '\0';
+                i--;
+            } else if (rcmd[i - 1] == '\n') {
+                rcmd[i - 1] = '\0';
                 Communication_Command((char *)rcmd);
                 memset(rcmd, 0, sizeof(rcmd));
                 i = 0;
