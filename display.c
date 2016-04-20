@@ -77,20 +77,20 @@ void printTemperature(char *buff, uint32_t temp) {
 }
 
 void updateScreen(struct globals *g) {
-
     char *atomState;
-    uint16_t battVolts;
-    uint8_t battPerc;
     char buff[9];
     uint8_t atomizerOn = Atomizer_IsOn();
 
-    // Get battery voltage and charge
-    battVolts = Battery_IsPresent()? Battery_GetVoltage() : 0;
-    battPerc = Battery_VoltageToPercent(battVolts);
+    if (!atomizerOn) {
+	    g->batteryPercent = Battery_VoltageToPercent(
+            Battery_IsPresent()? Battery_GetVoltage() : 0);
+    }
 
     if (g->charging && !gv.screenState) {
         Display_Clear();
-        getPercent(buff, battPerc);
+        // update the battery percent all the time if
+        // we are charging
+        getPercent(buff, gv.batteryPercent);
         uint8_t size = strlen(buff);
         Display_PutText((DISPLAY_WIDTH/2)-((8*size)/2),
             (DISPLAY_HEIGHT/2)-12, buff, FONT_DEJAVU_8PT);
@@ -174,7 +174,7 @@ void updateScreen(struct globals *g) {
     getString(buff, atomState);
     Display_PutText(0, 35, buff, FONT_DEJAVU_8PT);
 
-    getPercent(buff, battPerc);
+    getPercent(buff, gv.batteryPercent);
     Display_PutText(0, 48, buff, FONT_DEJAVU_8PT);
 
     getFloating(buff, Battery_GetVoltage());
