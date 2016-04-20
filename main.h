@@ -3,6 +3,7 @@
 
 #include <Atomizer.h>
 #include <stdint.h>
+#include <string.h>
 #include <math.h>
 
 // TODO: Make this match reality later
@@ -60,6 +61,7 @@ struct settings {
     uint32_t pidP;
     uint32_t pidI;
     uint32_t pidD;
+    uint8_t dumpPids;
 };
 
 extern const char *tempScaleType[];
