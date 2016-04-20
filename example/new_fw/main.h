@@ -67,7 +67,8 @@ extern const char *tempScaleType[];
 extern struct settings s;
 
 int load_settings(void);
-
+void updateSettings(char *buffer, char *response);
+void dumpSettings(char *buffer, char *response);
 
 /* Helpers */
 uint16_t wattsToVolts(uint32_t watts, uint16_t res);
