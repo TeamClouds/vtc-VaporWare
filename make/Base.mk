@@ -85,10 +85,16 @@ INCDIRS := -I$(NUVOSDK)/CMSIS/Include \
 
 LDSCRIPT := $(EVICSDK)/linker/linker.ld
 
+ifeq ($(shell uname),Darwin)
+LIBDIRS := -L$(ARMGCC)/arm-none-eabi/lib \
+	-L$(ARMGCC)/lib/gcc/arm-none-eabi/$(shell arm-none-eabi-gcc -dumpversion) \
+	-L$(EVICSDK)/lib
+else
 LIBDIRS := -L$(ARMGCC)/arm-none-eabi/lib \
 	-L$(ARMGCC)/arm-none-eabi/newlib \
 	-L$(ARMGCC)/gcc/arm-none-eabi/$(shell arm-none-eabi-gcc -dumpversion) \
 	-L$(EVICSDK)/lib
+endif
 
 CFLAGS += -Wall -mcpu=$(CPU) -mthumb -Os -fdata-sections -ffunction-sections
 CFLAGS += $(INCDIRS)
