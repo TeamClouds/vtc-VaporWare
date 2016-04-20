@@ -90,8 +90,10 @@ void updateScreen(struct globals *g) {
 
     if (g->charging && !gv.screenState) {
         Display_Clear();
-        getPercent(buff, battPerc);
-        Display_PutText(24, 55, buff, FONT_DEJAVU_8PT);
+        getPercent(buff, "0");
+        uint8_t size = strlen(buff);
+        Display_PutText((DISPLAY_WIDTH/2)-((8*size)/2),
+            (DISPLAY_HEIGHT/2)-12, buff, FONT_DEJAVU_8PT);
         Display_Update();
         return;
     }
