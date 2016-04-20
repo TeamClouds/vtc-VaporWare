@@ -90,6 +90,7 @@ struct globals {
     uint8_t vapeCnt;
     uint32_t maxTemp;
     uint32_t minTemp;
+    uint8_t batteryPercent;
 };
 extern struct globals g;
 
