@@ -66,6 +66,7 @@ int load_settings(void) {
 
 void updateSettings(char *buffer, char *response) {
     char buff[63];
+    char *endptr;
     char *setting;
     char *value;
     const char delim = ',';
@@ -74,8 +75,16 @@ void updateSettings(char *buffer, char *response) {
     strtok(buffer, &delim); // eat the 'S'
     setting = strtok(NULL, &delim);
     value = strtok(NULL, &delim);
+    if (!setting || !value) {
+        response[0] = '~';
+        return;
+    }
     errno = 0;
-    val32 = strtol(value, NULL, 10);
+    val32 = strtol(value, &endptr, 10);
+    if (value == endptr) {
+        response[0] = '~';
+        return;
+    }
 
     if (strncmp(setting,"mode",4) == 0) {
         if (errno || val32 < 0 || val32 >= MAX_CONTROL) {
@@ -120,8 +129,10 @@ void updateSettings(char *buffer, char *response) {
         s.dumpPids = val32 & 0xF;
         response[0] = '$';
     }
-    siprintf(buff, "INFO,setting %s to %s\r\n", setting, value);
-    USB_VirtualCOM_SendString(buff);
+    if (response[0] == '$') {
+        siprintf(buff, "INFO,setting %s to %s\r\n", setting, value);
+        USB_VirtualCOM_SendString(buff);
+    }
 }
 
 
