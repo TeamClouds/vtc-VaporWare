@@ -2,7 +2,11 @@
 #include "main.h"
 
 void wattInit() {
-
+	// set this initial value because we may be switching
+	// from another mode that changes our watts.
+    g.watts = 15000;
+    g.volts = wattsToVolts(g.watts, g.atomInfo.resistance);
+    Atomizer_SetOutputVoltage(g.volts);
 }
 
 void wattFire() {

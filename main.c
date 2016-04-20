@@ -180,13 +180,7 @@ int main() {
     setVapeMaterial(s.materialIndex);
 
     Communication_Init();
-    // Let's start with 15.0W as the initial value
-    // We keep g.watts as mW
     Atomizer_ReadInfo(&g.atomInfo);
-    g.watts = 15000;
-    g.volts = wattsToVolts(g.watts, g.atomInfo.resistance);
-    Atomizer_SetOutputVoltage(g.volts);
-
 
     // Initialize atomizer info
     do {
