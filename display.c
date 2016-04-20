@@ -77,16 +77,26 @@ void printTemperature(char *buff, uint32_t temp) {
 }
 
 void updateScreen(struct globals *g) {
+
     char *atomState;
     uint16_t battVolts;
     uint8_t battPerc;
     char buff[9];
     uint8_t atomizerOn = Atomizer_IsOn();
 
-    if (!gv.screenState)
-	return;
+    // Get battery voltage and charge
+    battVolts = Battery_IsPresent()? Battery_GetVoltage() : 0;
+    battPerc = Battery_VoltageToPercent(battVolts);
 
-    if (Atomizer_IsOn()) {
+    if (g->charging && !gv.screenState) {
+        Display_Clear();
+        getPercent(buff, battPerc);
+        Display_PutText(24, 55, buff, FONT_DEJAVU_8PT);
+        Display_Update();
+        return;
+    }
+
+    if (atomizerOn) {
 	if (!Display_IsFlipped()) {
 	    Display_Flip();
 	}
@@ -95,10 +105,6 @@ void updateScreen(struct globals *g) {
 	    Display_Flip();
 	}
     }
-
-    // Get battery voltage and charge
-    battVolts = Battery_IsPresent()? Battery_GetVoltage() : 0;
-    battPerc = Battery_VoltageToPercent(battVolts);
 
     // Display info
     switch (Atomizer_GetError()) {
@@ -119,7 +125,7 @@ void updateScreen(struct globals *g) {
 	    && g->atomInfo.temperature >= s.targetTemperature) {
 	    atomState = "Temp Max";
 	} else if (!gv.fireButtonPressed
-		   && Battery_IsCharging() & Battery_IsPresent()) {
+		   && g->charging & Battery_IsPresent()) {
 	    atomState = "Charging";
 	} else if (!Battery_IsPresent()) {
 	    atomState = "No Bat";
