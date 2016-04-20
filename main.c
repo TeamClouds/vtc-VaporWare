@@ -18,6 +18,8 @@
  * Copyright (C) 2016 kfazz
  */
 #include <stdio.h>
+#include <string.h>
+
 #include <M451Series.h>
 #include <Atomizer.h>
 #include <Button.h>
@@ -199,7 +201,7 @@ int main() {
 
     if (!s.fromRom)
 	gv.shouldShowMenu = 1;
-
+    uint8_t rcmd[63];
     while (1) {
 	g.charging = Battery_IsCharging();
 	if (gv.fireButtonPressed) {
@@ -215,6 +217,21 @@ int main() {
 	    Display_Clear();
 	    Display_SetOn(0);
 	}
-	Timer_DelayMs(66);	// 15fps
+        while(USB_VirtualCOM_GetAvailableSize() > 0) {
+            uint8_t C = 0;
+            i += USB_VirtualCOM_Read(&C,1);
+            rcmd[i - 1] = C;
+            if (rcmd[i - 1] == '\n') {
+                Communication_Command((char *)rcmd);
+                memset(rcmd, 0, sizeof(rcmd));
+                i = 0;
+            } else if (i == 62) {
+                Communication_Command((char *)rcmd);
+                memset(rcmd, 0, sizeof(rcmd));
+                i = 0;
+                break; //overflow
+            }
+        }
+        Timer_DelayMs(66); // 15fps
     }
 }
