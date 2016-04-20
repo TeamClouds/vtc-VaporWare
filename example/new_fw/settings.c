@@ -25,6 +25,7 @@
 #include <TimerUtils.h>
 #include <Button.h>
 #include <USB_VirtualCOM.h>
+#include <Dataflash.h>
 #include "main.h"
 
 uint16_t selectorY = 0;
@@ -32,17 +33,18 @@ uint16_t selectorX = 0;
 uint16_t toggleItem = 0;
 uint16_t showItemToggle = 0;
 volatile uint8_t currentItem = 0;
+volatile uint8_t viewingInfo = 0;
 const char *strings[] = { "one", "two", "three" };
 
 uint8_t settings[100];
 
 const char *headers[] =
-    { "Type", "Mode", "Scale", "Reboot", "Exit", "USB" };
+    { "Type", "Mode", "Scale", "Reboot", "Exit", "Info" };
 const char *tempScaleType[] = { "C", "F", "K" };
 
 uint8_t ITEM_COUNT = 6;
 // Array of selections
-uint8_t items[6] = { 0, 20, 40, 80, 100, 110 };
+uint8_t items[6] = { 0, 28, 56, 90, 100, 110 };
 
 void setupButtons();
 
@@ -111,13 +113,34 @@ printSettingsItem(uint8_t starting, char *buff, char *header,
     Display_PutText(10, starting, buff, FONT_DEJAVU_8PT);
 
     getString(buff, string);
-    Display_PutText(15, starting + 10, buff, FONT_DEJAVU_8PT);
+    Display_PutText(15, starting + 12, buff, FONT_DEJAVU_8PT);
 }
 
+void
+printInfoItem(uint8_t starting, char *buff, char *header,
+		  char *string) {
+
+    getString(buff, header);
+    Display_PutText(0, starting, buff, FONT_DEJAVU_8PT);
+
+    getString(buff, string);
+    Display_PutText(10, starting + 15, buff, FONT_DEJAVU_8PT);
+}
 
 void printHeader(uint8_t starting, char *buff, char *text) {
     getString(buff, text);
     Display_PutText(10, starting, buff, FONT_DEJAVU_8PT);
+}
+
+void printHWVersion(uint8_t starting, char *buff) {
+	getString(buff, "HW Ver");
+	Display_PutText(0, starting, buff, FONT_DEJAVU_8PT);
+
+	uint8_t hwVerMajor, hwVerMinor;
+	hwVerMajor = Dataflash_info.hwVersion / 100;
+	hwVerMinor = Dataflash_info.hwVersion % 100;
+    siprintf(buff, "%d.%02d", hwVerMajor, hwVerMinor);
+    Display_PutText(10, starting + 15, buff, FONT_DEJAVU_8PT);
 }
 
 void buildMenu() {
@@ -125,22 +148,32 @@ void buildMenu() {
 
     Display_Clear();
 
-    Display_PutLine(0, 90, 63, 90);
+    if (viewingInfo) {
+    	// TODO: read this value from a datastruct
+    	printInfoItem(0, buff, "FW Ver", "-0.01");
+        printHWVersion(40, buff);
+    	printInfoItem(80, buff, "Display",
+    			Display_GetType() == DISPLAY_SSD1327 ? "1327" : "1306");
+    } else {
+
+    Display_PutLine(0, 80, 63, 80);
 
     getSelector(buff);
     Display_PutText(0, items[currentItem], buff, FONT_DEJAVU_8PT);
 
     printSettingsItem(0, buff, (char *) headers[0],
 		      vapeMaterialList[s.materialIndex].name);
-    printSettingsItem(20, buff, (char *) headers[1],
+    printSettingsItem(28, buff, (char *) headers[1],
 		      g.vapeModes[s.mode]->name);
-    printSettingsItem(40, buff, (char *) headers[2],
+    printSettingsItem(56, buff, (char *) headers[2],
 		      (char *) tempScaleType[s.tempScaleType]);
 
     // Print reboot and standard stuff
-    printHeader(80, buff, (char *) headers[5]);
+    printHeader(90, buff, (char *) headers[5]);
     printHeader(100, buff, (char *) headers[3]);
     printHeader(110, buff, (char *) headers[4]);
+
+    }
 
     Display_Update();
 }
@@ -188,8 +221,11 @@ void handleFireButton() {
 	}
 	break;
     case 3:
-	// Send string over the virtual COM port
-	USB_VirtualCOM_SendString("Hello, It's me.\r\n");
+    if (viewingInfo) {
+        viewingInfo = 0;
+    } else {
+        viewingInfo = 1;
+    }
 	break;
     case 4:
 	reboot();
