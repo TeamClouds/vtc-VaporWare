@@ -261,6 +261,10 @@ void buttonSettingFire(uint8_t state) {
 	gv.fireButtonPressed = 1;
     } else {
 	gv.fireButtonPressed = 0;
+	if (viewingInfo) {
+	    viewingInfo = 0;
+	    registerSettingsMovement();
+	}
     }
 }
 
@@ -298,10 +302,9 @@ void handleFireButton() {
 	}
 	break;
     case 3:
-    if (viewingInfo) {
-        viewingInfo = 0;
-    } else {
+    if (!viewingInfo) {
         viewingInfo = 1;
+        deregisterSettingsMovement();
     }
 	break;
     case 4:
@@ -339,10 +342,19 @@ void buttonSettingLeft(uint8_t state) {
     }
 }
 
-void setupSettingsButtons() {
-    g.fire = Button_CreateCallback(buttonSettingFire, BUTTON_MASK_FIRE);
+void deregisterSettingsMovement() {
+    Button_DeleteCallback(g.plus);
+    Button_DeleteCallback(g.minus);
+}
+
+void registerSettingsMovement() {
     g.plus = Button_CreateCallback(buttonSettingRight, BUTTON_MASK_RIGHT);
     g.minus = Button_CreateCallback(buttonSettingLeft, BUTTON_MASK_LEFT);
+}
+
+void setupSettingsButtons() {
+    g.fire = Button_CreateCallback(buttonSettingFire, BUTTON_MASK_FIRE);
+    registerSettingsMovement();
 }
 
 void showMenu() {
