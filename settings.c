@@ -19,6 +19,9 @@
  */
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 #include <M451Series.h>
 #include <Display.h>
 #include <Font.h>
@@ -57,10 +60,54 @@ int load_settings(void) {
     s.pidP = 50;
     s.pidI = 20;
     s.pidD = 0;
+    s.dumpPids = 0;
     return 1;
 }
 
-void updateSettings(char *buffer, char *response) {}
+void updateSettings(char *buffer, char *response) {
+    char buff[63];
+    char *setting;
+    char *value;
+    const char delim = ',';
+    int32_t val32;
+
+    strtok(buffer, &delim); // eat the 'S'
+    setting = strtok(NULL, &delim);
+    value = strtok(NULL, &delim);
+    errno = 0;
+    val32 = strtol(value, NULL, 10);
+
+    if (strncmp(setting,"mode",4) == 0) {
+        if (errno || val32 < 0 || val32 >= MAX_CONTROL) {
+            response[0] = '~';
+            siprintf(buff, "INFO,%s not valid mode\r\n", value);
+            USB_VirtualCOM_SendString(buff);
+            return;
+        }
+        s.mode = val32 & 0xFF;
+        response[0] = '$';
+    } else if (strncmp(setting, "screenTimeout", 13) == 0) {
+        if (errno || val32 < 0 || val32 > 600) {
+            response[0] = '~';
+            siprintf(buff, "INFO,%s not valid screenTimeout\r\n", value);
+            USB_VirtualCOM_SendString(buff);
+            return;
+        }
+        s.screenTimeout = val32 & 0xFFFF;
+        response[0] = '$';
+    } else if (strncmp(setting, "targetTemperature", 17) == 0) {
+        if (errno || val32 < 0 || val32 > 600) {
+            response[0] = '~';
+            siprintf(buff, "INFO,%s not valid targetTemperature\r\n", value);
+            USB_VirtualCOM_SendString(buff);
+            return;
+        }
+        s.targetTemperature = val32 & 0xFFFFFFFF;
+    }
+
+    siprintf(buff, "INFO,setting %s to %s\r\n", setting, value);
+    USB_VirtualCOM_SendString(buff);
+}
 
 
 void dumpSettings(char *buffer, char *response) {
