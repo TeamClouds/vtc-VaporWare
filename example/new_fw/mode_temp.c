@@ -60,10 +60,12 @@ int32_t getNext(int32_t c_temp, int32_t c_fire) {
     if (next < 1000)
 	next = 1000;
 
-    char buff[63];
-    siprintf(buff, "PID,%ld,%ld,%ld,%d\r\n", I.targetTemp, c_temp, next,
-	     g.atomInfo.resistance);
-    USB_VirtualCOM_SendString(buff);
+    if (s.dumpPids) {
+        char buff[63];
+        siprintf(buff, "PID,%ld,%ld,%ld,%d\r\n", I.targetTemp, c_temp, next,
+	         g.atomInfo.resistance);
+        USB_VirtualCOM_SendString(buff);
+    }
 
     // TODO: there needs to be 'scaling' to scale dT to dW    
     return next;
