@@ -17,6 +17,7 @@ void Communication_Init() {
 
 void Communication_Command(char *buffer) {
     char response[4];
+    response[0] = '-';
     response[1] = buffer[0];
     response[2] = '\r';
     response[3] = '\n';
