@@ -103,8 +103,23 @@ void updateSettings(char *buffer, char *response) {
             return;
         }
         s.targetTemperature = val32 & 0xFFFFFFFF;
+        response[0] = '$';
     }
-
+    // materialIndex
+    // tempScaleType
+    // pidP
+    // pidI
+    // pidD
+    else if (strncmp(setting, "dumpPids", 8) == 0) {
+        if (errno || val32 < 0 || val32 > 1) {
+            response[0] = '~';
+            siprintf(buff, "INFO,%s not valid dumpPids\r\n", value);
+            USB_VirtualCOM_SendString(buff);
+            return;
+        }
+        s.dumpPids = val32 & 0xF;
+        response[0] = '$';
+    }
     siprintf(buff, "INFO,setting %s to %s\r\n", setting, value);
     USB_VirtualCOM_SendString(buff);
 }
@@ -119,6 +134,8 @@ void dumpSettings(char *buffer, char *response) {
     USB_VirtualCOM_SendString(buff);
     siprintf(buff, "setting,%s,%i\r\n","screenTimeout",s.screenTimeout);
     USB_VirtualCOM_SendString(buff);
+    siprintf(buff, "setting,%s,%ld\r\n","targetTemperature",s.targetTemperature);
+    USB_VirtualCOM_SendString(buff);
     siprintf(buff, "setting,%s,%i\r\n","materialIndex",s.materialIndex);
     USB_VirtualCOM_SendString(buff);
     siprintf(buff, "setting,%s,%i\r\n","tempScaleType",s.tempScaleType);
@@ -128,6 +145,8 @@ void dumpSettings(char *buffer, char *response) {
     siprintf(buff, "setting,%s,%ld\r\n","pidI",s.pidI);
     USB_VirtualCOM_SendString(buff);
     siprintf(buff, "setting,%s,%ld\r\n","pidD",s.pidD);
+    USB_VirtualCOM_SendString(buff);
+    siprintf(buff, "setting,%s,%i\r\n","dumpPids",s.dumpPids);
     USB_VirtualCOM_SendString(buff);
 }
 
