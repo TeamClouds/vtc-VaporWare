@@ -58,6 +58,30 @@ int load_settings(void) {
     return 1;
 }
 
+void updateSettings(char *buffer, char *response) {}
+
+
+void dumpSettings(char *buffer, char *response) {
+    char buff[63];
+    USB_VirtualCOM_SendString("INFO,dumpSettings\r\n");
+    siprintf(buff, "setting,%s,%i\r\n","fromRom",s.fromRom);
+    USB_VirtualCOM_SendString(buff);
+    siprintf(buff, "setting,%s,%i\r\n","mode",s.mode);
+    USB_VirtualCOM_SendString(buff);
+    siprintf(buff, "setting,%s,%i\r\n","screenTimeout",s.screenTimeout);
+    USB_VirtualCOM_SendString(buff);
+    siprintf(buff, "setting,%s,%i\r\n","materialIndex",s.materialIndex);
+    USB_VirtualCOM_SendString(buff);
+    siprintf(buff, "setting,%s,%i\r\n","tempScaleType",s.tempScaleType);
+    USB_VirtualCOM_SendString(buff);
+    siprintf(buff, "setting,%s,%ld\r\n","pidP",s.pidP);
+    USB_VirtualCOM_SendString(buff);
+    siprintf(buff, "setting,%s,%ld\r\n","pidI",s.pidI);
+    USB_VirtualCOM_SendString(buff);
+    siprintf(buff, "setting,%s,%ld\r\n","pidD",s.pidD);
+    USB_VirtualCOM_SendString(buff);
+}
+
 void reboot() {
     /* Unlock protected registers */
     SYS_UnlockReg();
