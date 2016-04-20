@@ -1,4 +1,5 @@
 #include "communication.h"
+#include "main.h"
 
 void Communication_Init() {
     // We may want to only init this if the user tells us it's cool.
@@ -12,4 +13,27 @@ void Communication_Init() {
     // 3) Lock system control registers.
     SYS_LockReg();
     USB_VirtualCOM_SetAsyncMode(1);
+}
+
+void Communication_Command(char *buffer) {
+    char response[4];
+    response[1] = buffer[0];
+    response[2] = '\r';
+    response[3] = '\n';
+    switch(buffer[0]) {
+    case '@':
+        response[0] = '$';
+        USB_VirtualCOM_SendString("AT HOME YOU ARE\r\n");
+        break;
+    case 'S':
+        updateSettings(buffer, response);
+        break;
+    case 's':
+        dumpSettings(buffer, response);
+        break;
+    default:
+        response[0] = '~';
+        break;
+    }
+    USB_VirtualCOM_SendString(response);
 }
