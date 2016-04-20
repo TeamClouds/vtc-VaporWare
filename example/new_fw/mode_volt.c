@@ -2,7 +2,11 @@
 #include "main.h"
 
 void voltInit() {
-    // Voltage don't need no init
+	// set this initial value because we may be switching
+	// from another mode that changes our volts.
+    g.watts = 15000;
+    g.volts = wattsToVolts(g.watts, g.atomInfo.resistance);
+    Atomizer_SetOutputVoltage(g.volts);
 }
 
 void voltFire() {
