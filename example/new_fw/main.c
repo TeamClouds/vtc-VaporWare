@@ -206,6 +206,8 @@ int main() {
     while (1) {
 	g.charging = Battery_IsCharging();
 	if (gv.fireButtonPressed) {
+            if (s.dumpPids && !g.charging)
+                s.dumpPids = 0;
 	    __vape();
 	}
 	if (gv.shouldShowMenu) {
