@@ -191,6 +191,9 @@ void updateSettings(char *buffer, char *response) {
     } else if (strncmp(setting, "pidD", 4) == 0) {
         if (parseUInt32(value, "pidD", response, 1000, 0, &s.pidD))
             return;
+    } else if (strncmp(setting, "initWatts", 9) == 0) {
+        if (parseUInt32(value, "initWatts", response, 60000, 0, &s.initWatts))
+            return;
     } else if (strncmp(setting, "dumpPids", 8) == 0) {
         if (parseUInt8(value, "dumpPids", response, 1, 0, &s.dumpPids))
             return;
@@ -224,8 +227,61 @@ void dumpSettings(char *buffer, char *response) {
     USB_VirtualCOM_SendString(buff);
     siprintf(buff, "setting,%s,%ld\r\n","pidD",s.pidD);
     USB_VirtualCOM_SendString(buff);
+    siprintf(buff, "setting,%s,%ld\r\n","initWatts",s.initWatts);
+    USB_VirtualCOM_SendString(buff);
     siprintf(buff, "setting,%s,%i\r\n","dumpPids",s.dumpPids);
     USB_VirtualCOM_SendString(buff);
+}
+
+void updateAtomizer(char *buffer, char *response) {
+    char buff[63];
+    char *setting;
+    char *value;
+    const char delim = ',';
+
+    strtok(buffer, &delim); // eat the 'S'
+    setting = strtok(NULL, &delim);
+    value = strtok(NULL, &delim);
+    if (!setting || !value) {
+        response[0] = '~';
+        return;
+    }
+
+    if (strncmp(setting,"base_resistance",15) == 0) {
+        if (parseUInt16(value, "base_resistance", response, 3500, 0, &g.atomInfo.base_resistance))
+            return;
+    } else if (strncmp(setting,"base_temperature", 16) == 0) {
+        if (parseUInt32(value, "base_temperature", response, 200, 0, &g.atomInfo.base_temperature))
+            return;
+    } else if (strncmp(setting,"tcr", 3) == 0) {
+        if (parseUInt16(value, "tcr", response, 1000, 10, &g.atomInfo.tcr))
+            return;
+    }
+    if (response[0] == '$') {
+        siprintf(buff, "INFO,setting atomInfo.%s to %s\r\n", setting, value);
+        USB_VirtualCOM_SendString(buff);
+    }
+}
+
+void dumpAtomizer(char *buffer, char *response) {
+    char buff[63];
+    Atomizer_Info_t *a = &g.atomInfo;
+    USB_VirtualCOM_SendString("INFO,dumpSettings\r\n");
+    siprintf(buff, "atomInfo,%s,%i\r\n","voltage",a->voltage);
+    USB_VirtualCOM_SendString(buff);
+    siprintf(buff, "atomInfo,%s,%i\r\n","resistance",a->resistance);
+    USB_VirtualCOM_SendString(buff);
+    siprintf(buff, "atomInfo,%s,%i\r\n","base_resistance",a->base_resistance);
+    USB_VirtualCOM_SendString(buff);
+    siprintf(buff, "atomInfo,%s,%ld\r\n","base_temperature",a->base_temperature);
+    USB_VirtualCOM_SendString(buff);
+    siprintf(buff, "atomInfo,%s,%i\r\n","current",a->current);
+    USB_VirtualCOM_SendString(buff);
+    siprintf(buff, "atomInfo,%s,%ld\r\n","temperature",a->temperature);
+    USB_VirtualCOM_SendString(buff);
+    siprintf(buff, "atomInfo,%s,%i\r\n","tcr",a->tcr);
+    USB_VirtualCOM_SendString(buff);
+ 
 }
 
 void reboot() {
