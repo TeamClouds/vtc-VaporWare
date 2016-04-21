@@ -74,6 +74,9 @@ int load_settings(void);
 void updateSettings(char *buffer, char *response);
 void dumpSettings(char *buffer, char *response);
 
+void updateAtomizer(char *buffer, char *response);
+void dumpAtomizer(char *buffer, char *response);
+
 /* Helpers */
 uint16_t wattsToVolts(uint32_t watts, uint16_t res);
 uint32_t voltsToWatts(uint16_t volts, uint16_t res);

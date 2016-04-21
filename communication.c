@@ -25,6 +25,12 @@ void Communication_Command(char *buffer) {
         response[0] = '$';
         USB_VirtualCOM_SendString("AT HOME YOU ARE\r\n");
         break;
+    case 'A':
+        updateAtomizer(buffer, response);
+        break;
+    case 'a':
+        dumpAtomizer(buffer, response);
+        break;
     case 'S':
         updateSettings(buffer, response);
         break;
