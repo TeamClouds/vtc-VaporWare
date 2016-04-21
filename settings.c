@@ -75,7 +75,7 @@ int8_t parseUInt32(char *V, const char *C, char *R, uint32_t M, uint32_t m, uint
         return 1;
     }
 
-    if (errno || val32 < m || val32 >= M) {
+    if (errno || val32 < m || val32 > M) {
         R[0] = '~';
         siprintf(buff, "INFO,%s not valid %s\r\n", V, C);
         USB_VirtualCOM_SendString(buff);
@@ -97,7 +97,7 @@ int8_t parseInt32(char *V, const char *C, char *R, int32_t M, int32_t m, int32_t
         return 1;
     }
 
-    if (errno || val32 < m || val32 >= M) {
+    if (errno || val32 < m || val32 > M) {
         R[0] = '~';
         siprintf(buff, "INFO,%s not valid %s\r\n", V, C);
         USB_VirtualCOM_SendString(buff);
