@@ -64,13 +64,87 @@ int load_settings(void) {
     return 1;
 }
 
+int8_t parseUInt32(char *V, const char *C, char *R, uint32_t M, uint32_t m, uint32_t *o) {
+    char *endptr;
+    char buff[63];
+    errno = 0;
+    uint32_t val32 = strtoul(V, &endptr, 10);
+    if (V == endptr) {
+        R[0] = '~';
+        return 1;
+    }
+
+    if (errno || val32 < m || val32 >= M) {
+        R[0] = '~';
+        siprintf(buff, "INFO,%s not valid %s\r\n", V, C);
+        USB_VirtualCOM_SendString(buff);
+        return 1;
+    }
+    
+    *o = val32;
+    R[0] = '$';
+    return 0;
+}
+
+int8_t parseInt32(char *V, const char *C, char *R, int32_t M, int32_t m, int32_t *o) {
+    char *endptr;
+    char buff[63];
+    errno = 0;
+    int32_t val32 = strtol(V, &endptr, 10);
+    if (V == endptr) {
+        R[0] = '~';
+        return 1;
+    }
+
+    if (errno || val32 < m || val32 >= M) {
+        R[0] = '~';
+        siprintf(buff, "INFO,%s not valid %s\r\n", V, C);
+        USB_VirtualCOM_SendString(buff);
+        return 1;
+    }
+    
+    *o = val32;
+    R[0] = '$';
+    return 0;
+}
+
+int8_t parseUInt16(char *V, const char *C, char *R, uint16_t M, uint16_t m, uint16_t *o) {
+    uint32_t val32;
+    if (parseUInt32(V,C,R,M,m,&val32))
+        return 1;
+    *o = val32 & 0xFFFF;
+    return 0;
+}
+
+int8_t parseInt16(char *V, const char *C, char *R, int16_t M, int16_t m, int16_t *o) {
+    int32_t val32;
+    if (parseInt32(V,C,R,M,m,&val32))
+        return 1;
+    *o = val32 & 0xFFFF;
+    return 0;
+}
+
+int8_t parseUInt8(char *V, const char *C, char *R, uint8_t M, uint8_t m, uint8_t *o) {
+    uint32_t val32;
+    if (parseUInt32(V,C,R,M,m,&val32))
+        return 1;
+    *o = val32 & 0xFF;
+    return 0;
+}
+
+int8_t parseInt8(char *V, const char *C, char *R, int8_t M, int8_t m, int8_t *o) {
+    int32_t val32;
+    if (parseInt32(V,C,R,M,m,&val32))
+        return 1;
+    *o = val32 & 0xFF;
+    return 0;
+}
+
 void updateSettings(char *buffer, char *response) {
     char buff[63];
-    char *endptr;
     char *setting;
     char *value;
     const char delim = ',';
-    int32_t val32;
 
     strtok(buffer, &delim); // eat the 'S'
     setting = strtok(NULL, &delim);
@@ -79,56 +153,48 @@ void updateSettings(char *buffer, char *response) {
         response[0] = '~';
         return;
     }
-    errno = 0;
-    val32 = strtol(value, &endptr, 10);
-    if (value == endptr) {
-        response[0] = '~';
-        return;
-    }
 
     if (strncmp(setting,"mode",4) == 0) {
-        if (errno || val32 < 0 || val32 >= MAX_CONTROL) {
-            response[0] = '~';
-            siprintf(buff, "INFO,%s not valid mode\r\n", value);
-            USB_VirtualCOM_SendString(buff);
+        if (parseUInt8(value, "mode", response, MAX_CONTROL, 0, &s.mode))
             return;
-        }
-        s.mode = val32 & 0xFF;
-        response[0] = '$';
     } else if (strncmp(setting, "screenTimeout", 13) == 0) {
-        if (errno || val32 < 0 || val32 > 600) {
-            response[0] = '~';
-            siprintf(buff, "INFO,%s not valid screenTimeout\r\n", value);
-            USB_VirtualCOM_SendString(buff);
+        if (parseUInt16(value, "screenTimeout", response, 600, 0, &s.screenTimeout))
             return;
-        }
-        s.screenTimeout = val32 & 0xFFFF;
-        response[0] = '$';
     } else if (strncmp(setting, "targetTemperature", 17) == 0) {
-        if (errno || val32 < 0 || val32 > 600) {
+        if (parseUInt32(value, "targetTemperature", response, 600, 0, &s.targetTemperature))
+            return;
+    } else if (strncmp(setting, "materialIndex", 13) == 0) {
+        uint8_t tindex = 0;
+        if (parseUInt8(value, "materialIndex", response, MATERIAL_COUNT, 0, &tindex))
+            return;
+        setVapeMaterial(tindex);
+        response[0] = '$';
+    } else if (strncmp(setting, "tempScaleType", 13) == 0) {
+        uint8_t tindex = 0;
+        if (parseUInt8(value, "tempScaleType", response, 0xFF, 0, &tindex))
+            return;
+        if (!tempScaleType[tindex]) {
             response[0] = '~';
-            siprintf(buff, "INFO,%s not valid targetTemperature\r\n", value);
+            siprintf(buff, "INFO,%s not valid tempScaleType\r\n", value);
             USB_VirtualCOM_SendString(buff);
             return;
         }
-        s.targetTemperature = val32 & 0xFFFFFFFF;
+        s.tempScaleType = tindex;
         response[0] = '$';
-    }
-    // materialIndex
-    // tempScaleType
-    // pidP
-    // pidI
-    // pidD
-    else if (strncmp(setting, "dumpPids", 8) == 0) {
-        if (errno || val32 < 0 || val32 > 1) {
-            response[0] = '~';
-            siprintf(buff, "INFO,%s not valid dumpPids\r\n", value);
-            USB_VirtualCOM_SendString(buff);
+    } else if (strncmp(setting, "pidP", 4) == 0) {
+        if (parseUInt32(value, "pidP", response, 1000, 0, &s.pidP))
             return;
-        }
-        s.dumpPids = val32 & 0xF;
-        response[0] = '$';
+    } else if (strncmp(setting, "pidI", 4) == 0) {
+        if (parseUInt32(value, "pidI", response, 1000, 0, &s.pidI))
+            return;
+    } else if (strncmp(setting, "pidD", 4) == 0) {
+        if (parseUInt32(value, "pidD", response, 1000, 0, &s.pidD))
+            return;
+    } else if (strncmp(setting, "dumpPids", 8) == 0) {
+        if (parseUInt8(value, "dumpPids", response, 1, 0, &s.dumpPids))
+            return;
     }
+
     if (response[0] == '$') {
         siprintf(buff, "INFO,setting %s to %s\r\n", setting, value);
         USB_VirtualCOM_SendString(buff);
