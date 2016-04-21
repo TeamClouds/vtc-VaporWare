@@ -26,6 +26,11 @@ void initPid() {
 	I.Rvals[i] = 0;
     I.Rave = 0;
     I.i = 0;
+    I.P = s.pidP;
+    I.I = s.pidI;
+    I.D = s.pidD;
+    I.Max = 60000;		// Never fire over 60 watts
+    I.Min = 0;
 }
 
 void setTarget(int32_t ttemp) {
@@ -72,11 +77,6 @@ int32_t getNext(int32_t c_temp, int32_t c_fire) {
 }
 
 void tempInit() {
-    I.P = s.pidP;
-    I.I = s.pidI;
-    I.D = s.pidD;
-    I.Max = 60000;		// Never fire over 60 watts
-    I.Min = 0;
 
     if (!s.targetTemperature)
 	s.targetTemperature = 400;
