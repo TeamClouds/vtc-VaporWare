@@ -14,6 +14,7 @@ struct IntPID {
     int32_t P;
     int32_t I;
     int32_t D;
+    int32_t initWatts;
     int32_t Rave;
     int32_t Rvals[PIDLEN];
     uint8_t i;
@@ -29,6 +30,7 @@ void initPid() {
     I.P = s.pidP;
     I.I = s.pidI;
     I.D = s.pidD;
+    g.watts = s.initWatts;
     I.Max = 60000;		// Never fire over 60 watts
     I.Min = 0;
 }
@@ -81,9 +83,9 @@ void tempInit() {
     if (!s.targetTemperature)
 	s.targetTemperature = 400;
 
-	// set this initial value because we may be switching
-	// from another mode that changes our watts.
-    g.watts = 15000;
+    //  set this initial value because we may be switching
+    // from another mode that changes our watts.
+    g.watts = s.initWatts;
     g.volts = wattsToVolts(g.watts, g.atomInfo.resistance);
     Atomizer_SetOutputVoltage(g.volts);
 }

@@ -60,6 +60,7 @@ int load_settings(void) {
     s.pidP = 30;
     s.pidI = 70;
     s.pidD = 0;
+    s.initWatts = 5000;
     s.dumpPids = 0;
     return 1;
 }
