@@ -202,6 +202,7 @@ int main() {
     if (!s.fromRom)
 	gv.shouldShowMenu = 1;
     uint8_t rcmd[63];
+    i = 0;
     while (1) {
 	g.charging = Battery_IsCharging();
 	if (gv.fireButtonPressed) {
