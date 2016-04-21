@@ -57,8 +57,8 @@ int load_settings(void) {
     s.screenTimeout = 30;	// 100s of s
     s.materialIndex = 1;
     s.tempScaleType = 1;
-    s.pidP = 50;
-    s.pidI = 20;
+    s.pidP = 30;
+    s.pidI = 70;
     s.pidD = 0;
     s.dumpPids = 0;
     return 1;
