@@ -32,6 +32,7 @@ struct vapeMaterials {
 };
 
 extern struct vapeMaterials vapeMaterialList[];
+#define MATERIAL_COUNT 4
 
 struct vapeMode {
     int8_t index;
