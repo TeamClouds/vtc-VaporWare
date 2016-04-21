@@ -171,7 +171,6 @@ void setupButtons() {
 
 int main() {
     int i = 0;
-    Atomizer_Init();
     load_settings();
     setupButtons();
 
