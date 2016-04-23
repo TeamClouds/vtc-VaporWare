@@ -65,6 +65,7 @@ struct settings {
     uint32_t pidD;
     int32_t initWatts;
     uint8_t dumpPids;
+    uint8_t tunePids;
 };
 extern struct settings s;
 
