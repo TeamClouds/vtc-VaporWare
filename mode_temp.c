@@ -5,6 +5,7 @@
 
 #include "main.h"
 
+#define HISTLEN 16
 struct IntPID {
     int32_t targetTemp;
     int32_t Max;
@@ -14,6 +15,8 @@ struct IntPID {
     int32_t D;
     int32_t initWatts;
     int32_t Rave;
+    int32_t Hist[HISTLEN];
+    int32_t HIndex;
     int32_t Perror;
 } I = {
 };
@@ -21,6 +24,11 @@ struct IntPID {
 volatile int prline = 0;
 
 void initPid() {
+    int i = 0;
+    for (i = 0; i<HISTLEN; i++) {
+        I.Hist[i] = 0;
+    }
+    I.HIndex = 0;
     I.Rave = 0;
     I.P = s.pidP;
     I.I = s.pidI;
@@ -37,12 +45,37 @@ void setTarget(int32_t ttemp) {
     I.targetTemp = ttemp;
 }
 
+uint32_t start = 0;
+uint32_t atTemp = 0;
+uint32_t freqNow = 0;
+uint32_t count = 0;
+uint32_t samples = 0;
+int8_t curSign = 1;
+
+// Curently runs at about 132hz
 int32_t getNext(int32_t c_temp) {
     int32_t error = I.targetTemp - c_temp;
     int32_t aveError;
     int32_t diffError;
+    samples++;
+    freqNow = gv.uptime;
 
+    if (s.tunePids) {
+        if (!atTemp && error <= 0) {
+            atTemp = gv.uptime;
+            char buff[64];
+            siprintf(buff, "INFO," UPTIME ",At Temp\r\n", (atTemp - start)/100, (atTemp - start)%100);
+            USB_VirtualCOM_SendString(buff);
+        }
+    }
+
+    int j = I.HIndex - 1;
+    j = (j < 0) ? HISTLEN : j;
+    I.Hist[I.HIndex] = error;
     I.Rave = I.Rave + error;
+    I.Rave = I.Rave - I.Hist[j];
+    I.HIndex = (I.HIndex + 1) % HISTLEN;
+
     aveError = I.Rave;
     diffError = I.Perror - error;
     I.Perror = error;
@@ -51,10 +84,13 @@ int32_t getNext(int32_t c_temp) {
 	           aveError * I.I / 100 +
                    diffError * I.D / 100;
 
-#if 0
-    if(prline) {
+    if (s.tunePids) {
+        if (prline) {
                  char buff[63];
-                 siprintf(buff, "%lu,%ld,%ld,%ld,%ld,%ld,%ld,%ld\r\n",
+                 siprintf(buff, UPTIME ",%ld,%ld,%lu,%ld,%ld,%ld,%ld,%ld,%ld,%ld\r\n",
+                          UPTIMEVAL,
+                          I.targetTemp,
+                          c_temp,
                           g.watts, 
                           I.P,
                           error,
@@ -65,6 +101,7 @@ int32_t getNext(int32_t c_temp) {
                           g.watts + next
                  );
                  USB_VirtualCOM_SendString(buff);
+        }
     }
 #endif
 
@@ -82,9 +119,14 @@ void tempFire() {
     setTarget(s.targetTemperature);
     initPid();
     int pidactive = 0;
+    start = gv.uptime;
+    atTemp = 0;
+    uint32_t last = gv.uptime;
+    uint32_t now;
     while (gv.fireButtonPressed) {
-	// Handle fire button
-	if (!Atomizer_IsOn() && g.atomInfo.resistance != 0
+        now = gv.uptime;
+        // Handle fire button
+        if (!Atomizer_IsOn() && g.atomInfo.resistance != 0
 	    && Atomizer_GetError() == OK) {
 	    // Power on
 	    Atomizer_Control(1);
@@ -140,13 +182,24 @@ void tempFire() {
 	// TODO: We might need a short sleep here?
 //        if (pidactive || s.targetTemperature < g.atomInfo.temperature + 50) 
 {
-	    g.watts += getNext(g.atomInfo.temperature);
+	    g.watts = getNext(g.atomInfo.temperature);
             pidactive = 1;
         } 
+        if (g.watts < 0)
+            g.watts = 1000;
+
+        if (g.watts > 100000)
+            g.watts = 1000;
+
+        if (g.watts > 60000)
+            g.watts = 60000;
+        prline = now - last >= 10;
+        now = last;
 	if (1 || prline) {
 	     if (s.dumpPids) {
                  char buff[63];
-                 siprintf(buff, "PID,%ld,%ld,%ld,%d\r\n",
+                 siprintf(buff, UPTIME ":PID,%ld,%ld,%ld,%d\r\n",
+                          UPTIMEVAL,
                           s.targetTemperature, 
                           g.atomInfo.temperature,
                           g.watts,

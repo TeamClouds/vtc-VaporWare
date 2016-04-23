@@ -79,8 +79,8 @@ int load_settings(void) {
     s.tempScaleTypeIndex = 1;
     s.displayTemperature = tempScaleType[s.tempScaleTypeIndex].def;
     s.targetTemperature = displayToC(s.displayTemperature);
-    s.pidP = 50;
-    s.pidI = 0;
+    s.pidP = 17000;
+    s.pidI = 5500;
     s.pidD = 0;
     s.initWatts = 15000;
     s.dumpPids = 0;
