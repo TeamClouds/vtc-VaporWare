@@ -1,5 +1,6 @@
 #include <math.h>
 #include <stdint.h>
+#include "main.h"
 
 uint16_t wattsToVolts(uint32_t watts, uint16_t res) {
     // Units: mV, mW, mOhm
@@ -17,4 +18,36 @@ uint32_t voltsToWatts(uint16_t volts, uint16_t res) {
 
     uint32_t watts = (volts * volts / res + 5) / 10;
     return watts * 10;
+}
+
+uint32_t displayToC(uint32_t T) {
+    switch(s.tempScaleTypeIndex) {
+    case 0: //C - Do nothing
+        return T;
+        break;
+    case 1: //F
+        return 5 * T / 9 - 32;
+        break;
+    case 2: //K
+        return T + 276;
+        break;
+    }
+    // default probably won't ever reach here
+    return T;
+}
+
+uint32_t CToDisplay(uint32_t T) {
+    switch(s.tempScaleTypeIndex) {
+    case 0: //C - Do nothing
+        return T;
+        break;
+    case 1: //F
+        return 32 + 9 * T / 5;
+        break;
+    case 2: //K
+        return T - 276;
+        break;
+    }
+    // Something Bad Happened
+    return T;
 }
