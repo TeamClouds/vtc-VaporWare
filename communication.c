@@ -12,7 +12,6 @@ void Communication_Init() {
     USB_VirtualCOM_Init();
     // 3) Lock system control registers.
     SYS_LockReg();
-    USB_VirtualCOM_SetAsyncMode(1);
 }
 
 void Communication_Command(char *buffer) {

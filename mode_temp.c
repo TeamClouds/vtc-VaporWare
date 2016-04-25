@@ -36,7 +36,6 @@ void initPid() {
     g.watts = s.initWatts;
     I.Max = 60000;		// Never fire over 60 watts
     I.Min = 0;
-    USB_VirtualCOM_SendString("INFO,Start the fire\r\n");
     g.volts = wattsToVolts(g.watts, g.atomInfo.resistance);
     Atomizer_SetOutputVoltage(g.volts);
 }
