@@ -26,7 +26,7 @@ uint32_t displayToC(uint32_t T) {
         return T;
         break;
     case 1: //F
-        return 5 * T / 9 - 32;
+        return 5 * (T - 32) / 9;
         break;
     case 2: //K
         return T + 276;
