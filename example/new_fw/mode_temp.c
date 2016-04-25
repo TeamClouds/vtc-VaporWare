@@ -103,7 +103,6 @@ int32_t getNext(int32_t c_temp) {
                  USB_VirtualCOM_SendString(buff);
         }
     }
-#endif
 
     // TODO: there needs to be 'scaling' to scale dT to dW    
     return next;
