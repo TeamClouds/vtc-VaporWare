@@ -169,8 +169,13 @@ void setupButtons() {
 
 #define REGISTER_MODE(X) g.vapeModes[X.index] = &X
 
+void uptime(uint32_t param) {
+    gv.uptime++;
+}
+
 int main() {
     int i = 0;
+    gv.uptimeTimer = Timer_CreateTimer(100, 1, uptime, 3);
     load_settings();
     setupButtons();
 
