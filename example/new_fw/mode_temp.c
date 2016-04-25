@@ -196,8 +196,7 @@ void tempFire() {
 	if (1 || prline) {
 	     if (s.dumpPids) {
                  char buff[63];
-                 siprintf(buff, UPTIME ":PID,%ld,%ld,%ld,%d\r\n",
-                          UPTIMEVAL,
+                 siprintf(buff, "PID,%ld,%ld,%ld,%d\r\n",
                           s.targetTemperature, 
                           g.atomInfo.temperature,
                           g.watts,
