@@ -56,19 +56,26 @@ struct settings {
     uint8_t fromRom;
     uint8_t mode;
     uint16_t screenTimeout;
-    uint32_t targetTemperature;
+    volatile uint32_t displayTemperature;
+    volatile uint32_t targetTemperature;
     uint8_t materialIndex;
-    uint8_t tempScaleType;
+    uint8_t tempScaleTypeIndex;
     uint32_t pidP;
     uint32_t pidI;
     uint32_t pidD;
-    uint32_t initWatts;
+    int32_t initWatts;
     uint8_t dumpPids;
+    uint8_t tunePids;
 };
-
-extern const char *tempScaleType[];
-
 extern struct settings s;
+
+struct tempScale {
+    const char display[2];
+    uint32_t max;
+    uint32_t min;
+    uint32_t def;
+};
+extern struct tempScale tempScaleType[];
 
 int load_settings(void);
 void updateSettings(char *buffer, char *response);
@@ -80,6 +87,8 @@ void dumpAtomizer(char *buffer, char *response);
 /* Helpers */
 uint16_t wattsToVolts(uint32_t watts, uint16_t res);
 uint32_t voltsToWatts(uint16_t volts, uint16_t res);
+uint32_t displayToC(uint32_t T);
+uint32_t CToDisplay(uint32_t T);
 
 /* Ugly Globals */
 struct globals {
@@ -99,7 +108,12 @@ struct globals {
 };
 extern struct globals g;
 
+#define UPTIME "%8lu.%02lu"
+#define UPTIMEVAL gv.uptime / 100, gv.uptime % 100
+
 struct globalVols {
+    volatile uint32_t uptime;
+    volatile uint8_t uptimeTimer;
     volatile uint8_t fireTimer;
     volatile uint8_t fireButtonPressed;
     volatile uint8_t screenState;

@@ -61,21 +61,6 @@ inline void getFloatingTenth(char *buff, uint32_t floating) {
     siprintf(buff, "%3lu.%lu", floating / 1000, floating % 1000 / 10);
 }
 
-void printTemperature(char *buff, uint32_t temp) {
-    switch (s.tempScaleType) {
-    case 0:
-	temp = (temp - 32) * .5556;
-	break;
-    case 1:
-	break;
-    case 2:
-	temp = (temp + 459.67) * 5 / 9;
-	break;
-    }
-    printNumber(buff, temp);
-
-}
-
 void updateScreen(struct globals *g) {
     char *atomState;
     char buff[9];
@@ -145,12 +130,12 @@ void updateScreen(struct globals *g) {
     switch (g->vapeModes[s.mode]->controlType) {
     case TEMP_CONTROL:
         if (atomizerOn) {
-            printTemperature(buff, g->atomInfo.temperature);
+            printNumber(buff, CToDisplay(g->atomInfo.temperature));
         } else {
-            printTemperature(buff, s.targetTemperature);
+            printNumber(buff, s.displayTemperature);
         }
 	    Display_PutText(0, 0, buff, FONT_LARGE);
-	    getString(buff, (char *) tempScaleType[s.tempScaleType]);
+	    getString(buff, (char *) tempScaleType[s.tempScaleTypeIndex].display);
 	    Display_PutText(48, 2, buff, FONT_DEJAVU_8PT);
         break;
     case WATT_CONTROL:

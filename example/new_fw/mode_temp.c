@@ -5,8 +5,7 @@
 
 #include "main.h"
 
-#define PIDLEN 10
-
+#define HISTLEN 16
 struct IntPID {
     int32_t targetTemp;
     int32_t Max;
@@ -16,62 +15,92 @@ struct IntPID {
     int32_t D;
     int32_t initWatts;
     int32_t Rave;
-    int32_t Rvals[PIDLEN];
-    uint8_t i;
+    int32_t Hist[HISTLEN];
+    int32_t HIndex;
+    int32_t Perror;
 } I = {
 };
 
+volatile int prline = 0;
+
 void initPid() {
-    int i;
-    for (i = 0; i < PIDLEN; i++)
-	I.Rvals[i] = 0;
+    int i = 0;
+    for (i = 0; i<HISTLEN; i++) {
+        I.Hist[i] = 0;
+    }
+    I.HIndex = 0;
     I.Rave = 0;
-    I.i = 0;
     I.P = s.pidP;
     I.I = s.pidI;
     I.D = s.pidD;
     g.watts = s.initWatts;
     I.Max = 60000;		// Never fire over 60 watts
     I.Min = 0;
+    g.volts = wattsToVolts(g.watts, g.atomInfo.resistance);
+    Atomizer_SetOutputVoltage(g.volts);
 }
 
 void setTarget(int32_t ttemp) {
     I.targetTemp = ttemp;
 }
 
-int32_t getNext(int32_t c_temp, int32_t c_fire) {
+uint32_t start = 0;
+uint32_t atTemp = 0;
+uint32_t freqNow = 0;
+uint32_t count = 0;
+uint32_t samples = 0;
+int8_t curSign = 1;
+
+// Curently runs at about 132hz
+int32_t getNext(int32_t c_temp) {
     int32_t error = I.targetTemp - c_temp;
     int32_t aveError;
     int32_t diffError;
-    int i = I.i;
-    int l = I.i > 0 ? I.i - 1 : PIDLEN;
+    samples++;
+    freqNow = gv.uptime;
 
-    I.Rave -= I.Rvals[i];
-    I.Rvals[i] = error;
-    I.Rave += I.Rvals[i];
+    if (s.tunePids) {
+        if (!atTemp && error <= 0) {
+            atTemp = gv.uptime;
+            char buff[64];
+            siprintf(buff, "INFO," UPTIME ",At Temp\r\n", (atTemp - start)/100, (atTemp - start)%100);
+            USB_VirtualCOM_SendString(buff);
+        }
+    }
 
-    aveError = I.Rave / PIDLEN;
+    int j = I.HIndex - 1;
+    j = (j < 0) ? HISTLEN : j;
+    I.Hist[I.HIndex] = error;
+    I.Rave = I.Rave + error;
+    I.Rave = I.Rave - I.Hist[j];
+    I.HIndex = (I.HIndex + 1) % HISTLEN;
 
-    diffError = I.Rvals[i] - I.Rvals[l];
+    aveError = I.Rave;
+    diffError = I.Perror - error;
+    I.Perror = error;
 
-    I.i++;
-    I.i %= PIDLEN;
+    int32_t next = error * I.P / 100 +
+	           aveError * I.I / 100 +
+                   diffError * I.D / 100;
 
-    /* */
-    int32_t next = I.P * error / 1000 +
-	I.I * aveError / 1000 + I.D * diffError / 1000;
-    next += c_fire;
-
-    if (next > 60000)
-	next = 60000;
-    if (next < 1000)
-	next = 1000;
-
-    if (s.dumpPids) {
-        char buff[63];
-        siprintf(buff, "PID,%ld,%ld,%ld,%d\r\n", I.targetTemp, c_temp, next,
-	         g.atomInfo.resistance);
-        USB_VirtualCOM_SendString(buff);
+    if (s.tunePids) {
+        if (prline) {
+                 char buff[63];
+                 siprintf(buff, UPTIME ",%ld,%ld,%lu,%ld,%ld,%ld,%ld,%ld,%ld,%ld\r\n",
+                          UPTIMEVAL,
+                          I.targetTemp,
+                          c_temp,
+                          g.watts, 
+                          I.P,
+                          error,
+                          I.I,
+                          aveError,
+                          I.D,
+	                  diffError,
+                          g.watts + next
+                 );
+                 USB_VirtualCOM_SendString(buff);
+        }
     }
 
     // TODO: there needs to be 'scaling' to scale dT to dW    
@@ -79,25 +108,23 @@ int32_t getNext(int32_t c_temp, int32_t c_fire) {
 }
 
 void tempInit() {
-
-    if (!s.targetTemperature)
-	s.targetTemperature = 400;
-
     //  set this initial value because we may be switching
     // from another mode that changes our watts.
-    g.watts = s.initWatts;
-    g.volts = wattsToVolts(g.watts, g.atomInfo.resistance);
-    Atomizer_SetOutputVoltage(g.volts);
 }
 
 void tempFire() {
     g.vapeCnt++;
     setTarget(s.targetTemperature);
     initPid();
-    g.watts = 15000;		// Start Firing at 15 watts.
+    int pidactive = 0;
+    start = gv.uptime;
+    atTemp = 0;
+    uint32_t last = gv.uptime;
+    uint32_t now;
     while (gv.fireButtonPressed) {
-	// Handle fire button
-	if (!Atomizer_IsOn() && g.atomInfo.resistance != 0
+        now = gv.uptime;
+        // Handle fire button
+        if (!Atomizer_IsOn() && g.atomInfo.resistance != 0
 	    && Atomizer_GetError() == OK) {
 	    // Power on
 	    Atomizer_Control(1);
@@ -106,25 +133,24 @@ void tempFire() {
 	// If resistance is zero voltage will be zero
 	Atomizer_ReadInfo(&g.atomInfo);
 
-	if (g.atomInfo.temperature > s.targetTemperature) {
-	    if (g.atomInfo.temperature > g.maxTemp) {
-		g.maxTemp = g.atomInfo.temperature;
-	    }
-
-	}
-	if (g.maxTemp) {
-	    if (g.atomInfo.temperature < g.minTemp || !g.minTemp) {
-		g.minTemp = g.atomInfo.temperature;
-	    }
-	}
 	// Don't allow firing > 1 ohm in temp mode.
 	if (g.atomInfo.resistance > 1000) {
 	    g.watts = 0;
 	}
 
+        if (g.watts < 0)
+            g.watts = 1000;
+
+        if (g.watts > 100000)
+            g.watts = 1000;
+
+        if (g.watts > 60000)
+            g.watts = 60000;
+           
+
 	g.newVolts = wattsToVolts(g.watts, g.atomInfo.resistance);
 
-	if (g.newVolts != g.volts || !g.volts) {
+	if (g.newVolts != g.volts) {
 	    if (Atomizer_IsOn()) {
 
 		// Update output voltage to correct res variations:
@@ -150,12 +176,38 @@ void tempFire() {
 
 	    Atomizer_SetOutputVoltage(g.volts);
 	}
-	g.vapeCnt++;
 	Atomizer_ReadInfo(&g.atomInfo);
 	// TODO: We might need a short sleep here?
-	g.watts = getNext(g.atomInfo.temperature, g.watts);
-	if (!g.vapeCnt % 10)
-	    updateScreen(&g);
+//        if (pidactive || s.targetTemperature < g.atomInfo.temperature + 50) 
+{
+	    g.watts = getNext(g.atomInfo.temperature);
+            pidactive = 1;
+        } 
+        if (g.watts < 0)
+            g.watts = 1000;
+
+        if (g.watts > 100000)
+            g.watts = 1000;
+
+        if (g.watts > 60000)
+            g.watts = 60000;
+        prline = now - last >= 10;
+        now = last;
+	if (1 || prline) {
+	     if (s.dumpPids) {
+                 char buff[63];
+                 siprintf(buff, UPTIME ":PID,%ld,%ld,%ld,%d\r\n",
+                          UPTIMEVAL,
+                          s.targetTemperature, 
+                          g.atomInfo.temperature,
+                          g.watts,
+	                  g.atomInfo.resistance);
+                 USB_VirtualCOM_SendString(buff);
+             }
+             updateScreen(&g);
+        }
+	g.vapeCnt++;
+        prline = (g.vapeCnt % 10) == 0;
     }
     if (Atomizer_IsOn())
 	Atomizer_Control(0);
@@ -163,17 +215,25 @@ void tempFire() {
 }
 
 void tempUp() {
-    if (s.targetTemperature + 10 <= g.vapeModes[s.mode]->maxSetting) {
-	s.targetTemperature += 10;
+    uint32_t dT = s.displayTemperature + 10;
+    uint32_t mT = tempScaleType[s.tempScaleTypeIndex].max;
+    if (dT <= mT) {
+	s.displayTemperature = dT;
+        s.targetTemperature = displayToC(dT);
     } else {
-	s.targetTemperature = g.vapeModes[s.mode]->maxSetting;
+        s.displayTemperature = mT;
+	s.targetTemperature = displayToC(mT);
     }
 }
 
 void tempDown() {
-    if (s.targetTemperature - 10 >= 0) {
-	s.targetTemperature -= 10;
+    uint32_t dT = s.displayTemperature - 10;
+    uint32_t mT = tempScaleType[s.tempScaleTypeIndex].min;
+    if (dT >= mT) {
+        s.displayTemperature = dT;
+	s.targetTemperature = displayToC(dT);
     } else {
-	s.targetTemperature = 0;
+        s.displayTemperature = mT;
+	s.targetTemperature = displayToC(mT);
     }
 }

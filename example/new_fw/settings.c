@@ -43,7 +43,27 @@ uint8_t settings[100];
 
 const char *headers[] =
     { "Type", "Mode", "Scale", "Reboot", "Exit", "Info" };
-const char *tempScaleType[] = { "C", "F", "K" };
+struct tempScale tempScaleType[] = {
+    {
+      .display = "C",
+      .max = 320,
+      .min = 0,
+      .def = 200,
+    },
+    {
+      .display = "F",
+      .max = 600,
+      .min = 0,
+      .def = 400,
+    },
+    {
+      .display = "K",
+      .max = 880,
+      .min = 280,
+      .def = 680,
+    },
+};
+#define SCALE_CNT 3
 
 uint8_t ITEM_COUNT = 6;
 // Array of selections
@@ -56,11 +76,13 @@ int load_settings(void) {
     s.mode = 2;
     s.screenTimeout = 30;	// 100s of s
     s.materialIndex = 1;
-    s.tempScaleType = 1;
-    s.pidP = 30;
-    s.pidI = 70;
+    s.tempScaleTypeIndex = 1;
+    s.displayTemperature = tempScaleType[s.tempScaleTypeIndex].def;
+    s.targetTemperature = displayToC(s.displayTemperature);
+    s.pidP = 17000;
+    s.pidI = 5500;
     s.pidD = 0;
-    s.initWatts = 5000;
+    s.initWatts = 15000;
     s.dumpPids = 0;
     return 1;
 }
@@ -162,37 +184,34 @@ void updateSettings(char *buffer, char *response) {
         if (parseUInt16(value, "screenTimeout", response, 600, 0, &s.screenTimeout))
             return;
     } else if (strncmp(setting, "targetTemperature", 17) == 0) {
-        if (parseUInt32(value, "targetTemperature", response, 600, 0, &s.targetTemperature))
+        struct tempScale *t = &tempScaleType[s.tempScaleTypeIndex];
+        uint32_t ttemp;
+        if (parseUInt32(value, "targetTemperature", response, t->max, t->min, &ttemp))
             return;
+        s.displayTemperature = ttemp;
+        s.targetTemperature = displayToC(s.displayTemperature);
     } else if (strncmp(setting, "materialIndex", 13) == 0) {
         uint8_t tindex = 0;
         if (parseUInt8(value, "materialIndex", response, MATERIAL_COUNT, 0, &tindex))
             return;
         setVapeMaterial(tindex);
-        response[0] = '$';
-    } else if (strncmp(setting, "tempScaleType", 13) == 0) {
-        uint8_t tindex = 0;
-        if (parseUInt8(value, "tempScaleType", response, 0xFF, 0, &tindex))
+    } else if (strncmp(setting, "tempScaleTypeIndex", 13) == 0) {
+        uint8_t tindex;
+        if (parseUInt8(value, "tempScaleTypeIndex", response, SCALE_CNT - 1, 0, &tindex))
             return;
-        if (!tempScaleType[tindex]) {
-            response[0] = '~';
-            siprintf(buff, "INFO,%s not valid tempScaleType\r\n", value);
-            USB_VirtualCOM_SendString(buff);
-            return;
-        }
-        s.tempScaleType = tindex;
-        response[0] = '$';
+        s.tempScaleTypeIndex = tindex;
+        s.targetTemperature = tempScaleType[s.tempScaleTypeIndex].def;
     } else if (strncmp(setting, "pidP", 4) == 0) {
-        if (parseUInt32(value, "pidP", response, 1000, 0, &s.pidP))
+        if (parseUInt32(value, "pidP", response, 0xFFFFFFFF, 0, &s.pidP))
             return;
     } else if (strncmp(setting, "pidI", 4) == 0) {
-        if (parseUInt32(value, "pidI", response, 1000, 0, &s.pidI))
+        if (parseUInt32(value, "pidI", response, 0xFFFFFFFF, 0, &s.pidI))
             return;
     } else if (strncmp(setting, "pidD", 4) == 0) {
-        if (parseUInt32(value, "pidD", response, 1000, 0, &s.pidD))
+        if (parseUInt32(value, "pidD", response, 0xFFFFFFFF, 0, &s.pidD))
             return;
     } else if (strncmp(setting, "initWatts", 9) == 0) {
-        if (parseUInt32(value, "initWatts", response, 60000, 0, &s.initWatts))
+        if (parseInt32(value, "initWatts", response, 60000, 0, &s.initWatts))
             return;
     } else if (strncmp(setting, "dumpPids", 8) == 0) {
         if (parseUInt8(value, "dumpPids", response, 1, 0, &s.dumpPids))
@@ -219,7 +238,7 @@ void dumpSettings(char *buffer, char *response) {
     USB_VirtualCOM_SendString(buff);
     siprintf(buff, "setting,%s,%i\r\n","materialIndex",s.materialIndex);
     USB_VirtualCOM_SendString(buff);
-    siprintf(buff, "setting,%s,%i\r\n","tempScaleType",s.tempScaleType);
+    siprintf(buff, "setting,%s,%i\r\n","tempScaleTypeIndex",s.tempScaleTypeIndex);
     USB_VirtualCOM_SendString(buff);
     siprintf(buff, "setting,%s,%ld\r\n","pidP",s.pidP);
     USB_VirtualCOM_SendString(buff);
@@ -366,7 +385,7 @@ void buildMenu() {
     printSettingsItem(28, buff, (char *) headers[1],
 		      g.vapeModes[s.mode]->name);
     printSettingsItem(56, buff, (char *) headers[2],
-		      (char *) tempScaleType[s.tempScaleType]);
+		      (char *) tempScaleType[s.tempScaleTypeIndex].display);
 
     // Print reboot and standard stuff
     printHeader(90, buff, (char *) headers[5]);
@@ -448,10 +467,10 @@ void handleFireButton() {
 	setVapeMode(s.mode);
 	break;
     case 2:
-	if (s.tempScaleType == 2) {
-	    s.tempScaleType = 0;
+	if (s.tempScaleTypeIndex == 2) {
+	    s.tempScaleTypeIndex = 0;
 	} else {
-	    s.tempScaleType++;
+	    s.tempScaleTypeIndex++;
 	}
 	break;
     case 3:
