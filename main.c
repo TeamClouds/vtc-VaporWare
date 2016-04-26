@@ -142,21 +142,43 @@ void buttonFire(uint8_t state) {
     }
 }
 
+void longPressButton(uint32_t which) {
+    if (gv.buttonRepeatTimer)
+        Timer_DeleteTimer(gv.buttonRepeatTimer);
+
+    uint8_t state = Button_GetState();
+	if (state & BUTTON_MASK_RIGHT) {
+        __up();
+        gv.buttonRepeatTimer = Timer_CreateTimeout(200, 1, longPressButton, BUTTON_MASK_RIGHT);
+    } else if (state & BUTTON_MASK_LEFT) {
+        __down();
+        gv.buttonRepeatTimer = Timer_CreateTimeout(200, 1, longPressButton, BUTTON_MASK_LEFT);
+    }
+}
+
 void buttonRight(uint8_t state) {
     screenOn();
+    if (gv.buttonRepeatTimer)
+        Timer_DeleteTimer(gv.buttonRepeatTimer);
+
     if (state & BUTTON_MASK_RIGHT) {
-	__up();
+        __up();
+        gv.buttonRepeatTimer = Timer_CreateTimeout(500, 0, longPressButton, BUTTON_MASK_RIGHT);
     } else {
-	__screenOff();
+	    __screenOff();
     }
 }
 
 void buttonLeft(uint8_t state) {
     screenOn();
+    if (gv.buttonRepeatTimer)
+        Timer_DeleteTimer(gv.buttonRepeatTimer);
+
     if (state & BUTTON_MASK_LEFT) {
-	__down();
+	    __down();
+        gv.buttonRepeatTimer = Timer_CreateTimeout(500, 0, longPressButton, BUTTON_MASK_LEFT);
     } else {
-	__screenOff();
+	    __screenOff();
     }
 }
 
