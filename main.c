@@ -149,10 +149,10 @@ void longPressButton(uint32_t which) {
     uint8_t state = Button_GetState();
 	if (state & BUTTON_MASK_RIGHT) {
         __up();
-        gv.buttonRepeatTimer = Timer_CreateTimeout(200, 1, longPressButton, BUTTON_MASK_RIGHT);
+        gv.buttonRepeatTimer = Timer_CreateTimeout(200, 0, longPressButton, BUTTON_MASK_RIGHT);
     } else if (state & BUTTON_MASK_LEFT) {
         __down();
-        gv.buttonRepeatTimer = Timer_CreateTimeout(200, 1, longPressButton, BUTTON_MASK_LEFT);
+        gv.buttonRepeatTimer = Timer_CreateTimeout(200, 0, longPressButton, BUTTON_MASK_LEFT);
     }
 }
 
