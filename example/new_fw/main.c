@@ -142,28 +142,24 @@ void buttonFire(uint8_t state) {
     }
 }
 
-void longPressButton(uint32_t which) {
-    if (gv.buttonRepeatTimer)
-        Timer_DeleteTimer(gv.buttonRepeatTimer);
-
-    uint8_t state = Button_GetState();
+void longPressButton(uint32_t state) {
+    Timer_DeleteTimer(gv.buttonRepeatTimer);
 	if (state & BUTTON_MASK_RIGHT) {
         __up();
-        gv.buttonRepeatTimer = Timer_CreateTimeout(200, 0, longPressButton, BUTTON_MASK_RIGHT);
+        gv.buttonRepeatTimer = Timer_CreateTimeout(200, 1, __up, state);
     } else if (state & BUTTON_MASK_LEFT) {
         __down();
-        gv.buttonRepeatTimer = Timer_CreateTimeout(200, 0, longPressButton, BUTTON_MASK_LEFT);
+        gv.buttonRepeatTimer = Timer_CreateTimeout(200, 1, __down, state);
     }
 }
 
 void buttonRight(uint8_t state) {
     screenOn();
-    if (gv.buttonRepeatTimer)
-        Timer_DeleteTimer(gv.buttonRepeatTimer);
+    Timer_DeleteTimer(gv.buttonRepeatTimer);
 
     if (state & BUTTON_MASK_RIGHT) {
         __up();
-        gv.buttonRepeatTimer = Timer_CreateTimeout(500, 0, longPressButton, BUTTON_MASK_RIGHT);
+        gv.buttonRepeatTimer = Timer_CreateTimeout(500, 0, longPressButton, state);
     } else {
 	    __screenOff();
     }
@@ -171,12 +167,11 @@ void buttonRight(uint8_t state) {
 
 void buttonLeft(uint8_t state) {
     screenOn();
-    if (gv.buttonRepeatTimer)
-        Timer_DeleteTimer(gv.buttonRepeatTimer);
+    Timer_DeleteTimer(gv.buttonRepeatTimer);
 
     if (state & BUTTON_MASK_LEFT) {
 	    __down();
-        gv.buttonRepeatTimer = Timer_CreateTimeout(500, 0, longPressButton, BUTTON_MASK_LEFT);
+        gv.buttonRepeatTimer = Timer_CreateTimeout(500, 0, longPressButton, state);
     } else {
 	    __screenOff();
     }
