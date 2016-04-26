@@ -132,7 +132,18 @@ void tempFire() {
 	// Update info
 	// If resistance is zero voltage will be zero
 	Atomizer_ReadInfo(&g.atomInfo);
-
+        if (!pidactive) {
+            if ((int32_t)s.targetTemperature - (int32_t)g.atomInfo.temperature >= s.pidSwitch) {
+                g.watts = s.initWatts;
+            } else {
+                if (s.dumpPids) {
+                    char b[63];
+                    siprintf(b, "INFO,Switching to PID %ld %ld\r\n", s.targetTemperature, g.atomInfo.temperature);
+                    USB_VirtualCOM_SendString(b);
+                }
+                pidactive = 1;
+            }
+        }
 	// Don't allow firing > 1 ohm in temp mode.
 	if (g.atomInfo.resistance > 1000) {
 	    g.watts = 0;

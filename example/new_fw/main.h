@@ -64,6 +64,7 @@ struct settings {
     uint32_t pidI;
     uint32_t pidD;
     int32_t initWatts;
+    int32_t pidSwitch;
     uint8_t dumpPids;
     uint8_t tunePids;
 };

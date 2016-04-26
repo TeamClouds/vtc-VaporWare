@@ -83,6 +83,7 @@ int load_settings(void) {
     s.pidI = 5500;
     s.pidD = 0;
     s.initWatts = 15000;
+    s.pidSwitch = 600;
     s.dumpPids = 0;
     return 1;
 }
@@ -212,6 +213,9 @@ void updateSettings(char *buffer, char *response) {
             return;
     } else if (strncmp(setting, "initWatts", 9) == 0) {
         if (parseInt32(value, "initWatts", response, 60000, 0, &s.initWatts))
+            return;
+    } else if (strncmp(setting, "pidSwitch", 8) == 0) {
+        if (parseInt32(value, "pidSwitch", response, 600, -600, &s.pidSwitch))
             return;
     } else if (strncmp(setting, "dumpPids", 8) == 0) {
         if (parseUInt8(value, "dumpPids", response, 1, 0, &s.dumpPids))
