@@ -72,6 +72,8 @@ ifdef NEED_FIXPATH
 		OBJS_FIXPATH := $(OBJS)
 endif
 
+GCC_VERSION := $(shell arm-none-eabi-gcc -dumpversion)
+
 AS := arm-none-eabi-as
 LD := arm-none-eabi-ld
 OBJCOPY := arm-none-eabi-objcopy
