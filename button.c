@@ -248,6 +248,22 @@ void freeHandlers() {
 void dummyHandler(uint8_t a, uint32_t b) {}
 void dummyRepeatHandler() {}
 
+void cleanupVariables() {
+    bg.fireTimeout = 0;
+    bg.leftTimeout = 0;
+    bg.rightTimeout = 0;
+
+    bg.fireCount = 0;
+    bg.leftCount = 0;
+    bg.rightCount = 0;
+
+    bg.fireNext = 0;
+    bg.leftNext = 0;
+    bg.rightNext = 0;
+
+    bg.buttonTimerExpires = 0;
+}
+
 void validateHandlers(struct buttonHandler *b) {
     if (b->fire_handler == NULL)
         b->fire_handler = &dummyHandler;
@@ -267,6 +283,7 @@ void setHandler(struct buttonHandler *b) {
     bg.buttonTimerExpires = 0;
     bg.currentHandler = b;
     validateHandlers(bg.currentHandler);
+    cleanupVariables();
 }
 
 void switchHandler(struct buttonHandler *b) {
@@ -274,6 +291,7 @@ void switchHandler(struct buttonHandler *b) {
     bg.stashedHandler = bg.currentHandler;
     bg.currentHandler = b;
     validateHandlers(bg.currentHandler);
+    cleanupVariables();
 }
 
 void returnHandler(void) {
@@ -281,4 +299,5 @@ void returnHandler(void) {
     bg.currentHandler = bg.stashedHandler;
     bg.stashedHandler = NULL;
     validateHandlers(bg.currentHandler);
+    cleanupVariables();
 }
