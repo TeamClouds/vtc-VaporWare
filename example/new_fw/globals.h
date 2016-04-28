@@ -37,6 +37,7 @@ struct globalVols {
     volatile int8_t screenOffTimer;
     volatile uint8_t buttonRepeatTimer;
     volatile uint32_t saveSettings;
+    volatile uint8_t buttonEvent;
 };
 
 extern volatile struct globalVols gv;

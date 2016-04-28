@@ -22,18 +22,17 @@
 
 #include <M451Series.h>
 #include <Atomizer.h>
-#include <Button.h>
 #include <Battery.h>
 #include <TimerUtils.h>
 #include <Display.h>
 #include <USB_VirtualCOM.h>
 
+#include "button.h"
 #include "communication.h"
 #include "display.h"
 #include "globals.h"
 #include "materials.h"
 #include "settings.h"
-
 
 #include "mode_watt.h"
 #include "mode_volt.h"
@@ -47,7 +46,7 @@ void (*__down) (void);
 
 void setVapeMode(int newMode) {
     if (newMode >= MODE_COUNT)
-	return;
+    return;
 
     s.mode = newMode;
 
@@ -55,8 +54,8 @@ void setVapeMode(int newMode) {
     __up = g.vapeModes[newMode]->increase;
     __down = g.vapeModes[newMode]->decrease;
     if (g.vapeModes[newMode]->init) {
-	__init = g.vapeModes[newMode]->init;
-	__init();
+        __init = g.vapeModes[newMode]->init;
+        __init();
     }
 }
 
@@ -71,9 +70,9 @@ inline void __screenOff(void);
 void screenOffTimeout(uint32_t c) {
     gv.screenState--;
     if (gv.screenState >= 1) {
-	__screenOff();
+    __screenOff();
     } else {
-	gv.buttonCnt = 0;
+    gv.buttonCnt = 0;
     }
 }
 
@@ -83,83 +82,8 @@ inline void screenOn() {
 
 inline void __screenOff() {
     if (gv.screenOffTimer >= 0)
-	Timer_DeleteTimer(gv.screenOffTimer);
+    Timer_DeleteTimer(gv.screenOffTimer);
     gv.screenOffTimer = Timer_CreateTimeout(100, 0, screenOffTimeout, 9);
-}
-
-void startVaping(uint32_t counterIndex) {
-    if (gv.buttonCnt < 3) {
-	if (Button_GetState() & BUTTON_MASK_FIRE) {
-	    Timer_DeleteTimer(gv.screenOffTimer);
-	    gv.screenOffTimer = 5;
-	    gv.fireButtonPressed = 1;
-	    gv.buttonCnt = 0;
-	}
-    } else {
-	gv.shouldShowMenu = 1;
-	gv.buttonCnt = 0;
-    }
-}
-
-void buttonFire(uint8_t state) {
-    screenOn();
-    if (state & BUTTON_MASK_FIRE) {
-	if (gv.fireTimer)
-	    Timer_DeleteTimer(gv.fireTimer);
-	gv.fireTimer = Timer_CreateTimeout(200, 0, startVaping, 3);
-	gv.buttonCnt++;
-    } else {
-	screenOn();
-	__screenOff();
-	gv.fireButtonPressed = 0;
-    }
-}
-
-void longPressButton(uint32_t which) {
-    if (gv.buttonRepeatTimer)
-        Timer_DeleteTimer(gv.buttonRepeatTimer);
-
-    uint8_t state = Button_GetState();
-	if (state & BUTTON_MASK_RIGHT) {
-        __up();
-        gv.buttonRepeatTimer = Timer_CreateTimeout(200, 0, longPressButton, BUTTON_MASK_RIGHT);
-    } else if (state & BUTTON_MASK_LEFT) {
-        __down();
-        gv.buttonRepeatTimer = Timer_CreateTimeout(200, 0, longPressButton, BUTTON_MASK_LEFT);
-    }
-}
-
-void buttonRight(uint8_t state) {
-    screenOn();
-    if (gv.buttonRepeatTimer)
-        Timer_DeleteTimer(gv.buttonRepeatTimer);
-
-    if (state & BUTTON_MASK_RIGHT) {
-        __up();
-        gv.buttonRepeatTimer = Timer_CreateTimeout(500, 0, longPressButton, BUTTON_MASK_RIGHT);
-    } else {
-	    __screenOff();
-    }
-}
-
-void buttonLeft(uint8_t state) {
-    screenOn();
-    if (gv.buttonRepeatTimer)
-        Timer_DeleteTimer(gv.buttonRepeatTimer);
-
-    if (state & BUTTON_MASK_LEFT) {
-	    __down();
-        gv.buttonRepeatTimer = Timer_CreateTimeout(500, 0, longPressButton, BUTTON_MASK_LEFT);
-    } else {
-	    __screenOff();
-    }
-}
-
-
-void setupButtons() {
-    g.fire = Button_CreateCallback(buttonFire, BUTTON_MASK_FIRE);
-    g.plus = Button_CreateCallback(buttonRight, BUTTON_MASK_RIGHT);
-    g.minus = Button_CreateCallback(buttonLeft, BUTTON_MASK_LEFT);
 }
 
 #define REGISTER_MODE(X) g.vapeModes[X.index] = &X
@@ -168,12 +92,52 @@ void uptime(uint32_t param) {
     gv.uptime++;
 }
 
+void fire(uint8_t status, uint32_t held) {
+    screenOn();
+    if (status & BUTTON_PRESS)
+        __vape();
+}
+
+void left(uint8_t status, uint32_t held) {
+    screenOn();
+    if ((status & BUTTON_PRESS) ||
+        ((held > 30) && status & BUTTON_HELD))
+        __down();
+}
+
+void right(uint8_t status, uint32_t held) {
+    screenOn();
+    if ((status & BUTTON_PRESS) ||
+        ((held > 30) && status & BUTTON_HELD))
+        __up();
+}
+
+struct buttonHandler mainButtonHandler = {
+    .name = "mainButtons",
+    .flags = LEFT_HOLD_EVENT | RIGHT_HOLD_EVENT | FIRE_REPEAT,
+
+    .fire_handler = &fire,
+    .fire_repeated = &showMenu,
+    .fireRepeatCount = 3,
+    .fireRepeatTimeout = 30,
+
+    .left_handler = &left,
+    .leftUpdateInterval = 10,
+
+    .right_handler = &right,
+    .rightUpdateInterval = 10,
+
+};
+
 int main() {
     int i = 0;
     gv.uptimeTimer = Timer_CreateTimer(100, 1, uptime, 3);
-    load_settings();
-    setupButtons();
+    Communication_Init();
+    initHandlers();
+    setHandler(&mainButtonHandler);
 
+    load_settings();
+    
     REGISTER_MODE(variableVoltage);
     REGISTER_MODE(variableWattage);
     REGISTER_MODE(variableTemp);
@@ -181,66 +145,69 @@ int main() {
     setVapeMode(s.mode);
     setVapeMaterial(s.materialIndex);
 
-    Communication_Init();
+    
     Atomizer_ReadInfo(&g.atomInfo);
 
     // Initialize atomizer info
     do {
-	Atomizer_ReadInfo(&g.atomInfo);
-	updateScreen(&g);
-	i++;
-    }
-    while (i < 100 && g.atomInfo.resistance == 0);
+        Atomizer_ReadInfo(&g.atomInfo);
+        updateScreen(&g);
+        i++;
+    } while (i < 100 && g.atomInfo.resistance == 0);
 
     while (g.atomInfo.resistance - g.atomInfo.base_resistance > 10) {
-	Atomizer_ReadInfo(&g.atomInfo);
-	updateScreen(&g);
+        Atomizer_ReadInfo(&g.atomInfo);
+        updateScreen(&g);
     }
     screenOn();
     __screenOff();
 
     if (!s.fromRom)
-	gv.shouldShowMenu = 1;
+    gv.shouldShowMenu = 1;
     uint8_t rcmd[63];
     i = 0;
     while (1) {
-	g.charging = Battery_IsCharging();
-	if (gv.fireButtonPressed) {
-            if ((s.dumpPids || s.tunePids) && !g.charging)
+    g.charging = Battery_IsCharging();
+
+    if ((s.dumpPids || s.tunePids) && !g.charging)
                 s.dumpPids = s.tunePids = 0;
-	    __vape();
-	}
-	if (gv.shouldShowMenu) {
-	    showMenu();
-	} else if (gv.screenState || g.charging) {
-	    Display_SetOn(1);
-	    updateScreen(&g);
-	} else if (gv.screenState <= 1 && !g.charging) {
-	    Timer_DelayMs(100);
-	    Display_Clear();
-	    Display_SetOn(0);
-	}
-        while(USB_VirtualCOM_GetAvailableSize() > 0) {
-            uint8_t C = 0;
-            i += USB_VirtualCOM_Read(&C,1);
-            rcmd[i - 1] = C;
-            /* This should be updatedto eat all control chars */
-            if (rcmd[i - 1] == '\r') {
-                // eat \r
-                rcmd[i - 1] = '\0';
-                i--;
-            } else if (rcmd[i - 1] == '\n') {
-                rcmd[i - 1] = '\0';
-                Communication_Command((char *)rcmd);
-                memset(rcmd, 0, sizeof(rcmd));
-                i = 0;
-            } else if (i == 62) {
-                Communication_Command((char *)rcmd);
-                memset(rcmd, 0, sizeof(rcmd));
-                i = 0;
-                break; //overflow
-            }
+
+    if (gv.buttonEvent) {
+        
+        handleButtonEvents();
+        gv.buttonEvent = 0;
+    }
+    if (gv.shouldShowMenu) {
+        showMenu();
+    } else if (gv.screenState || g.charging) {
+        Display_SetOn(1);
+        updateScreen(&g);
+    } else if (gv.screenState <= 1 && !g.charging) {
+        Timer_DelayMs(100);
+        Display_Clear();
+        Display_SetOn(0);
+    }
+    while(USB_VirtualCOM_GetAvailableSize() > 0) {
+        uint8_t C = 0;
+        i += USB_VirtualCOM_Read(&C,1);
+        rcmd[i - 1] = C;
+        /* This should be updatedto eat all control chars */
+        if (rcmd[i - 1] == '\r') {
+            // eat \r
+            rcmd[i - 1] = '\0';
+            i--;
+        } else if (rcmd[i - 1] == '\n') {
+            rcmd[i - 1] = '\0';
+            Communication_Command((char *)rcmd);
+            memset(rcmd, 0, sizeof(rcmd));
+            i = 0;
+        } else if (i == 62) {
+            Communication_Command((char *)rcmd);
+            memset(rcmd, 0, sizeof(rcmd));
+            i = 0;
+            break; //overflow
         }
-        Timer_DelayMs(66); // 15fps
+    }
+    // TODO WFI
     }
 }
