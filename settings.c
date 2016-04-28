@@ -30,6 +30,7 @@
 #include <USB_VirtualCOM.h>
 #include <Dataflash.h>
 
+#include "button.h"
 #include "display.h"
 #include "globals.h"
 #include "helper.h"
@@ -75,12 +76,10 @@ uint8_t ITEM_COUNT = 6;
 // Array of selections
 uint8_t items[6] = { 0, 28, 56, 90, 100, 110 };
 
-void setupButtons();
-
 int load_settings(void) {
     s.fromRom = 0;
     s.mode = 2;
-    s.screenTimeout = 30;	// 100s of s
+    s.screenTimeout = 30;   // 100s of s
     s.materialIndex = 1;
     s.tempScaleTypeIndex = 1;
     s.displayTemperature = tempScaleType[s.tempScaleTypeIndex].def;
@@ -327,16 +326,9 @@ inline void getSelector(char *buff) {
     siprintf(buff, "*");
 }
 
-void disableButtons() {
-    gv.buttonCnt = 0;
-    Button_DeleteCallback(g.fire);
-    Button_DeleteCallback(g.plus);
-    Button_DeleteCallback(g.minus);
-}
-
 void
 printSettingsItem(uint8_t starting, char *buff, char *header,
-		  char *string) {
+          char *string) {
 
     getString(buff, header);
     Display_PutText(10, starting, buff, FONT_DEJAVU_8PT);
@@ -347,7 +339,7 @@ printSettingsItem(uint8_t starting, char *buff, char *header,
 
 void
 printInfoItem(uint8_t starting, char *buff, char *header,
-		  char *string) {
+          char *string) {
 
     getString(buff, header);
     Display_PutText(0, starting, buff, FONT_DEJAVU_8PT);
@@ -362,12 +354,12 @@ void printHeader(uint8_t starting, char *buff, char *text) {
 }
 
 void printHWVersion(uint8_t starting, char *buff) {
-	getString(buff, "HW Ver");
-	Display_PutText(0, starting, buff, FONT_DEJAVU_8PT);
+    getString(buff, "HW Ver");
+    Display_PutText(0, starting, buff, FONT_DEJAVU_8PT);
 
-	uint8_t hwVerMajor, hwVerMinor;
-	hwVerMajor = 0; //Dataflash_info.hwVersion / 100;
-	hwVerMinor = 0; //Dataflash_info.hwVersion % 100;
+    uint8_t hwVerMajor, hwVerMinor;
+    hwVerMajor = 0; //Dataflash_info.hwVersion / 100;
+    hwVerMinor = 0; //Dataflash_info.hwVersion % 100;
     siprintf(buff, "%d.%02d", hwVerMajor, hwVerMinor);
     Display_PutText(10, starting + 15, buff, FONT_DEJAVU_8PT);
 }
@@ -378,11 +370,11 @@ void buildMenu() {
     Display_Clear();
 
     if (viewingInfo) {
-    	// TODO: read this value from a datastruct
-    	printInfoItem(0, buff, "FW Ver", "-0.01");
+        // TODO: read this value from a datastruct
+        printInfoItem(0, buff, "FW Ver", "-0.01");
         printHWVersion(40, buff);
-    	printInfoItem(80, buff, "Display",
-    			Display_GetType() == DISPLAY_SSD1327 ? "1327" : "1306");
+        printInfoItem(80, buff, "Display",
+                Display_GetType() == DISPLAY_SSD1327 ? "1327" : "1306");
     } else {
 
     Display_PutLine(0, 80, 63, 80);
@@ -391,11 +383,11 @@ void buildMenu() {
     Display_PutText(0, items[currentItem], buff, FONT_DEJAVU_8PT);
 
     printSettingsItem(0, buff, (char *) headers[0],
-		      vapeMaterialList[s.materialIndex].name);
+              vapeMaterialList[s.materialIndex].name);
     printSettingsItem(28, buff, (char *) headers[1],
-		      g.vapeModes[s.mode]->name);
+              g.vapeModes[s.mode]->name);
     printSettingsItem(56, buff, (char *) headers[2],
-		      (char *) tempScaleType[s.tempScaleTypeIndex].display);
+              (char *) tempScaleType[s.tempScaleTypeIndex].display);
 
     // Print reboot and standard stuff
     printHeader(90, buff, (char *) headers[5]);
@@ -407,116 +399,124 @@ void buildMenu() {
     Display_Update();
 }
 
-void buttonSettingRight(uint8_t state) {
-    if (!(state & BUTTON_MASK_RIGHT)) {
-	if (currentItem + 1 > ITEM_COUNT - 1) {
-	    currentItem = 0;
-	} else {
-	    currentItem++;
-	}
+void buttonSettingRight(uint8_t state, uint32_t time) {
+    if (gv.fireButtonPressed)
+        return;
+
+    if (state == BUTTON_REL) {
+        if (currentItem + 1 > ITEM_COUNT - 1) {
+            currentItem = 0;
+        } else {
+            currentItem++;
+        }
     }
 }
 
-void buttonSettingLeft(uint8_t state) {
-    if (!(state & BUTTON_MASK_LEFT)) {
-	if (currentItem - 1 < 0) {
-	    currentItem = ITEM_COUNT - 1;
-	} else {
-	    currentItem--;
-	}
+void buttonSettingLeft(uint8_t state, uint32_t time) {
+    if (gv.fireButtonPressed)
+        return;
+    if (state == BUTTON_REL) {
+        if (currentItem - 1 < 0) {
+            currentItem = ITEM_COUNT - 1;
+        } else {
+            currentItem--;
+        }
     }
 }
 
-void registerSettingsMovement() {
-    g.plus = Button_CreateCallback(buttonSettingRight, BUTTON_MASK_RIGHT);
-    g.minus = Button_CreateCallback(buttonSettingLeft, BUTTON_MASK_LEFT);
-}
-
-void deregisterSettingsMovement() {
-    Button_DeleteCallback(g.plus);
-    Button_DeleteCallback(g.minus);
-}
-
-void buttonSettingFire(uint8_t state) {
+void handleFireButton();
+void buttonSettingFire(uint8_t state, uint32_t time) {
     // To things
-    if (state & BUTTON_MASK_FIRE) {
-	gv.fireButtonPressed = 1;
-    } else {
-	gv.fireButtonPressed = 0;
-	if (viewingInfo) {
-	    viewingInfo = 0;
-	    registerSettingsMovement();
-	}
+    if (state == BUTTON_PRESS)
+        handleFireButton();
+    else {
+        viewingInfo = 0;
+
     }
+
 }
+
+struct buttonHandler settingsButtons = {
+    .name = "settingsButtons",
+
+    .fire_handler = &buttonSettingFire,
+    .left_handler = &buttonSettingLeft,
+    .right_handler = &buttonSettingRight,
+};
+
+void registerSettingsButtons() {
+    switchHandler(&settingsButtons);
+}
+
+void deregisterSettingsButtons() {
+    returnHandler();
+}
+
+
 
 void handleFireButton() {
-    gv.fireButtonPressed = 0;	//Always clear this so no chance of bouncing
+    
     switch (currentItem) {
     case 0:
-	if (s.materialIndex == 3) {
-	    s.materialIndex = 0;
-	} else {
-	    s.materialIndex++;
-	}
-	setVapeMaterial(s.materialIndex);
-	break;
+    if (s.materialIndex == 3) {
+        s.materialIndex = 0;
+    } else {
+        s.materialIndex++;
+    }
+    setVapeMaterial(s.materialIndex);
+    break;
     case 1:
-	s.mode++;
-	if (!g.vapeModes[s.mode]) {
-	    s.mode = 0;
-	}
-	if (!
-	    (vapeMaterialList[s.materialIndex].typeMask & g.
-	     vapeModes[s.mode]->supportedMaterials)) {
-	    s.mode++;
-	}
-	if (!g.vapeModes[s.mode]) {
-	    s.mode = 0;
-	}
-	setVapeMode(s.mode);
-	break;
+    s.mode++;
+    if (!g.vapeModes[s.mode]) {
+        s.mode = 0;
+    }
+    if (!
+        (vapeMaterialList[s.materialIndex].typeMask & g.
+         vapeModes[s.mode]->supportedMaterials)) {
+        s.mode++;
+    }
+    if (!g.vapeModes[s.mode]) {
+        s.mode = 0;
+    }
+    setVapeMode(s.mode);
+    break;
     case 2:
-	if (s.tempScaleTypeIndex == 2) {
-	    s.tempScaleTypeIndex = 0;
-	} else {
-	    s.tempScaleTypeIndex++;
-	}
-	break;
+    if (s.tempScaleTypeIndex == 2) {
+        s.tempScaleTypeIndex = 0;
+    } else {
+        s.tempScaleTypeIndex++;
+    }
+    break;
     case 3:
     if (!viewingInfo) {
         viewingInfo = 1;
-        deregisterSettingsMovement();
     }
-	break;
+    break;
     case 4:
-	reboot();
-	break;
+    reboot();
+    break;
     case 5:
-	disableButtons();
-	setupButtons();
-	updateScreen(&g);
-	gv.buttonCnt = 0;
-	gv.shouldShowMenu = 0;
-	currentItem = 0;
-	return;
-	break;
+    
+    deregisterSettingsButtons();
+    updateScreen(&g);
+    gv.buttonCnt = 0;
+    gv.shouldShowMenu = 0;
+    currentItem = 0;
+    return;
+    break;
     }
-}
-
-void setupSettingsButtons() {
-    g.fire = Button_CreateCallback(buttonSettingFire, BUTTON_MASK_FIRE);
-    registerSettingsMovement();
 }
 
 void showMenu() {
     gv.buttonCnt = 0;
-    disableButtons();
-    setupSettingsButtons();
+    gv.shouldShowMenu = 1;
+    registerSettingsButtons();
+    
     while (gv.shouldShowMenu) {
-	if (gv.fireButtonPressed)
-	    handleFireButton();
-	buildMenu();
-	Timer_DelayMs(66);	//15fps
+        if (gv.buttonEvent) {
+            handleButtonEvents();
+            gv.buttonEvent = 0;
+        }
+        buildMenu();
     }
 }
