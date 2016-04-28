@@ -29,7 +29,7 @@ extern "C" {
 #endif
 
 #define FONT_DEJAVU_8PT (&Font_DejaVuSansMono_8pt_FontInfo)
-#define FONT_LARGE (&fontdata_10x18_fontinfo)
+#define FONT_LARGE (&Font_NotoSans_FontInfo)
 
 #ifdef __cplusplus
 }
