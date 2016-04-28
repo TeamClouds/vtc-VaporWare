@@ -1,5 +1,6 @@
 #include "communication.h"
-#include "main.h"
+#include "mode.h"
+#include "settings.h"
 
 void Communication_Init() {
     // We may want to only init this if the user tells us it's cool.

@@ -1,5 +1,10 @@
 #include <stdint.h>
-#include "main.h"
+
+#include <Atomizer.h>
+
+#include "display.h"
+#include "globals.h"
+#include "helper.h"
 
 void voltInit() {
 	// set this initial value because we may be switching

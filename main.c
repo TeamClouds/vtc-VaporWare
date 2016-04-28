@@ -28,43 +28,16 @@
 #include <Display.h>
 #include <USB_VirtualCOM.h>
 
-#include "main.h"
 #include "communication.h"
+#include "display.h"
+#include "globals.h"
+#include "materials.h"
+#include "settings.h"
+
+
 #include "mode_watt.h"
 #include "mode_volt.h"
 #include "mode_temp.h"
-
-struct globals g = { };
-
-volatile struct globalVols gv = {
-    .fireButtonPressed = 0,
-    .screenState = 1,
-    .screenOffTimer = -1,
-};
-struct settings s = { };
-
-struct vapeMaterials vapeMaterialList[] = {
-    {
-     .typeMask = KANTHAL,
-     .name = "KA",
-     .tcr = 0,
-     },
-    {
-     .typeMask = NICKEL,
-     .name = "NI",
-     .tcr = 620,
-     },
-    {
-     .typeMask = TITANIUM,
-     .name = "TI",
-     .tcr = 350,
-     },
-    {
-     .typeMask = STAINLESS,
-     .name = "SS",
-     .tcr = 105,
-     },
-};
 
 // ALWAYS init it a sane mode
 void (*__init) (void);

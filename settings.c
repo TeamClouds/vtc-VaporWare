@@ -29,7 +29,13 @@
 #include <Button.h>
 #include <USB_VirtualCOM.h>
 #include <Dataflash.h>
-#include "main.h"
+
+#include "display.h"
+#include "globals.h"
+#include "helper.h"
+#include "settings.h"
+
+void saveDefaultSettings();
 
 uint16_t selectorY = 0;
 uint16_t selectorX = 0;
@@ -360,8 +366,8 @@ void printHWVersion(uint8_t starting, char *buff) {
 	Display_PutText(0, starting, buff, FONT_DEJAVU_8PT);
 
 	uint8_t hwVerMajor, hwVerMinor;
-	hwVerMajor = Dataflash_info.hwVersion / 100;
-	hwVerMinor = Dataflash_info.hwVersion % 100;
+	hwVerMajor = 0; //Dataflash_info.hwVersion / 100;
+	hwVerMinor = 0; //Dataflash_info.hwVersion % 100;
     siprintf(buff, "%d.%02d", hwVerMajor, hwVerMinor);
     Display_PutText(10, starting + 15, buff, FONT_DEJAVU_8PT);
 }

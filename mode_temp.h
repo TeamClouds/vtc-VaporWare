@@ -1,6 +1,5 @@
 #ifndef __MODE_TEMP_H
 #define __MODE_TEMP_H
-#include "main.h"
 
 void tempInit(void);
 void tempFire(void);

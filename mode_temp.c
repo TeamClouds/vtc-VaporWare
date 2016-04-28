@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include <stdint.h>
-
+#include <Atomizer.h>
 #include <USB_VirtualCOM.h>
 
-#include "main.h"
+#include "display.h"
+#include "globals.h"
+#include "helper.h"
+#include "settings.h"
 
 #define HISTLEN 16
 struct IntPID {
