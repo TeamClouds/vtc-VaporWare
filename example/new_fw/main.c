@@ -81,7 +81,7 @@ void uptime(uint32_t param) {
 }
 
 void fire(uint8_t status, uint32_t held) {
-    
+    screenOn();
     if (status & BUTTON_PRESS) {
         __vape();
     }
@@ -178,7 +178,8 @@ int main() {
 
     if (gv.shouldShowMenu) {
         showMenu();
-    } else if ((g.screenState >= gv.uptime) || g.charging) {
+    } else if ((g.nextRefresh < gv.uptime) && ((g.screenState >= gv.uptime) || g.charging)) {
+        g.nextRefresh = gv.uptime + 6;
         Display_SetOn(1);
         updateScreen(&g);
     } else if ((g.screenState < gv.uptime) && !g.charging) {

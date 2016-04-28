@@ -25,6 +25,7 @@ struct globals {
     uint8_t batteryPercent;
     uint32_t screenState;
     int8_t pauseScreenOff;
+    uint32_t nextRefresh;
 };
 extern struct globals g;
 
