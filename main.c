@@ -96,6 +96,8 @@ void fire(uint8_t status, uint32_t held) {
     screenOn();
     if (status & BUTTON_PRESS)
         __vape();
+    else
+        __screenOff();
 }
 
 void left(uint8_t status, uint32_t held) {
@@ -103,6 +105,8 @@ void left(uint8_t status, uint32_t held) {
     if ((status & BUTTON_PRESS) ||
         ((held > 30) && status & BUTTON_HELD))
         __down();
+    else 
+        __screenOff();
 }
 
 void right(uint8_t status, uint32_t held) {
@@ -110,6 +114,8 @@ void right(uint8_t status, uint32_t held) {
     if ((status & BUTTON_PRESS) ||
         ((held > 30) && status & BUTTON_HELD))
         __up();
+    else
+        __screenOff();
 }
 
 struct buttonHandler mainButtonHandler = {
