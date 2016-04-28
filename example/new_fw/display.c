@@ -19,6 +19,8 @@
  */
 
 #include <stdio.h>
+#include <string.h>
+
 #include <M451Series.h>
 #include <Display.h>
 #include <Font.h>
@@ -26,7 +28,10 @@
 #include <TimerUtils.h>
 #include <Battery.h>
 #include <Button.h>
-#include "main.h"
+
+#include "globals.h"
+#include "helper.h"
+#include "settings.h"
 
 // To whom it may concern
 // Calling things like Button state here are really bad

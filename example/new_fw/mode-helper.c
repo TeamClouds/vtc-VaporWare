@@ -1,5 +1,6 @@
 #include <stdint.h>
-#include "main.h"
+#include "globals.h"
+
 
 void getModesByMaterial(uint8_t materialMask, int8_t * modes, int8_t * cnt) {
     int i = 0;

@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdint.h>
-#include "main.h"
+#include "globals.h"
+#include "settings.h"
 
 uint16_t wattsToVolts(uint32_t watts, uint16_t res) {
     // Units: mV, mW, mOhm
