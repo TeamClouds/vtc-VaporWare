@@ -82,8 +82,8 @@ void updateScreen(struct globals *g) {
         // we are charging
         getPercent(buff, g->batteryPercent);
         uint8_t size = strlen(buff);
-        Display_PutText((DISPLAY_WIDTH/2)-((8*size)/2),
-            (DISPLAY_HEIGHT/2)-12, buff, FONT_DEJAVU_8PT);
+        Display_PutText((DISPLAY_WIDTH/2)-((12*size)/2),
+            (DISPLAY_HEIGHT/2)-12, buff, FONT_LARGE);
         Display_Update();
         return;
     }
