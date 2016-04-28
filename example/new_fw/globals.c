@@ -6,8 +6,6 @@ struct globals g = { };
 
 volatile struct globalVols gv = {
     .fireButtonPressed = 0,
-    .screenState = 1,
-    .screenOffTimer = -1,
 };
 struct settings s = { };
 

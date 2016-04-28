@@ -76,7 +76,7 @@ void updateScreen(struct globals *g) {
             Battery_IsPresent()? Battery_GetVoltage() : 0);
     }
 
-    if (g->charging && !gv.screenState) {
+    if (g->charging && (g->screenState < gv.uptime)) {
         Display_Clear();
         // update the battery percent all the time if
         // we are charging
