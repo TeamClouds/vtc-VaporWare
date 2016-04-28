@@ -23,6 +23,8 @@ struct globals {
     uint32_t maxTemp;
     uint32_t minTemp;
     uint8_t batteryPercent;
+    uint32_t screenState;
+    int8_t pauseScreenOff;
 };
 extern struct globals g;
 
@@ -31,10 +33,8 @@ struct globalVols {
     volatile uint8_t uptimeTimer;
     volatile uint8_t fireTimer;
     volatile uint8_t fireButtonPressed;
-    volatile uint8_t screenState;
     volatile uint8_t buttonCnt;
     volatile uint8_t shouldShowMenu;
-    volatile int8_t screenOffTimer;
     volatile uint8_t buttonRepeatTimer;
     volatile uint32_t saveSettings;
     volatile uint8_t buttonEvent;

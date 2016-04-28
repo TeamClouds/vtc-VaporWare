@@ -65,25 +65,13 @@ void setVapeMaterial(int index) {
     g.atomInfo.tcr = material->tcr;
 }
 
-inline void __screenOff(void);
-
-void screenOffTimeout(uint32_t c) {
-    gv.screenState--;
-    if (gv.screenState >= 1) {
-    __screenOff();
-    } else {
-    gv.buttonCnt = 0;
-    }
-}
-
 inline void screenOn() {
-    gv.screenState = s.screenTimeout;
+    g.screenState = gv.uptime + s.screenTimeout * 10;
+    g.pauseScreenOff = 1;
 }
 
-inline void __screenOff() {
-    if (gv.screenOffTimer >= 0)
-    Timer_DeleteTimer(gv.screenOffTimer);
-    gv.screenOffTimer = Timer_CreateTimeout(100, 0, screenOffTimeout, 9);
+inline void screenOff() {
+    g.pauseScreenOff = 0;
 }
 
 #define REGISTER_MODE(X) g.vapeModes[X.index] = &X
@@ -93,11 +81,13 @@ void uptime(uint32_t param) {
 }
 
 void fire(uint8_t status, uint32_t held) {
-    screenOn();
-    if (status & BUTTON_PRESS)
+    
+    if (status & BUTTON_PRESS) {
         __vape();
-    else
-        __screenOff();
+    }
+    screenOn();
+    screenOff();
+    
 }
 
 void left(uint8_t status, uint32_t held) {
@@ -106,7 +96,7 @@ void left(uint8_t status, uint32_t held) {
         ((held > 30) && status & BUTTON_HELD))
         __down();
     else 
-        __screenOff();
+        screenOff();
 }
 
 void right(uint8_t status, uint32_t held) {
@@ -115,7 +105,7 @@ void right(uint8_t status, uint32_t held) {
         ((held > 30) && status & BUTTON_HELD))
         __up();
     else
-        __screenOff();
+        screenOff();
 }
 
 struct buttonHandler mainButtonHandler = {
@@ -166,7 +156,7 @@ int main() {
         updateScreen(&g);
     }
     screenOn();
-    __screenOff();
+    screenOff();
 
     if (!s.fromRom)
     gv.shouldShowMenu = 1;
@@ -183,13 +173,15 @@ int main() {
         handleButtonEvents();
         gv.buttonEvent = 0;
     }
+    if (g.pauseScreenOff)
+        screenOn();
+
     if (gv.shouldShowMenu) {
         showMenu();
-    } else if (gv.screenState || g.charging) {
+    } else if ((g.screenState >= gv.uptime) || g.charging) {
         Display_SetOn(1);
         updateScreen(&g);
-    } else if (gv.screenState <= 1 && !g.charging) {
-        Timer_DelayMs(100);
+    } else if ((g.screenState < gv.uptime) && !g.charging) {
         Display_Clear();
         Display_SetOn(0);
     }
