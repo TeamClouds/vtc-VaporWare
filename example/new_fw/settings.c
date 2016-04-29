@@ -29,6 +29,7 @@
 #include <Button.h>
 #include <USB_VirtualCOM.h>
 #include <Dataflash.h>
+#include <SysInfo.h>
 
 #include "button.h"
 #include "display.h"
@@ -358,8 +359,8 @@ void printHWVersion(uint8_t starting, char *buff) {
     Display_PutText(0, starting, buff, FONT_DEJAVU_8PT);
 
     uint8_t hwVerMajor, hwVerMinor;
-    hwVerMajor = 0; //Dataflash_info.hwVersion / 100;
-    hwVerMinor = 0; //Dataflash_info.hwVersion % 100;
+    hwVerMajor = gSysInfo.hwVersion / 100;
+    hwVerMinor = gSysInfo.hwVersion % 100;
     siprintf(buff, "%d.%02d", hwVerMajor, hwVerMinor);
     Display_PutText(10, starting + 15, buff, FONT_DEJAVU_8PT);
 }
