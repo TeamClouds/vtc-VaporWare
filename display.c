@@ -59,11 +59,11 @@ void getString(char *buff, char *state) {
 }
 
 inline void getFloating(char *buff, uint32_t floating) {
-    siprintf(buff, "%3lu.%02lu", floating / 1000, floating % 1000 / 10);
+    siprintf(buff, "%lu.%02lu", floating / 1000, floating % 1000 / 10);
 }
 
 inline void getFloatingTenth(char *buff, uint32_t floating) {
-    siprintf(buff, "%3lu.%lu", floating / 1000, floating % 1000 / 10);
+    siprintf(buff, "%lu.%lu", floating / 1000, floating % 1000 / 10);
 }
 
 void updateScreen(struct globals *g) {
@@ -139,7 +139,7 @@ void updateScreen(struct globals *g) {
         } else {
             printNumber(buff, s.displayTemperature);
         }
-	    Display_PutText(0, 0, buff, FONT_LARGE);
+	    Display_PutText(0, 5, buff, FONT_LARGE);
 	    getString(buff, (char *) tempScaleType[s.tempScaleTypeIndex].display);
 	    Display_PutText(48, 2, buff, FONT_DEJAVU_8PT);
         break;
@@ -165,20 +165,17 @@ void updateScreen(struct globals *g) {
     Display_PutText(0, 35, buff, FONT_DEJAVU_8PT);
 
     getPercent(buff, g->batteryPercent);
-    Display_PutText(0, 48, buff, FONT_DEJAVU_8PT);
-
-    getFloating(buff, Battery_GetVoltage());
-    Display_PutText(15, 48, buff, FONT_DEJAVU_8PT);
+    Display_PutText(0, 48, buff, FONT_LARGE);
 
     getFloating(buff, g->watts);
-    Display_PutText(0, 100, buff, FONT_DEJAVU_8PT);
+    Display_PutText(0, 70, buff, FONT_LARGE);
 
     if (atomizerOn) {
 	getFloating(buff, g->atomInfo.resistance);
     } else {
 	getFloating(buff, g->atomInfo.base_resistance);
     }
-    Display_PutText(0, 110, buff, FONT_DEJAVU_8PT);
+    Display_PutText(0, 100, buff, FONT_LARGE);
 
     Display_Update();
 }
