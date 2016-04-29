@@ -196,6 +196,7 @@ int main() {
         Sys_Sleep();
         Display_SetOn(1);
         screenOn();
+        screenOff();
         updateScreen(&g);
     }
     while(USB_VirtualCOM_GetAvailableSize() > 0) {
