@@ -157,12 +157,12 @@ void buttonTimer(uint32_t ignored) {
 
 void buttonPressed(uint8_t state) {
     uint32_t ltime = gv.uptime;
+
     if (state & BUTTON_MASK_FIRE) {
         gv.fireButtonPressed = 1;
         if (!bg.fireHeld) {
             bg.fireHeld = BUTTON_PRESS;
             bg.callFireCallback = 1;
-            gv.buttonEvent = 1; 
             if (bg.currentHandler->flags & FIRE_HOLD_EVENT) {
                 bg.fireStart = ltime;
                 bg.fireNext = ltime + bg.currentHandler->fireUpdateInterval;
@@ -175,7 +175,6 @@ void buttonPressed(uint8_t state) {
         }
     } else if (bg.fireHeld && !(state & BUTTON_MASK_FIRE)) {
         bg.callFireCallback = 1;
-        gv.buttonEvent = 1;
         
         gv.fireButtonPressed = 0;
         bg.fireStart = 0;
@@ -188,7 +187,6 @@ void buttonPressed(uint8_t state) {
         if (!bg.leftHeld) {
             bg.leftHeld = BUTTON_PRESS;
             bg.callLeftCallback = 1;
-            gv.buttonEvent = 1; 
             if (bg.currentHandler->flags & LEFT_HOLD_EVENT) {
                 bg.leftStart = ltime;
                 bg.leftNext = ltime + bg.currentHandler->leftUpdateInterval;
@@ -201,7 +199,6 @@ void buttonPressed(uint8_t state) {
         }
     } else if (bg.leftHeld && !(state & BUTTON_MASK_LEFT)) {
         bg.callLeftCallback = 1;
-        gv.buttonEvent = 1;
        
         bg.leftStart = 0;
         bg.leftNext = 0;
@@ -212,7 +209,6 @@ void buttonPressed(uint8_t state) {
         if (!bg.rightHeld) {
             bg.rightHeld = BUTTON_PRESS;
             bg.callRightCallback = 1;
-            gv.buttonEvent = 1;
             if (bg.currentHandler->flags & RIGHT_HOLD_EVENT) {
                 bg.rightStart = ltime;
                 bg.rightNext = ltime + bg.currentHandler->rightUpdateInterval;
@@ -226,14 +222,13 @@ void buttonPressed(uint8_t state) {
         }
     } else if (bg.rightHeld && !(state & BUTTON_MASK_RIGHT)) {
         bg.callRightCallback = 1;
-        gv.buttonEvent = 1;
         
         bg.rightStart = 0;
         bg.rightNext = 0;
         bg.rightHeld = BUTTON_REL;
     }
 
-    
+    gv.buttonEvent = 1;
     bg.buttonTimerExpires = ltime + 500;
 
 }
