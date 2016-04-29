@@ -51,5 +51,7 @@ void setHandler(struct buttonHandler *b);
 void switchHandler(struct buttonHandler *b);
 void returnHandler();
 
+volatile uint32_t *buttonTimeout;
+void buttonTimer(uint32_t ignored);
 void handleButtonEvents();
 #endif

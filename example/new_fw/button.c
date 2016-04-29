@@ -33,7 +33,6 @@ struct buttonGlobals {
     volatile uint8_t callRightRepeatCallback;
 
     uint8_t buttonHandlerIndex;
-    volatile int8_t buttonTimerIndex;
     volatile uint32_t buttonTimerExpires;
 
     struct buttonHandler *currentHandler;
@@ -154,13 +153,6 @@ void buttonTimer(uint32_t ignored) {
             gv.buttonEvent = 1;
         }
     }
-
-
-    if (ltime >= bg.buttonTimerExpires) {
-        Timer_DeleteTimer(bg.buttonTimerIndex);
-        bg.buttonTimerIndex = -1;
-    }
-
 }
 
 void buttonPressed(uint8_t state) {
@@ -242,24 +234,18 @@ void buttonPressed(uint8_t state) {
     }
 
     
-    if (bg.buttonTimerIndex < 0)
-        bg.buttonTimerIndex = Timer_CreateTimer(100, 1, buttonTimer, 0);
-    // TODO: Handle errors from CreateTimer
     bg.buttonTimerExpires = ltime + 500;
 
 }
 
 void initHandlers() {
-    bg.buttonTimerIndex = -1;
+    buttonTimeout = &bg.buttonTimerExpires;
     bg.buttonHandlerIndex = Button_CreateCallback(buttonPressed, 
         BUTTON_MASK_FIRE | BUTTON_MASK_RIGHT | BUTTON_MASK_LEFT);
 }
 
 void freeHandlers() {
-    if (bg.buttonTimerIndex >= 0) {
-        Timer_DeleteTimer(bg.buttonTimerIndex);
-        bg.buttonTimerIndex = -1;
-    }
+    bg.buttonTimerExpires = 0;
     Button_DeleteCallback(bg.buttonHandlerIndex);
     bg.currentHandler = NULL;
 }
@@ -283,29 +269,20 @@ void validateHandlers(struct buttonHandler *b) {
 }
 
 void setHandler(struct buttonHandler *b) {
-    if (bg.buttonTimerIndex >= 0) {
-        Timer_DeleteTimer(bg.buttonTimerIndex);
-        bg.buttonTimerIndex = -1;
-    }
+    bg.buttonTimerExpires = 0;
     bg.currentHandler = b;
     validateHandlers(bg.currentHandler);
 }
 
 void switchHandler(struct buttonHandler *b) {
-    if (bg.buttonTimerIndex >= 0) {
-        Timer_DeleteTimer(bg.buttonTimerIndex);
-        bg.buttonTimerIndex = -1;
-    }
+    bg.buttonTimerExpires = 0;
     bg.stashedHandler = bg.currentHandler;
     bg.currentHandler = b;
     validateHandlers(bg.currentHandler);
 }
 
 void returnHandler(void) {
-    if (bg.buttonTimerIndex >= 0) {
-        Timer_DeleteTimer(bg.buttonTimerIndex);
-        bg.buttonTimerIndex = -1;
-    }
+    bg.buttonTimerExpires = 0;
     bg.currentHandler = bg.stashedHandler;
     bg.stashedHandler = NULL;
     validateHandlers(bg.currentHandler);
