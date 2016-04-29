@@ -78,6 +78,8 @@ inline void screenOff() {
 
 void uptime(uint32_t param) {
     gv.uptime++;
+    if (buttonTimeout && *buttonTimeout > gv.uptime)
+        buttonTimer(param);
 }
 
 void fire(uint8_t status, uint32_t held) {
