@@ -390,4 +390,5 @@ const Font_Info_t Font_NotoSans_FontInfo = {
 24, /* Width, in pixels, of space character */
 Font_NotoSans_Descriptors,
 Font_NotoSans_Bitmaps,
+3, /* "kerning" */
 };
