@@ -25,6 +25,7 @@
 #include <Battery.h>
 #include <TimerUtils.h>
 #include <Display.h>
+#include <System.h>
 #include <USB_VirtualCOM.h>
 
 #include "button.h"
@@ -78,7 +79,9 @@ inline void screenOff() {
 
 void uptime(uint32_t param) {
     gv.uptime++;
-    if (buttonTimeout && *buttonTimeout > gv.uptime)
+    if (!gv.sleeping && (
+        (buttonTimeout && *buttonTimeout > gv.uptime) || gv.buttonEvent)
+        )
         buttonTimer(param);
 }
 
@@ -184,9 +187,16 @@ int main() {
         g.nextRefresh = gv.uptime + 6;
         Display_SetOn(1);
         updateScreen(&g);
+    } else if (gv.sleeping) {
+        gv.sleeping = 0;
     } else if ((g.screenState < gv.uptime) && !g.charging) {
+        gv.sleeping = 1;
         Display_Clear();
         Display_SetOn(0);
+        Sys_Sleep();
+        Display_SetOn(1);
+        screenOn();
+        updateScreen(&g);
     }
     while(USB_VirtualCOM_GetAvailableSize() > 0) {
         uint8_t C = 0;
