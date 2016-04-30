@@ -28,6 +28,7 @@ struct menuItem {
     char *(*items)[];
     uint16_t startAt; // Might be modified
     uint8_t count;
+    void (*populateCallback)(struct menuItem *this);
     void (*selectCallback)(uint16_t index);
 
     /* EDIT */
