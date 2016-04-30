@@ -177,7 +177,7 @@ void editLeft(uint8_t state, uint32_t duration) {
         state == BUTTON_HELD) {
         MI->editStart -= MI->editStep;
         if (MI->editStart < MI->editMin) {
-            mg->selectIndex = MI->editMin;
+            MI->editStart = MI->editMin;
         } 
     }
 }
@@ -191,7 +191,7 @@ void editRight(uint8_t state, uint32_t duration) {
         state == BUTTON_HELD) {
         MI->editStart += MI->editStep;
         if (MI->editStart > MI->editMax) {
-            mg->selectIndex = MI->editMax;
+            MI->editStart= MI->editMax;
         } 
     }
 }
