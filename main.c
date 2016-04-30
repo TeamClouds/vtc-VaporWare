@@ -75,8 +75,6 @@ inline void screenOff() {
     g.pauseScreenOff = 0;
 }
 
-#define REGISTER_MODE(X) g.vapeModes[X.index] = &X
-
 void uptime(uint32_t param) {
     gv.uptime++;
     if (!gv.sleeping && (
@@ -139,9 +137,17 @@ int main() {
 
     load_settings();
     
+#define REGISTER_MODE(X) g.vapeModes[X.index] = &X
     REGISTER_MODE(variableVoltage);
     REGISTER_MODE(variableWattage);
     REGISTER_MODE(variableTemp);
+
+    struct vapeMode THEMAX = {
+        .name = "\0",
+        .index = MAX_CONTROL,
+    };
+
+    REGISTER_MODE(THEMAX);
 
     setVapeMode(s.mode);
     setVapeMaterial(s.materialIndex);
@@ -183,6 +189,7 @@ int main() {
 
     if (gv.shouldShowMenu) {
         showMenu();
+        gv.shouldShowMenu = 0;
     } else if ((g.nextRefresh < gv.uptime) && ((g.screenState >= gv.uptime) || g.charging)) {
         g.nextRefresh = gv.uptime + 6;
         Display_SetOn(1);
