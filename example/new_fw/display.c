@@ -31,41 +31,16 @@
 
 #include "globals.h"
 #include "helper.h"
+#include "display_helper.h"
 #include "images/battery.h"
 #include "settings.h"
 #include "images/hot.h"
-#include "images/temperature.h"
 #include "images/short.h"
 #include "images/ohm.h"
-#include "images/watts.h"
 
 // NOTES:
 // Evic VTC mini X-MAX = 116
-
-void sleepDisplay(uint32_t counterIndex) {
-}
-
-inline void printNumber(char *buff, uint32_t temperature) {
-    siprintf(buff, "%lu", temperature);
-}
-
-inline void getPercent(char *buff, uint8_t percent) {
-    siprintf(buff, "%d%%", percent);
-}
-
-void getString(char *buff, char *state) {
-    siprintf(buff, "%s", state);
-}
-
-inline void getFloating(char *buff, uint32_t floating) {
-    siprintf(buff, "%lu.%02lu", floating / 1000, floating % 1000 / 10);
-}
-
-inline void getFloatingTenth(char *buff, uint32_t floating) {
-    siprintf(buff, "%lu.%lu", floating / 1000, floating % 1000 / 10);
-}
-
-uint8_t* getBatteryIcon(struct globals *g) {
+uint8_t* getBatteryIcon() {
     switch (Atomizer_GetError()) {
     case WEAK_BATT:
 	    return batteryalert;
@@ -97,7 +72,7 @@ void updateScreen(struct globals *g) {
         // we are charging
         getPercent(buff, g->batteryPercent);
         uint8_t size = strlen(buff);
-    	Display_PutPixels(20, 20, getBatteryIcon(&g), battery_width, battery_height);
+    	Display_PutPixels(20, 20, getBatteryIcon(), battery_width, battery_height);
 
         Display_PutText((DISPLAY_WIDTH/2)-((12*size)/2),
             (DISPLAY_HEIGHT/2)-12, buff, FONT_LARGE);
@@ -106,56 +81,29 @@ void updateScreen(struct globals *g) {
     }
 
     if (atomizerOn) {
-	if (!Display_IsFlipped()) {
-	    Display_Flip();
-	}
+	    if (!Display_IsFlipped()) {
+	        Display_Flip();
+	    }
     } else {
-	if (Display_IsFlipped()) {
-	    Display_Flip();
-	}
+	    if (Display_IsFlipped()) {
+	        Display_Flip();
+	    }
     }
 
     Display_Clear();
 
     Display_PutLine(0, 24, 63, 24);
 
-    switch (g->vapeModes[s.mode]->controlType) {
-    case TEMP_CONTROL:
-        if (atomizerOn) {
-            printNumber(buff, CToDisplay(g->atomInfo.temperature));
-        } else {
-            printNumber(buff, s.displayTemperature);
-        }
-	    Display_PutText(0, 5, buff, FONT_LARGE);
-	    getString(buff, (char *) tempScaleType[s.tempScaleTypeIndex].display);
-	    Display_PutText(48, 2, buff, FONT_DEJAVU_8PT);
-        break;
-    case WATT_CONTROL:
-        getFloatingTenth(buff, g->watts);
-	    Display_PutText(0, 10, buff, FONT_DEJAVU_8PT);
-	    getString(buff, "W");
-	    Display_PutText(48, 2, buff, FONT_DEJAVU_8PT);
-        break;
-    case VOLT_CONTROL:
-        getFloatingTenth(buff, g->volts);
-        Display_PutText(0, 10, buff, FONT_DEJAVU_8PT);
-	    getString(buff, "V");
-	    Display_PutText(48, 2, buff, FONT_DEJAVU_8PT);
-        break;
-    }
-
-	// Material
-	getString(buff, vapeMaterialList[s.materialIndex].name);
-	Display_PutText(48, 15, buff, FONT_DEJAVU_8PT);
+    g->vapeModes[s.mode]->display(atomizerOn);
 
 	// battery
-	Display_PutPixels(0, 34, getBatteryIcon(&g), battery_width, battery_height);
+	Display_PutPixels(0, 40, getBatteryIcon(), battery_width, battery_height);
 
     getPercent(buff, g->batteryPercent);
-    Display_PutText(24, 35, buff, FONT_DEJAVU_8PT);
+    Display_PutText(24, 41, buff, FONT_DEJAVU_8PT);
 
 	getFloating(buff, Battery_GetVoltage());
-	Display_PutText(24, 47, buff, FONT_DEJAVU_8PT);
+	Display_PutText(24, 53, buff, FONT_DEJAVU_8PT);
 
     switch (Atomizer_GetError()) {
     case SHORT:
@@ -163,20 +111,16 @@ void updateScreen(struct globals *g) {
 		Display_PutPixels(20, 75, shortBIT, shortBIT_width, shortBIT_height);
     	break;
     default:
-		Display_PutPixels(0, 60, ohm, ohm_width, ohm_height);
+    	Display_PutPixels(0, 70, ohm, ohm_width, ohm_height);
 
-		if (atomizerOn) {
-		getFloating(buff, g->atomInfo.resistance);
-		} else {
-		getFloating(buff, g->atomInfo.base_resistance);
-		}
-		Display_PutText(24, 68, buff, FONT_DEJAVU_8PT);
+    	if (atomizerOn) {
+    	getFloating(buff, g->atomInfo.resistance);
+    	} else {
+    	getFloating(buff, g->atomInfo.base_resistance);
+    	}
+    	Display_PutText(24, 78, buff, FONT_DEJAVU_8PT);
+        g->vapeModes[s.mode]->bottomDisplay(atomizerOn);
 
-		Display_PutPixels(0, 85, watts, watts_width, watts_height);
-
-		getFloating(buff, g->watts);
-		Display_PutText(24, 90, buff, FONT_DEJAVU_8PT);
-		break;
     }
 
     Display_Update();

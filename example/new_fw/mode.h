@@ -20,6 +20,8 @@ struct vapeMode {
     void (*fire) (void);
     void (*increase) (void);
     void (*decrease) (void);
+    void (*display) (uint8_t atomizerOn);
+    void (*bottomDisplay) (uint8_t atomizerOn);
 };
 
 void getModesByMaterial(uint8_t materialMask, int8_t * modes,
