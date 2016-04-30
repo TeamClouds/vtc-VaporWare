@@ -6,6 +6,7 @@
 enum {
     ACTION,
     SELECT,
+    TOGGLE,
     EDIT,
     LINE,
     SPACE,
@@ -30,6 +31,12 @@ struct menuItem {
     uint8_t count;
     void (*populateCallback)(struct menuItem *this);
     void (*selectCallback)(uint16_t index);
+
+    /* TOGGLE */
+    uint8_t *isSet;
+    char on[5];
+    char off[5];
+    void (*toggleCallback)(uint8_t on);
 
     /* EDIT */
     int32_t editMin;

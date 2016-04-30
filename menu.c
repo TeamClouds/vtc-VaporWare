@@ -51,6 +51,8 @@ struct buttonHandler selectButtonHandler = {
     .right_handler = &selectRight,
 };
 
+void toggleSelect();
+
 void editLeft(uint8_t state, uint32_t duration);
 void editRight(uint8_t state, uint32_t duration);
 void editSelect(uint8_t state, uint32_t duration);
@@ -104,6 +106,10 @@ void menuSelect(uint8_t state, uint32_t duration) {
             doSelectEdit(MI);
             MI->selectCallback(MI->startAt);
             returnHandler();
+            break;
+        case TOGGLE:
+            toggleSelect();
+            MI->toggleCallback(MI->startAt);
             break;
         case EDIT:
             switchHandler(&editButtonHandler);
@@ -168,6 +174,14 @@ void doSelectEdit(struct menuItem *MI) {
     }
 }
 
+void toggleSelect() {
+    uint8_t mIndex = mg->selectIndexToMD[mg->selectIndex];
+    struct menuItem *menuItems = *(mg->MD->menuItems);
+    struct menuItem *MI = &menuItems[mIndex];
+
+    MI->startAt = !MI->startAt;
+}
+
 void editLeft(uint8_t state, uint32_t duration) {
     uint8_t mIndex = mg->selectIndexToMD[mg->selectIndex];
     struct menuItem *menuItems = *(mg->MD->menuItems);
@@ -227,6 +241,7 @@ int drawMenuItem(struct menuItem *MI, uint8_t y, uint8_t x, uint8_t x2, const Fo
     }
     switch(MI->type) {
         case SELECT:
+        case TOGGLE:
             Display_PutText(x2, y + used, (*MI->items)[MI->startAt], font);
             used += rowHeight;
             break;
@@ -249,6 +264,8 @@ int drawMenuItem(struct menuItem *MI, uint8_t y, uint8_t x, uint8_t x2, const Fo
     return used;
 }
 
+char *toggles[2];
+
 void drawMenu() {
     uint8_t menuIndex = 0;
     uint8_t rowStart = 0, colStart = 10, valOffset = 5;
@@ -267,6 +284,15 @@ void drawMenu() {
             MI->populateCallback != NULL &&
             MI->count == 0)
             MI->populateCallback(MI);
+
+        if (MI->type == TOGGLE &&
+            MI->count == 0) {
+            toggles[0] = MI->off;
+            toggles[1] = MI->on;
+            MI->items = &toggles;
+            MI->startAt = !!MI->isSet;
+            MI->count = 2;
+        }
 
         if (menuIndex == mg->selectIndexToMD[mg->selectIndex] && mg->editOpen)
             valOffset = 0;
