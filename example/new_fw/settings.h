@@ -26,7 +26,7 @@ struct settings {
 extern struct settings s;
 
 struct tempScale {
-    const char display[2];
+    char display[2];
     uint32_t max;
     uint32_t min;
     uint32_t def;
@@ -34,12 +34,6 @@ struct tempScale {
 extern struct tempScale tempScaleType[];
 
 int load_settings(void);
-void updateSettings(char *buffer, char *response);
-void dumpSettings(char *buffer, char *response);
-
-void updateAtomizer(char *buffer, char *response);
-void dumpAtomizer(char *buffer, char *response);
-
 void saveSettings();
 
 #endif

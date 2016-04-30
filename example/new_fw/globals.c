@@ -1,6 +1,7 @@
 #include "globals.h"
 #include "settings.h"
 #include "materials.h"
+#include <stdio.h>
 
 struct globals g = { };
 
@@ -30,4 +31,7 @@ struct vapeMaterials vapeMaterialList[] = {
      .name = "SS",
      .tcr = 105,
      },
+     {
+        .name = "\0",
+     }
 };
