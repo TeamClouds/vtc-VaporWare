@@ -1,12 +1,16 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <Atomizer.h>
+#include <Display.h>
+#include <Font.h>
 #include <USB_VirtualCOM.h>
 
 #include "display.h"
 #include "globals.h"
 #include "helper.h"
 #include "settings.h"
+#include "images/watts.h"
+
 
 #define HISTLEN 16
 struct IntPID {
@@ -249,4 +253,28 @@ void tempDown() {
         s.displayTemperature = mT;
 	s.targetTemperature = displayToC(mT);
     }
+}
+
+void tempDisplay(uint8_t atomizerOn) {
+    char buff[9];
+    if (atomizerOn) {
+        printNumber(buff, CToDisplay(g.atomInfo.temperature));
+    } else {
+        printNumber(buff, s.displayTemperature);
+    }
+    Display_PutText(0, 5, buff, FONT_LARGE);
+    getString(buff, (char *) tempScaleType[s.tempScaleTypeIndex].display);
+    Display_PutText(48, 2, buff, FONT_DEJAVU_8PT);
+
+	// Material
+	getString(buff, vapeMaterialList[s.materialIndex].name);
+	Display_PutText(48, 15, buff, FONT_DEJAVU_8PT);
+}
+
+void tempBottomDisplay(uint8_t atomizerOn) {
+    char buff[9];
+	Display_PutPixels(0, 100, watts, watts_width, watts_height);
+
+	getFloating(buff, g.watts);
+	Display_PutText(24, 107, buff, FONT_DEJAVU_8PT);
 }

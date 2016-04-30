@@ -1,9 +1,13 @@
 #include <stdint.h>
+
 #include <Atomizer.h>
+#include <Display.h>
+#include <Font.h>
 
 #include "display.h"
 #include "globals.h"
 #include "helper.h"
+#include "images/temperature.h"
 
 void wattInit() {
 	// set this initial value because we may be switching
@@ -75,4 +79,20 @@ void wattDown() {
 	g.watts -= 100;
 	g.volts = wattsToVolts(g.watts, g.atomInfo.resistance);
     }
+}
+
+void wattDisplay(uint8_t atomizerOn) {
+    char buff[9];
+	getFloatingTenth(buff, g.watts);
+	Display_PutText(0, 5, buff, FONT_LARGE);
+	getString(buff, "W");
+	Display_PutText(48, 2, buff, FONT_DEJAVU_8PT);
+}
+
+void wattBottomDisplay(uint8_t atomizerOn) {
+    char buff[9];
+	Display_PutPixels(0, 100, tempImage, tempImage_width, tempImage_height);
+
+	printNumber(buff, CToDisplay(g.atomInfo.temperature));
+	Display_PutText(24, 107, buff, FONT_DEJAVU_8PT);
 }
