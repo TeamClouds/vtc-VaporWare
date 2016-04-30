@@ -263,6 +263,11 @@ void drawMenu() {
     Display_Clear();
 
     while ((MI = &menuItems[menuIndex])->type != END) {
+        if (MI->type == SELECT && 
+            MI->populateCallback != NULL &&
+            MI->count == 0)
+            MI->populateCallback(MI);
+
         if (menuIndex == mg->selectIndexToMD[mg->selectIndex] && mg->editOpen)
             valOffset = 0;
         else
