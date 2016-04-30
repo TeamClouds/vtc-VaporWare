@@ -41,7 +41,7 @@ struct menuItem {
     /* EDIT */
     int32_t editMin;
     int32_t editMax;
-    int32_t editStart; // Might be modified
+    int32_t *editStart; // Might be modified
     int32_t editStep;
     void (*editFormat)(int32_t value, char *formatted);
     void (*editCallback)(int32_t);
