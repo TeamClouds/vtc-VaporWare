@@ -134,6 +134,61 @@ void reboot() {
     SYS_ResetChip();
 }
 
+void invertSet(uint8_t a){
+	s.invertDisplay = a;
+    Display_SetInverted(s.invertDisplay);
+}
+
+void flipSet(uint8_t a) {
+	s.flipOnVape = a;
+}
+
+struct menuItem displaySubMenuItems[] = {
+	{
+	    .type = SELECT,
+	    .label = "Scale",
+	    /* .items = assigned before calling */
+	    /* .startAt assinged before calling */
+	    /* .count = assigned before calling */
+	    .populateCallback = &populateScales,
+	    .selectCallback = &updateScale,
+	},
+	{
+	    .type = TOGGLE,
+	    .label = "FlipVape",
+	    .on = "On",
+	    .off = "Off",
+	    .isSet = &s.flipOnVape,
+	    .toggleCallback = &flipSet,
+	},
+	{
+	    .type = TOGGLE,
+	    .label = "Invert",
+	    .on = "On",
+	    .off = "Off",
+	    .isSet = &s.invertDisplay,
+	    .toggleCallback = &invertSet,
+	},
+    {
+        .type = EXITMENU,
+        .label = "Exit",
+    },
+    {
+        .type = END,
+    }
+};
+
+struct menuDefinition displaySettingsMenu = {
+    .name = "Display Settings",
+    .font = FONT_DEJAVU_8PT,
+    .cursor = "*",
+    .prev_sel = "<",
+    .next_sel = ">",
+    .less_sel = "-",
+    .more_sel = "+",
+    .menuItems = &displaySubMenuItems,
+};
+
 struct menuItem settingsMenuItems[] = {
     {
         .type = SELECT,
@@ -161,15 +216,11 @@ struct menuItem settingsMenuItems[] = {
         .type = SPACE,
         .rows = 2,
     },
-    {
-        .type = SELECT,
-        .label = "Scale",
-        /* .items = assigned before calling */
-        /* .startAt assinged before calling */
-        /* .count = assigned before calling */
-        .populateCallback = &populateScales,
-        .selectCallback = &updateScale,
-    },
+	{
+		.type = SUBMENU,
+		.label = "Display",
+		.subMenu = &displaySettingsMenu,
+	},
     {
         .type = LINE,
     },
@@ -211,7 +262,8 @@ int load_settings(void) {
     // Should become part of globals instead of settings
     s.dumpPids = 0;
     readSettings();
-
+    s.flipOnVape = 0;
+    s.invertDisplay = 0;
     return 1;
 }
 
