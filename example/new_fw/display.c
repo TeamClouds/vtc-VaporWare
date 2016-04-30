@@ -59,12 +59,6 @@ uint8_t* getBatteryIcon() {
 
 void updateScreen(struct globals *g) {
     char buff[9];
-    uint8_t atomizerOn = Atomizer_IsOn();
-
-    if (!atomizerOn) {
-	    g->batteryPercent = Battery_VoltageToPercent(
-            Battery_IsPresent()? Battery_GetVoltage() : 0);
-    }
 
     if (g->charging && !g->pauseScreenOff && (g->screenState < gv.uptime)) {
         Display_Clear();
@@ -80,14 +74,25 @@ void updateScreen(struct globals *g) {
         return;
     }
 
-    if (atomizerOn) {
-	    if (!Display_IsFlipped()) {
-	        Display_Flip();
-	    }
-    } else {
-	    if (Display_IsFlipped()) {
-	        Display_Flip();
-	    }
+    uint8_t atomizerOn = Atomizer_IsOn();
+
+    if (!atomizerOn) {
+	    g->batteryPercent = Battery_VoltageToPercent(
+            Battery_IsPresent()? Battery_GetVoltage() : 0);
+    }
+
+    Display_SetInverted(s.invertDisplay);
+
+    if (s.flipOnVape) {
+        if (atomizerOn) {
+	        if (!Display_IsFlipped()) {
+	            Display_Flip();
+	        }
+        } else {
+	        if (Display_IsFlipped()) {
+	            Display_Flip();
+	        }
+        }
     }
 
     Display_Clear();

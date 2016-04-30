@@ -18,6 +18,8 @@ struct settings {
     int32_t pidSwitch;
     uint8_t dumpPids;
     uint8_t tunePids;
+    uint8_t invertDisplay;
+    uint8_t flipOnVape;
 };
 
 extern struct settings s;
