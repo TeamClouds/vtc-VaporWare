@@ -44,18 +44,61 @@ void saveDefaultSettings();
 
 char *typeIdString[MAXOPTIONS];
 int typeIdMapping[MAXOPTIONS];
+
+void populateTypes(struct menuItem *MI) {
+    uint8_t index = 0;
+    struct vapeMaterials *VM;
+    while ((VM = &vapeMaterialList[index])->name[0] != '\0') {
+        typeIdString[index] = VM->name;
+        typeIdMapping[index] = index;
+        index++;
+    }
+    MI->items = &typeIdString;
+    MI->count = index;
+    MI->startAt = s.materialIndex;
+}
+
 void updateType(uint16_t index) {
     setVapeMaterial(index);
 }
 
 char *modeIdString[MAXOPTIONS];
 int modeIdMapping[MAXOPTIONS];
+
+void populateModes(struct menuItem *MI) {
+    uint8_t index = 0;
+    struct vapeMode *VPM;
+    while ((VPM = g.vapeModes[index])->name[0] != '\0') {
+        modeIdString[index] = VPM->name;
+        modeIdMapping[index] = VPM->index;
+        index++;
+    }
+    MI->items = &modeIdString;
+    MI->count = index;
+    MI->startAt = s.mode;
+}
+
 void updateMode(uint16_t index) {
     setVapeMode(index);
 }
 
 char *scaleIdString[MAXOPTIONS];
 int scaleIdMapping[MAXOPTIONS];
+
+void populateScales(struct menuItem *MI) {
+    uint8_t index = 0;
+    struct tempScale *TS;
+    index = 0;
+    while ((TS = &tempScaleType[index])->display[0] != '\0') {
+        scaleIdString[index] = TS->display;
+        scaleIdMapping[index] = index;
+        index++;
+    }
+    MI->items = &scaleIdString;
+    MI->count = index;
+    MI->startAt = s.tempScaleTypeIndex;
+}
+
 void updateScale(uint16_t index) {
     s.tempScaleTypeIndex = index;
 }
@@ -97,6 +140,7 @@ struct menuItem settingsMenuItems[] = {
         /* .items = assigned before calling */
         /* .startAt assinged before calling */
         /* .count = assigned before calling */
+        .populateCallback = &populateTypes,
         .selectCallback = &updateType,
     },
     {
@@ -109,6 +153,7 @@ struct menuItem settingsMenuItems[] = {
         /* .items = assigned before calling */
         /* .startAt assinged before calling */
         /* .count = assigned before calling */
+        .populateCallback = &populateModes,
         .selectCallback = &updateMode,
     },
     {
@@ -121,6 +166,7 @@ struct menuItem settingsMenuItems[] = {
         /* .items = assigned before calling */
         /* .startAt assinged before calling */
         /* .count = assigned before calling */
+        .populateCallback = &populateScales,
         .selectCallback = &updateScale,
     },
     {
@@ -178,40 +224,5 @@ int load_settings(void) {
 
 
 void showMenu() {
-    uint8_t index = 0;
-    struct vapeMaterials *VM;
-    struct vapeMode *VPM;
-    struct tempScale *TS;
-
-    while ((VM = &vapeMaterialList[index])->name[0] != '\0') {
-        typeIdString[index] = VM->name;
-        typeIdMapping[index] = index;
-        index++;
-    }
-    settingsMenuItems[0].items = &typeIdString;
-    settingsMenuItems[0].count = index;
-    settingsMenuItems[0].startAt = s.materialIndex;
-
-    /* TODO: add logic here to filter modes based on material */
-    index = 0;
-    while ((VPM = g.vapeModes[index])->name[0] != '\0') {
-        modeIdString[index] = VPM->name;
-        modeIdMapping[index] = VPM->index;
-        index++;
-    }
-    settingsMenuItems[2].items = &modeIdString;
-    settingsMenuItems[2].count = index;
-    settingsMenuItems[2].startAt = s.mode;
-
-    index = 0;
-    while ((TS = &tempScaleType[index])->display[0] != '\0') {
-        scaleIdString[index] = TS->display;
-        scaleIdMapping[index] = index;
-        index++;
-    }
-    settingsMenuItems[4].items = &scaleIdString;
-    settingsMenuItems[4].count = index;
-    settingsMenuItems[4].startAt = s.tempScaleTypeIndex;
-
     runMenu(&settingsMenu);
 }
