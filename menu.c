@@ -263,7 +263,7 @@ void drawMenu() {
     Display_Clear();
 
     while ((MI = &menuItems[menuIndex])->type != END) {
-        if (menuIndex == mg->selectIndex && mg->editOpen)
+        if (menuIndex == mg->selectIndexToMD[mg->selectIndex] && mg->editOpen)
             valOffset = 0;
         else
             valOffset = 5;
@@ -334,9 +334,7 @@ void runMenu(struct menuDefinition *menuDef) {
     mg->selectIndex = 0;
     mg->menuOpen = 1;
     mg->MD = menuDef;
-
     switchHandler(&menuButtonHandler);
-    
     while (mg->menuOpen) {
         if (gv.buttonEvent) {
             handleButtonEvents();
