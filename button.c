@@ -262,6 +262,7 @@ void cleanupVariables() {
     bg.rightNext = 0;
 
     bg.buttonTimerExpires = 0;
+    gv.buttonEvent = 0;
 }
 
 void validateHandlers(struct buttonHandler *b) {
