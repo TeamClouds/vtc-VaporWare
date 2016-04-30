@@ -97,6 +97,8 @@ void updateScreen(struct globals *g) {
         // we are charging
         getPercent(buff, g->batteryPercent);
         uint8_t size = strlen(buff);
+    	Display_PutPixels(20, 20, getBatteryIcon(&g), battery_width, battery_height);
+
         Display_PutText((DISPLAY_WIDTH/2)-((12*size)/2),
             (DISPLAY_HEIGHT/2)-12, buff, FONT_LARGE);
         Display_Update();
@@ -170,11 +172,10 @@ void updateScreen(struct globals *g) {
 		}
 		Display_PutText(24, 68, buff, FONT_DEJAVU_8PT);
 
-		getString(buff, "W");
-		Display_PutText(0, 90, buff, FONT_LARGE);
+		Display_PutPixels(0, 85, watts, watts_width, watts_height);
 
 		getFloating(buff, g->watts);
-		Display_PutText(24, 94, buff, FONT_DEJAVU_8PT);
+		Display_PutText(24, 90, buff, FONT_DEJAVU_8PT);
 		break;
     }
 

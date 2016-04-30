@@ -30,17 +30,17 @@ extern "C" {
 /**
  * Character bitmaps for DejaVu Sans Mono 8pt.
  */
-extern const uint8_t Font_NotoSans_Bitmaps[];
+extern const uint8_t Font_NotoMono_Bitmaps[];
 
 /**
  * Character descriptors for DejaVu Sans Mono 8pt.
  */
-extern const Font_CharInfo_t Font_NotoSans_Descriptors[];
+extern const Font_CharInfo_t Font_NotoMono_Descriptors[];
 
 /**
  * Font information for DejaVu Sans Mono 8pt.
  */
-extern const Font_Info_t Font_NotoSans_FontInfo;
+extern const Font_Info_t Font_NotoMono_FontInfo;
 
 #ifdef __cplusplus
 }
