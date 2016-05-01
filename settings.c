@@ -220,7 +220,7 @@ struct menuItem advancedMenuItems[] = {
     },
     {
         .type = EXITMENU,
-        .label = "Exit",
+        .label = "Back",
     },
     {
         .type = END,
