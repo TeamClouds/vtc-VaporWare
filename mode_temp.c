@@ -29,10 +29,38 @@ struct IntPID {
 } I = {
 };
 
+void updateInitWatts(int32_t newWatts) {
+	s.initWatts = newWatts;
+}
+
+void formatWatts(int32_t value, char *formatted) {
+    siprintf(formatted, "%lu.%02lu", value / 1000, value % 1000 / 10);
+}
+
 struct menuItem tempSettingsOptions[] = {
     {
+	    .type = EDIT,
+		.label = "Watts",
+		.editMin = 0,
+		.editMax = 60000,
+		.editStart = &s.initWatts,
+		.editCallback = &updateInitWatts,
+		.editStep = 100,
+		.editFormat = &formatWatts
+    },
+    {
+        .type = STARTBOTTOM,
+    },
+    {
+        .type = LINE,
+    },
+    {
+        .type = SPACE,
+        .rows = 8,
+    },
+    {
         .type = EXITMENU,
-        .label = "temp",
+        .label = "Back",
     },
     {
         .type = END,
@@ -297,6 +325,10 @@ void tempBottomDisplay(uint8_t atomizerOn) {
     char buff[9];
 	Display_PutPixels(0, 100, watts, watts_width, watts_height);
 
-	getFloating(buff, g.watts);
+	if (atomizerOn) {
+	    getFloating(buff, g.watts);
+	} else {
+		getFloating(buff, s.initWatts);
+	}
 	Display_PutText(26, 105, buff, FONT_MEDIUM);
 }

@@ -9,26 +9,6 @@
 #include "helper.h"
 #include "images/temperature.h"
 
-struct menuItem voltSettingsOptions[] = {
-    {
-        .type = EXITMENU,
-        .label = "Exit Volt",
-    },
-    {
-        .type = END,
-    }
-};
-
-struct menuDefinition voltSettings = {
-    .name = "Display Settings",
-    .font = FONT_SMALL,
-    .cursor = "*",
-    .prev_sel = "<",
-    .next_sel = ">",
-    .less_sel = "-",
-    .more_sel = "+",
-    .menuItems = &voltSettingsOptions,
-};
 
 void voltInit() {
 	// set this initial value because we may be switching

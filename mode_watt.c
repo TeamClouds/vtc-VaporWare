@@ -9,27 +9,6 @@
 #include "helper.h"
 #include "images/temperature.h"
 
-struct menuItem wattSettingsOptions[] = {
-    {
-        .type = EXITMENU,
-        .label = "watt",
-    },
-    {
-        .type = END,
-    }
-};
-
-struct menuDefinition wattSettings = {
-    .name = "Display Settings",
-    .font = FONT_SMALL,
-    .cursor = "*",
-    .prev_sel = "<",
-    .next_sel = ">",
-    .less_sel = "-",
-    .more_sel = "+",
-    .menuItems = &wattSettingsOptions,
-};
-
 void wattInit() {
 	// set this initial value because we may be switching
 	// from another mode that changes our watts.
