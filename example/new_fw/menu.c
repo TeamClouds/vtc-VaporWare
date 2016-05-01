@@ -66,7 +66,6 @@ struct buttonHandler editButtonHandler = {
 };
 
 void menuLeft(uint8_t state, uint32_t duration) {
-    
     if (state == BUTTON_REL) {
         if (mg->selectIndex - 1 < 0) {
             mg->selectIndex = mg->menuItemCount - 1;
@@ -227,34 +226,23 @@ void doEditEdit(struct menuItem *MI){
     }
 }
 
-int drawMenuItem(struct menuItem *MI, uint8_t y, uint8_t x, uint8_t x2, const Font_Info_t *font) {
-    char buff[63];
+int8_t getItemHeight(struct menuItem *MI, const Font_Info_t *font) {
     uint8_t rowHeight = font->height;
-    
-
     int used = 0;
     if (MI->type != LINE &&
         MI->type != STARTBOTTOM &&
         MI->type != SPACE &&
-        MI->type != END) {
-        
-        Display_PutText(x, y + used, MI->label, font);
+        MI->type != END)
         used += rowHeight;
-    }
+
     switch(MI->type) {
         case SELECT:
         case TOGGLE:
-            Display_PutText(x2, y + used, (*MI->items)[MI->startAt], font);
-            used += rowHeight;
-            break;
         case EDIT:
-            MI->editFormat(*MI->editStart, buff);
-            Display_PutText(x2, y + used, buff, font);
             used += rowHeight;
             break;
         case LINE:
-            Display_PutLine(0, y + used, 63, y + used);
-            used += rowHeight;
+            used += 1;
             break;
         case SPACE:
             used += MI->rows;
@@ -264,6 +252,38 @@ int drawMenuItem(struct menuItem *MI, uint8_t y, uint8_t x, uint8_t x2, const Fo
             break;
     }
     return used;
+}
+
+void drawMenuItem(struct menuItem *MI, uint8_t y, uint8_t x, uint8_t x2, const Font_Info_t *font) {
+    char buff[63];
+    uint8_t rowHeight = font->height;
+    int used = 0;
+
+    if (MI->type != LINE &&
+        MI->type != STARTBOTTOM &&
+        MI->type != SPACE &&
+        MI->type != END) {
+        Display_PutText(x, y + used, MI->label, font);
+        used += rowHeight;
+    }
+    switch(MI->type) {
+        case SELECT:
+        case TOGGLE:
+            Display_PutText(x2, y + used, (*MI->items)[MI->startAt], font);
+            break;
+        case EDIT:
+            MI->editFormat(*MI->editStart, buff);
+            Display_PutText(x2, y + used, buff, font);
+            break;
+        case LINE:
+            Display_PutLine(0, y + used, 63, y + used);
+            break;
+        case SPACE:
+            break;
+
+        default:
+            break;
+    }
 }
 
 char *toggles[2];
@@ -303,8 +323,7 @@ void drawMenu() {
 
         if (!findEnd && (MI->hidden == NULL || !MI->hidden())) {
             if (MI->type != STARTBOTTOM) {
-                mg->ItemOffsets[mg->menuItemCount] = rowStart;
-                rowStart += drawMenuItem(MI, rowStart, colStart, colStart + valOffset, mg->MD->font);
+                drawMenuItem(MI, rowStart, colStart, colStart + valOffset, mg->MD->font);
             } else {
                 findEnd = 1;
             }
@@ -315,33 +334,36 @@ void drawMenu() {
                 MI->type != SPACE &&
                 MI->type != END) {
                 mg->selectIndexToMD[mg->menuItemCount] = menuIndex;
+                mg->ItemOffsets[mg->menuItemCount] = rowStart;
                 mg->menuItemCount++;
             }
+            rowStart += getItemHeight(MI, mg->MD->font);
         }
-        
+
         menuIndex++;
     }
-
+    menuIndex--; // Eat the end
     if (findEnd) {
         uint8_t negFind = 0;
-        rowStart = 120 - rowHeight;
+        rowStart = 128; // Bottom of screen
         while ((MI = &menuItems[menuIndex])->type != STARTBOTTOM) {
-            if (menuIndex == mg->selectIndex && mg->editOpen)
+            
+            if (menuIndex == mg->selectIndexToMD[mg->selectIndex] && mg->editOpen)
                 valOffset = 0;
             else
                 valOffset = 5;
 
-            if (MI->type != LINE &&
-                MI->type != STARTBOTTOM &&
-                MI->type != SPACE &&
-                MI->type != END) {
-                negFind++;
-                mg->selectIndexToMD[mg->menuItemCount - negFind] = menuIndex;
-            }
-
             if (MI->hidden == NULL || !MI->hidden()) {
-                mg->ItemOffsets[mg->menuItemCount - negFind] = rowStart;
-                rowStart -= drawMenuItem(MI, rowStart, colStart, colStart + valOffset, mg->MD->font);
+                rowStart -= getItemHeight(MI, mg->MD->font);
+                drawMenuItem(MI, rowStart, colStart, colStart + valOffset, mg->MD->font);
+
+                if (MI->type != LINE &&
+                    MI->type != STARTBOTTOM &&
+                    MI->type != SPACE &&
+                    MI->type != END) {
+                    mg->ItemOffsets[mg->menuItemCount - negFind - 1] = rowStart;
+                    negFind++;
+                }
             }
             menuIndex--;
         }
