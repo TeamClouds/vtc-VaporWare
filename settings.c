@@ -200,7 +200,7 @@ void showModeSettings(struct menuItem *MI) {
 }
 
 int shouldHideMenu() {
-	return 1;
+	return g.vapeModes[s.mode]->vapeModeMenu == NULL;
 }
 
 struct menuItem advancedMenuItems[] = {
@@ -261,12 +261,12 @@ struct menuItem settingsMenuItems[] = {
 		.type = SUBMENU,
 		.label = "Mode Settings",
 		.getMenuDef = &showModeSettings,
+		.hidden = &shouldHideMenu,
 	},
 	{
 		.type = SUBMENU,
 		.label = "Display",
 		.subMenu = &displaySettingsMenu,
-		.hidden = &shouldHideMenu,
 	},
     {
         .type = SPACE,
