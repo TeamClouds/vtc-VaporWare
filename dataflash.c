@@ -13,9 +13,9 @@ void DFSettingsToGlobals(struct baseSettings_1 *b, struct freqSettings_1 *f, uin
     CR(s.targetTemperature, f->targetTemperature,0,600);
     CR(s.materialIndex, b->materialIndex, 0,4);
     CR(s.tempScaleTypeIndex, b->tempScaleTypeIndex,0,2);
-    CR(s.pidP, b->pidP, -0xFFFF, 0xFFFF);
-    CR(s.pidI, b->pidI, -0xFFFF, 0xFFFF);
-    CR(s.pidD, b->pidD, -0xFFFF, 0xFFFF);
+    CR(s.pidP, b->pidP, 0, 0xFFFF);
+    CR(s.pidI, b->pidI, 0, 0xFFFF);
+    CR(s.pidD, b->pidD, 0, 0xFFFF);
     CR(s.initWatts, b->initWatts,0, 60000);
     CR(s.pidSwitch, b->pidSwitch,0, 600);
 }
