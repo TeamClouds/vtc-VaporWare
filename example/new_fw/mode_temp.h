@@ -7,6 +7,7 @@ void tempUp(void);
 void tempDown(void);
 void tempDisplay(uint8_t atomizerOn);
 void tempBottomDisplay(uint8_t atomizerOn);
+void showTempMenu();
 
 struct vapeMode variableTemp = {
     .index = 2,
@@ -20,5 +21,6 @@ struct vapeMode variableTemp = {
     .maxSetting = 600,
 	.display = &tempDisplay,
 	.bottomDisplay = &tempBottomDisplay,
+	.settings = &showTempMenu,
 };
 #endif

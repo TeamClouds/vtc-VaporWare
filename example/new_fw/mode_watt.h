@@ -7,6 +7,7 @@ void wattUp(void);
 void wattDown(void);
 void wattDisplay(uint8_t atomizerOn);
 void wattBottomDisplay(uint8_t atomizerOn);
+void showWattSettings();
 
 struct vapeMode variableWattage = {
     .index = 0,
@@ -20,5 +21,6 @@ struct vapeMode variableWattage = {
     .maxSetting = 75000,
 	.display = &wattDisplay,
 	.bottomDisplay = &wattBottomDisplay,
+	.settings = showWattSettings,
 };
 #endif
