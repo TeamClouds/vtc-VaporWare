@@ -24,7 +24,7 @@ struct vapeMode {
     void (*decrease) (void);
     void (*display) (uint8_t atomizerOn);
     void (*bottomDisplay) (uint8_t atomizerOn);
-    void (*settings) (void);
+    struct menuDefinition *vapeModeMenu;
 };
 
 void getModesByMaterial(uint8_t materialMask, int8_t * modes,

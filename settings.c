@@ -189,8 +189,8 @@ struct menuDefinition displaySettingsMenu = {
     .menuItems = &displaySubMenuItems,
 };
 
-void showModeSettings() {
-	g.vapeModes[s.mode]->settings();
+void showModeSettings(struct menuItem *MI) {
+	MI->subMenu = &(*g.vapeModes[s.mode]->vapeModeMenu);
 }
 
 struct menuItem settingsMenuItems[] = {
@@ -221,9 +221,9 @@ struct menuItem settingsMenuItems[] = {
         .rows = 2,
     },
 	{
-		.type = ACTION,
+		.type = SUBMENU,
 		.label = "Mode Settings",
-		.actionCallback = &showModeSettings,
+		.getMenuDef = &showModeSettings,
 	},
     {
         .type = SPACE,
