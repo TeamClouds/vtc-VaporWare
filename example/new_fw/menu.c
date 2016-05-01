@@ -301,7 +301,7 @@ void drawMenu() {
         else
             valOffset = 5;
 
-        if (!findEnd || (MI->hidden != NULL && !MI->hidden())) {
+        if (!findEnd && (MI->hidden == NULL || !MI->hidden())) {
             if (MI->type != STARTBOTTOM) {
                 mg->ItemOffsets[mg->menuItemCount] = rowStart;
                 rowStart += drawMenuItem(MI, rowStart, colStart, colStart + valOffset, mg->MD->font);
@@ -337,7 +337,7 @@ void drawMenu() {
                 mg->selectIndexToMD[mg->menuItemCount - negFind] = menuIndex;
             }
 
-            if (!(MI->hidden != NULL && MI->hidden())) {
+            if (MI->hidden == NULL || !MI->hidden()) {
                 mg->ItemOffsets[mg->menuItemCount - negFind] = rowStart;
                 rowStart -= drawMenuItem(MI, rowStart, colStart, colStart + valOffset, mg->MD->font);
             }
