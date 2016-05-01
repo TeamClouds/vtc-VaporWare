@@ -3,9 +3,44 @@
 
 #include <stdint.h>
 
+/*
+
+    I cannot express the importance of knowing what you're
+    doing when you change these values.  If you alter these
+    struct, or the values below, and don't get it right, bad
+    bad bad things will happen.
+
+    If you've forked another rom off of this and reach the
+    point that you're changing this stuff, PLEASE incriment
+    one of the LEFT 24 BITS.  I will maintain a list of known
+    prefixes here:
+
+    0x001xxx - Team Clouds
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  */
+
+
+
 // 24-bit structure magic number. Upper 8 bits must be zero.
+// NEVER CHANGE THIS NUMBER UNLESS YOU'RE FORKING A NEW ROM,
+// and if you are, only  vvv  <~Those are the bytes to change
 #define MYSTRUCT_MAGIC 0x001000
 // 2nd set of magic for stuff that changes all the time.
+// NEVER CHANGE THIS NUMBER
 #define MYSTRUCT_FREQ_MAGIC 0x500
 
 #define BASE_VER 1
