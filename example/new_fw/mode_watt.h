@@ -22,6 +22,5 @@ struct vapeMode variableWattage = {
     .maxSetting = 75000,
 	.display = &wattDisplay,
 	.bottomDisplay = &wattBottomDisplay,
-	.vapeModeMenu = &wattSettings,
 };
 #endif

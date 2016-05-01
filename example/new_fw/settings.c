@@ -193,6 +193,10 @@ void showModeSettings(struct menuItem *MI) {
 	MI->subMenu = &(*g.vapeModes[s.mode]->vapeModeMenu);
 }
 
+int shouldShowMenu() {
+	return false;
+}
+
 struct menuItem settingsMenuItems[] = {
     {
         .type = SELECT,
@@ -204,10 +208,6 @@ struct menuItem settingsMenuItems[] = {
         .selectCallback = &updateType,
     },
     {
-        .type = SPACE,
-        .rows = 2,
-    },
-    {
         .type = SELECT,
         .label = "Mode",
         /* .items = assigned before calling */
@@ -216,24 +216,21 @@ struct menuItem settingsMenuItems[] = {
         .populateCallback = &populateModes,
         .selectCallback = &updateMode,
     },
-    {
-        .type = SPACE,
-        .rows = 2,
-    },
 	{
 		.type = SUBMENU,
 		.label = "Mode Settings",
 		.getMenuDef = &showModeSettings,
 	},
-    {
-        .type = SPACE,
-        .rows = 2,
-    },
 	{
 		.type = SUBMENU,
 		.label = "Display",
 		.subMenu = &displaySettingsMenu,
+		.hidden = &shouldShowMenu,
 	},
+    {
+        .type = SPACE,
+        .rows = 1,
+    },
     {
         .type = LINE,
     },
