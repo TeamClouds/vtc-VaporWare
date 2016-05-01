@@ -1,12 +1,9 @@
 #ifndef __SETTINGS_H
 #define __SETTINGS_H
 
-// 24-bit structure magic number. Upper 8 bits must be zero.
-#define MYSTRUCT_MAGIC 0x001000
+
 
 struct settings {
-	uint32_t magic;
-	uint32_t size;
     uint8_t fromRom;
     uint8_t mode;
     uint16_t screenTimeout;

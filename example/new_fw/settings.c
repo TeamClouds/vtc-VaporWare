@@ -32,6 +32,7 @@
 #include <SysInfo.h>
 
 #include "button.h"
+#include "dataflash.h"
 #include "display.h"
 #include "globals.h"
 #include "helper.h"
@@ -207,22 +208,15 @@ struct menuDefinition settingsMenu = {
 
 int load_settings(void) {
     s.fromRom = 0;
-    s.mode = 2;
-    s.screenTimeout = 30;   // 100s of s
-    s.materialIndex = 1;
-    s.tempScaleTypeIndex = 1;
-    s.displayTemperature = tempScaleType[s.tempScaleTypeIndex].def;
-    s.targetTemperature = displayToC(s.displayTemperature);
-    s.pidP = 17000;
-    s.pidI = 5500;
-    s.pidD = 0;
-    s.initWatts = 15000;
-    s.pidSwitch = 600;
+    // Should become part of globals instead of settings
     s.dumpPids = 0;
+    readSettings();
+
     return 1;
 }
 
 
 void showMenu() {
     runMenu(&settingsMenu);
+    writeSettings();
 }
