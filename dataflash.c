@@ -4,19 +4,20 @@
 #include "helper.h"
 #include "settings.h"
 
+#define CR(A,B,C,D) if(B >= C && B <= D) A = B
 void DFSettingsToGlobals(struct baseSettings_1 *b, struct freqSettings_1 *f, uint8_t isDef) {
     s.fromRom = isDef;
-    s.mode = f->mode;
-    s.screenTimeout = b->screenTimeout;
-    s.displayTemperature = f->displayTemperature;
-    s.targetTemperature = f->targetTemperature;
-    s.materialIndex = b->materialIndex;
-    s.tempScaleTypeIndex = b->tempScaleTypeIndex;
-    s.pidP = b->pidP;
-    s.pidI = b->pidI;
-    s.pidD = b->pidD;
-    s.initWatts = b->initWatts;
-    s.pidSwitch = b->pidSwitch;
+    CR(s.mode, f->mode, 0, 2);
+    CR(s.screenTimeout, b->screenTimeout, 1, 1000);
+    CR(s.displayTemperature, f->displayTemperature, 0, 600);
+    CR(s.targetTemperature, f->targetTemperature,0,600);
+    CR(s.materialIndex, b->materialIndex, 0,4);
+    CR(s.tempScaleTypeIndex, b->tempScaleTypeIndex,0,2);
+    CR(s.pidP, b->pidP, -0xFFFF, 0xFFFF);
+    CR(s.pidI, b->pidI, -0xFFFF, 0xFFFF);
+    CR(s.pidD, b->pidD, -0xFFFF, 0xFFFF);
+    CR(s.initWatts, b->initWatts,0, 60000);
+    CR(s.pidSwitch, b->pidSwitch,0, 600);
 }
 
 void globalsToDFSettings(struct baseSettings_1 *b, struct freqSettings_1 *f) {
@@ -77,7 +78,10 @@ Dataflash_StructInfo_t freq_structInfo_v1 = {
 
 int readSettings() {
     struct baseSettings_1 base_v1 = {};
+    default_base(&base_v1);
+
     struct freqSettings_1 freq_v1 = {};
+    default_freq(&freq_v1);
 
 #define CURBASESTR base_v1
 #define CURFREQSTR freq_v1
