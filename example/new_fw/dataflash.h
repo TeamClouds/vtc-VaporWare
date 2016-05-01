@@ -7,12 +7,15 @@
 #define MYSTRUCT_MAGIC 0x001000
 // 2nd set of magic for stuff that changes all the time.
 #define MYSTRUCT_FREQ_MAGIC 0x500
+
+#define BASE_VER 1
+#define FREQ_VER 1
 /*
  * NEVER EVER CHANGE THESE.  If something needs changed, copy/paste, re-name
  * and add an upgrade path.  
  */
 
-#define SETTINGS_V1 (MYSTRUCT_MAGIC + 0x0)
+#define SETTINGS_V1 (MYSTRUCT_MAGIC + BASE_VER)
 #define SETTINGS_MAX SETTINGS_V1
 #define SETTINGS_VCNT (SETTINGS_MAX - MYSTRUCT_MAGIC + 1)
 struct baseSettings_1 {
@@ -26,7 +29,7 @@ struct baseSettings_1 {
     uint8_t tempScaleTypeIndex;
 };
 
-#define FREQ_SETTINGS_V1 (MYSTRUCT_MAGIC + MYSTRUCT_FREQ_MAGIC + 0x0)
+#define FREQ_SETTINGS_V1 (MYSTRUCT_MAGIC + MYSTRUCT_FREQ_MAGIC + FREQ_VER)
 #define FREQ_SETTINGS_MAX FREQ_SETTINGS_V1
 #define FREQ_SETTINGS_VCNT (FREQ_SETTINGS_MAX - MYSTRUCT_MAGIC - MYSTRUCT_FREQ_MAGIC + 1)
 struct freqSettings_1 {
