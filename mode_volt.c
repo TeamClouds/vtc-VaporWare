@@ -2,9 +2,9 @@
 
 #include <Atomizer.h>
 #include <Display.h>
-#include <Font.h>
 
 #include "display.h"
+#include "font/font_vaporware.h"
 #include "globals.h"
 #include "helper.h"
 #include "images/temperature.h"
@@ -66,7 +66,7 @@ void voltDisplay(uint8_t atomizerOn) {
 	getFloatingTenth(buff, g.volts);
 	Display_PutText(0, 5, buff, FONT_LARGE);
 	getString(buff, "V");
-	Display_PutText(48, 2, buff, FONT_DEJAVU_8PT);
+	Display_PutText(48, 2, buff, FONT_SMALL);
 }
 
 void voltBottomDisplay(uint8_t atomizerOn) {
@@ -74,5 +74,5 @@ void voltBottomDisplay(uint8_t atomizerOn) {
 	Display_PutPixels(0, 100, tempImage, tempImage_width, tempImage_height);
 
 	printNumber(buff, CToDisplay(g.atomInfo.temperature));
-	Display_PutText(24, 107, buff, FONT_DEJAVU_8PT);
+	Display_PutText(24, 107, buff, FONT_MEDIUM);
 }

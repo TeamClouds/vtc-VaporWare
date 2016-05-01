@@ -109,7 +109,7 @@ void menuSelect(uint8_t state, uint32_t duration) {
             break;
         case TOGGLE:
             toggleSelect();
-            MI->toggleCallback(MI->startAt);
+            MI->toggleCallback(MI->isSet);
             break;
         case EDIT:
             switchHandler(&editButtonHandler);

@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdint.h>
+
 #include <Atomizer.h>
 #include <Display.h>
-#include <Font.h>
 #include <USB_VirtualCOM.h>
 
 #include "display.h"
+#include "font/font_vaporware.h"
 #include "globals.h"
 #include "helper.h"
 #include "settings.h"
@@ -264,11 +265,11 @@ void tempDisplay(uint8_t atomizerOn) {
     }
     Display_PutText(0, 5, buff, FONT_LARGE);
     getString(buff, (char *) tempScaleType[s.tempScaleTypeIndex].display);
-    Display_PutText(48, 2, buff, FONT_DEJAVU_8PT);
+    Display_PutText(48, 2, buff, FONT_SMALL);
 
 	// Material
 	getString(buff, vapeMaterialList[s.materialIndex].name);
-	Display_PutText(48, 15, buff, FONT_DEJAVU_8PT);
+	Display_PutText(48, 15, buff, FONT_SMALL);
 }
 
 void tempBottomDisplay(uint8_t atomizerOn) {
@@ -276,5 +277,5 @@ void tempBottomDisplay(uint8_t atomizerOn) {
 	Display_PutPixels(0, 100, watts, watts_width, watts_height);
 
 	getFloating(buff, g.watts);
-	Display_PutText(24, 107, buff, FONT_DEJAVU_8PT);
+	Display_PutText(26, 105, buff, FONT_MEDIUM);
 }
