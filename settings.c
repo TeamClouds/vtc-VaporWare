@@ -136,6 +136,8 @@ void reboot() {
 
 void factoryReset() {
     defaultSettings();
+    writeSettings();
+    reboot();
 }
 
 void invertSet(uint8_t a){
