@@ -52,6 +52,7 @@ struct menuItem {
 
     /* SUBMENU */
     struct menuDefinition *subMenu;
+    void (*getMenuDef)(struct menuItem *this);
 };
 
 // Per layer of menu.  Could bump as high as 255, but wastes memory
