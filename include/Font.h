@@ -22,14 +22,12 @@
 
 #include <Font_Data.h>
 #include <Font_DejaVuSansMono_8pt.h>
-#include <font_10x18.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define FONT_DEJAVU_8PT (&Font_DejaVuSansMono_8pt_FontInfo)
-#define FONT_LARGE (&Font_NotoMono_FontInfo)
 
 #ifdef __cplusplus
 }

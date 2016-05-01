@@ -23,12 +23,12 @@
 
 #include <M451Series.h>
 #include <Display.h>
-#include <Font.h>
 #include <Atomizer.h>
 #include <TimerUtils.h>
 #include <Battery.h>
 #include <Button.h>
 
+#include "font/font_vaporware.h"
 #include "globals.h"
 #include "helper.h"
 #include "display_helper.h"
@@ -105,10 +105,7 @@ void updateScreen(struct globals *g) {
 	Display_PutPixels(0, 40, getBatteryIcon(), battery_width, battery_height);
 
     getPercent(buff, g->batteryPercent);
-    Display_PutText(24, 41, buff, FONT_DEJAVU_8PT);
-
-	getFloating(buff, Battery_GetVoltage());
-	Display_PutText(24, 53, buff, FONT_DEJAVU_8PT);
+    Display_PutText(26, 45, buff, FONT_MEDIUM);
 
     switch (Atomizer_GetError()) {
     case SHORT:
@@ -123,7 +120,7 @@ void updateScreen(struct globals *g) {
     	} else {
     	getFloating(buff, g->atomInfo.base_resistance);
     	}
-    	Display_PutText(24, 78, buff, FONT_DEJAVU_8PT);
+    	Display_PutText(26, 75, buff, FONT_MEDIUM);
         g->vapeModes[s.mode]->bottomDisplay(atomizerOn);
 
     }
