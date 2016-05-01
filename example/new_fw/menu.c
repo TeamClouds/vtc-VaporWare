@@ -301,7 +301,7 @@ void drawMenu() {
         else
             valOffset = 5;
 
-        if (!findEnd || (MI->hidden != NULL && MI->hidden())) {
+        if (!findEnd || (MI->hidden != NULL && !MI->hidden())) {
             if (MI->type != STARTBOTTOM) {
                 mg->ItemOffsets[mg->menuItemCount] = rowStart;
                 rowStart += drawMenuItem(MI, rowStart, colStart, colStart + valOffset, mg->MD->font);
