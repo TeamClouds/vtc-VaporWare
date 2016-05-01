@@ -7,7 +7,8 @@ void voltUp(void);
 void voltDown(void);
 void voltDisplay(uint8_t atomizerOn);
 void voltBottomDisplay(uint8_t atomizerOn);
-void showVoltMenu();
+
+extern struct menuDefinition voltSettings;
 
 struct vapeMode variableVoltage = {
     .index = 1,
@@ -21,6 +22,6 @@ struct vapeMode variableVoltage = {
     .maxSetting = ATOMIZER_MAX_VOLTS,
 	.display = &voltDisplay,
 	.bottomDisplay = &voltBottomDisplay,
-	.settings = &showVoltMenu,
+	.vapeModeMenu = &voltSettings,
 };
 #endif

@@ -50,10 +50,6 @@ struct menuDefinition tempSettings = {
     .menuItems = &tempSettingsOptions,
 };
 
-void showTempMenu() {
-    runMenu(&tempSettings);
-}
-
 volatile int prline = 0;
 
 void initPid() {

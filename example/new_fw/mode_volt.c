@@ -30,10 +30,6 @@ struct menuDefinition voltSettings = {
     .menuItems = &voltSettingsOptions,
 };
 
-void showVoltMenu() {
-    runMenu(&voltSettings);
-}
-
 void voltInit() {
 	// set this initial value because we may be switching
 	// from another mode that changes our volts.

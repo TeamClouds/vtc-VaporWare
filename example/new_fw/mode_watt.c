@@ -30,9 +30,6 @@ struct menuDefinition wattSettings = {
     .menuItems = &wattSettingsOptions,
 };
 
-void showWattSettings() {
-    runMenu(&wattSettings);
-}
 void wattInit() {
 	// set this initial value because we may be switching
 	// from another mode that changes our watts.
