@@ -109,12 +109,12 @@ void menuSelect(uint8_t state, uint32_t duration) {
             break;
         case TOGGLE:
             toggleSelect();
-            MI->toggleCallback(MI->isSet);
+            MI->toggleCallback(MI->startAt);
             break;
         case EDIT:
             switchHandler(&editButtonHandler);
             doEditEdit(MI);
-            MI->editCallback(MI->editStart);
+            MI->editCallback(*MI->editStart);
             returnHandler();
             break;
         case EXITMENU:
@@ -189,9 +189,9 @@ void editLeft(uint8_t state, uint32_t duration) {
     
     if (state == BUTTON_PRESS ||
         state == BUTTON_HELD) {
-        MI->editStart -= MI->editStep;
-        if (MI->editStart < MI->editMin) {
-            MI->editStart = MI->editMin;
+        *MI->editStart -= MI->editStep;
+        if (*MI->editStart < MI->editMin) {
+            *MI->editStart = MI->editMin;
         } 
     }
 }
@@ -203,9 +203,9 @@ void editRight(uint8_t state, uint32_t duration) {
     
     if (state == BUTTON_PRESS ||
         state == BUTTON_HELD) {
-        MI->editStart += MI->editStep;
-        if (MI->editStart > MI->editMax) {
-            MI->editStart= MI->editMax;
+        *MI->editStart += MI->editStep;
+        if (*MI->editStart > MI->editMax) {
+            *MI->editStart= MI->editMax;
         } 
     }
 }
@@ -246,7 +246,7 @@ int drawMenuItem(struct menuItem *MI, uint8_t y, uint8_t x, uint8_t x2, const Fo
             used += rowHeight;
             break;
         case EDIT:
-            MI->editFormat(MI->editStart, buff);
+            MI->editFormat(*MI->editStart, buff);
             Display_PutText(x2, y + used, buff, font);
             used += rowHeight;
             break;
