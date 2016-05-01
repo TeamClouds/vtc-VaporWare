@@ -60,7 +60,7 @@ struct menuItem dragonItems[] = {
         .editMin = 0,
         .editMax = 20000,
         .editStart = &s.pidP,
-        .editCallback = &updateInitWatts,
+        .editCallback = &setP,
         .editStep = 100,
         .editFormat = &formatNumber
     },
@@ -70,7 +70,7 @@ struct menuItem dragonItems[] = {
         .editMin = 0,
         .editMax = 20000,
         .editStart = &s.pidI,
-        .editCallback = &updateInitWatts,
+        .editCallback = &setI,
         .editStep = 100,
         .editFormat = &formatNumber
     },
@@ -80,7 +80,7 @@ struct menuItem dragonItems[] = {
         .editMin = 0,
         .editMax = 20000,
         .editStart = &s.pidD,
-        .editCallback = &updateInitWatts,
+        .editCallback = &setD,
         .editStep = 100,
         .editFormat = &formatNumber
     },
