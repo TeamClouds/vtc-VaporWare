@@ -21,6 +21,7 @@ struct menuDefinition;
 struct menuItem {
     uint8_t type;
     const char *label;
+    int (*hidden)(void);
 
     /* ACTION */
     void (*actionCallback)(void);
