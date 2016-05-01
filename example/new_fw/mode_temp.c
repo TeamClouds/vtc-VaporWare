@@ -37,6 +37,73 @@ void formatWatts(int32_t value, char *formatted) {
     siprintf(formatted, "%lu.%02lu", value / 1000, value % 1000 / 10);
 }
 
+void formatNumber(int32_t value, char *formatted) {
+    siprintf(formatted, "%lu", value);
+}
+
+void setP(uint32_t p) {
+	s.pidP = p;
+}
+
+void setI(uint32_t i) {
+	s.pidI = i;
+}
+
+void setD(uint32_t d) {
+	s.pidD = d;
+}
+
+struct menuItem dragonItems[] = {
+	{
+        .type = EDIT,
+        .label = "P",
+        .editMin = 0,
+        .editMax = 20000,
+        .editStart = &s.pidP,
+        .editCallback = &updateInitWatts,
+        .editStep = 100,
+        .editFormat = &formatNumber
+    },
+	{
+        .type = EDIT,
+        .label = "I",
+        .editMin = 0,
+        .editMax = 20000,
+        .editStart = &s.pidI,
+        .editCallback = &updateInitWatts,
+        .editStep = 100,
+        .editFormat = &formatNumber
+    },
+    {
+        .type = EDIT,
+        .label = "D",
+        .editMin = 0,
+        .editMax = 20000,
+        .editStart = &s.pidD,
+        .editCallback = &updateInitWatts,
+        .editStep = 100,
+        .editFormat = &formatNumber
+    },
+	{
+		.type = EXITMENU,
+	    .label = "Back",
+    },
+	{
+        .type = END,
+	}
+};
+
+struct menuDefinition dragonMenu = {
+	    .name = "Display Settings",
+	    .font = FONT_SMALL,
+	    .cursor = "*",
+	    .prev_sel = "<",
+	    .next_sel = ">",
+	    .less_sel = "-",
+	    .more_sel = "+",
+	    .menuItems = &dragonItems,
+};
+
 struct menuItem tempSettingsOptions[] = {
     {
 	    .type = EDIT,
@@ -57,6 +124,11 @@ struct menuItem tempSettingsOptions[] = {
     {
         .type = SPACE,
         .rows = 8,
+    },
+    {
+        .type = SUBMENU,
+        .label = "Dragons",
+        .subMenu = &dragonMenu,
     },
     {
         .type = EXITMENU,
