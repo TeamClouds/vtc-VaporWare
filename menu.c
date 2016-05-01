@@ -121,6 +121,8 @@ void menuSelect(uint8_t state, uint32_t duration) {
             mg->menuOpen = 0;
             break;
         case SUBMENU:
+            if (MI->getMenuDef != NULL)
+                MI->getMenuDef(MI);
             t = mg;
             runMenu(MI->subMenu);
             mg = t;
