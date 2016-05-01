@@ -134,6 +134,10 @@ void reboot() {
     SYS_ResetChip();
 }
 
+void factoryReset() {
+    defaultSettings();
+}
+
 void invertSet(uint8_t a){
 	s.invertDisplay = a;
     Display_SetInverted(s.invertDisplay);
@@ -197,6 +201,41 @@ int shouldShowMenu() {
 	return false;
 }
 
+struct menuItem advancedMenuItems[] = {
+    {
+        .type = ACTION,
+        .label = "Reboot",
+        .actionCallback = &reboot,
+    },
+    {
+        .type = ACTION,
+        .label = "F.Reset",
+        .actionCallback = &factoryReset,
+    },
+
+    {
+        .type = STARTBOTTOM,
+    },
+    {
+        .type = EXITMENU,
+        .label = "Exit",
+    },
+    {
+        .type = END,
+    }
+};
+
+struct menuDefinition advancedMenu = {
+    .name = "Advanced Settings",
+    .font = FONT_SMALL,
+    .cursor = "*",
+    .prev_sel = "<",
+    .next_sel = ">",
+    .less_sel = "-",
+    .more_sel = "+",
+    .menuItems = &advancedMenuItems,
+};
+
 struct menuItem settingsMenuItems[] = {
     {
         .type = SELECT,
@@ -243,9 +282,9 @@ struct menuItem settingsMenuItems[] = {
         .actionCallback = &showInfo,
     },
     {
-        .type = ACTION,
-        .label = "Reboot",
-        .actionCallback = &reboot,
+        .type = SUBMENU,
+        .label = "Advanced",
+        .subMenu = &advancedMenu,
     },
     {
         .type = EXITMENU,
