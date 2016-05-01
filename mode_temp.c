@@ -29,6 +29,31 @@ struct IntPID {
 } I = {
 };
 
+struct menuItem tempSettingsOptions[] = {
+    {
+        .type = EXITMENU,
+        .label = "temp",
+    },
+    {
+        .type = END,
+    }
+};
+
+struct menuDefinition tempSettings = {
+    .name = "Display Settings",
+    .font = FONT_SMALL,
+    .cursor = "*",
+    .prev_sel = "<",
+    .next_sel = ">",
+    .less_sel = "-",
+    .more_sel = "+",
+    .menuItems = &tempSettingsOptions,
+};
+
+void showTempMenu() {
+    runMenu(&tempSettings);
+}
+
 volatile int prline = 0;
 
 void initPid() {

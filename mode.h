@@ -1,6 +1,8 @@
 #ifndef __MODES_H
 #define __MODES_H
 
+#include "menu.h"
+
 #define MODE_COUNT 8
 
 enum {
@@ -22,6 +24,7 @@ struct vapeMode {
     void (*decrease) (void);
     void (*display) (uint8_t atomizerOn);
     void (*bottomDisplay) (uint8_t atomizerOn);
+    void (*settings) (void);
 };
 
 void getModesByMaterial(uint8_t materialMask, int8_t * modes,
