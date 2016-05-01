@@ -71,7 +71,7 @@ typedef struct {
 	/**
 	 * Font char kerning
 	 */
-	const uint8_t kerning;
+	const int8_t kerning;
 } Font_Info_t;
 
 #ifdef __cplusplus
