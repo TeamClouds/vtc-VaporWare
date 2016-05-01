@@ -311,12 +311,14 @@ void drawMenu() {
                 findEnd = 1;
             }
         }
-        if (MI->type != LINE &&
-            MI->type != STARTBOTTOM &&
-            MI->type != SPACE &&
-            MI->type != END) {
-            mg->selectIndexToMD[mg->menuItemCount] = menuIndex;
-            mg->menuItemCount++;
+        if (MI->hidden == NULL || !MI->hidden()) {
+            if (MI->type != LINE &&
+                MI->type != STARTBOTTOM &&
+                MI->type != SPACE &&
+                MI->type != END) {
+                mg->selectIndexToMD[mg->menuItemCount] = menuIndex;
+                mg->menuItemCount++;
+            }
         }
         
         menuIndex++;
