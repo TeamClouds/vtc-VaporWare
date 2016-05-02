@@ -60,9 +60,12 @@ void doEditEdit(struct menuItem *MI);
 
 struct buttonHandler editButtonHandler = {
     .name = "menuButtonHandler",
+    .flags = LEFT_HOLD_EVENT | RIGHT_HOLD_EVENT,
     .fire_handler = &editSelect,
     .left_handler = &editLeft,
+    .leftUpdateInterval = 10,
     .right_handler = &editRight,
+    .rightUpdateInterval = 10,
 };
 
 void menuLeft(uint8_t state, uint32_t duration) {
@@ -189,7 +192,7 @@ void editLeft(uint8_t state, uint32_t duration) {
     struct menuItem *MI = &menuItems[mIndex];
     
     if (state == BUTTON_PRESS ||
-        state == BUTTON_HELD) {
+        ((duration > 30) && state & BUTTON_HELD)) {
         *MI->editStart -= MI->editStep;
         if (*MI->editStart < MI->editMin) {
             *MI->editStart = MI->editMin;
@@ -203,7 +206,7 @@ void editRight(uint8_t state, uint32_t duration) {
     struct menuItem *MI = &menuItems[mIndex];
     
     if (state == BUTTON_PRESS ||
-        state == BUTTON_HELD) {
+        ((duration > 30) && state & BUTTON_HELD)) {
         *MI->editStart += MI->editStep;
         if (*MI->editStart > MI->editMax) {
             *MI->editStart= MI->editMax;
