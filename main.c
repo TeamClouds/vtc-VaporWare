@@ -46,8 +46,8 @@ void (*__up) (void);
 void (*__down) (void);
 
 void setVapeMode(int newMode) {
-    if (newMode >= MODE_COUNT)
-    return;
+    if (newMode >= modeCount)
+        return;
 
     s.mode = newMode;
 
@@ -58,12 +58,6 @@ void setVapeMode(int newMode) {
         __init = g.vapeModes[newMode]->init;
         __init();
     }
-}
-
-void setVapeMaterial(int index) {
-    struct vapeMaterials *material = &vapeMaterialList[index];
-    s.materialIndex = index;
-    g.atomInfo.tcr = material->tcr;
 }
 
 inline void screenOn() {
@@ -135,12 +129,12 @@ int main() {
     initHandlers();
     setHandler(&mainButtonHandler);
 
-    load_settings();
-    
-#define REGISTER_MODE(X) g.vapeModes[X.index] = &X
+#define REGISTER_MODE(X) modeCount++; g.vapeModes[X.index] = &X
     REGISTER_MODE(variableVoltage);
     REGISTER_MODE(variableWattage);
     REGISTER_MODE(variableTemp);
+
+    load_settings();
 
     struct vapeMode THEMAX = {
         .name = "\0",
@@ -150,8 +144,6 @@ int main() {
     REGISTER_MODE(THEMAX);
 
     setVapeMode(s.mode);
-    setVapeMaterial(s.materialIndex);
-
     
     Atomizer_ReadInfo(&g.atomInfo);
 

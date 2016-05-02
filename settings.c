@@ -60,7 +60,7 @@ void populateTypes(struct menuItem *MI) {
 }
 
 void updateType(uint16_t index) {
-    setVapeMaterial(index);
+    materialIndexSet(index);
 }
 
 char *modeIdString[MAXOPTIONS];

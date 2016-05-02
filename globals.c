@@ -10,28 +10,4 @@ volatile struct globalVols gv = {
 };
 struct settings s = { };
 
-struct vapeMaterials vapeMaterialList[] = {
-    {
-     .typeMask = KANTHAL,
-     .name = "KA",
-     .tcr = 0,
-     },
-    {
-     .typeMask = NICKEL,
-     .name = "NI",
-     .tcr = 620,
-     },
-    {
-     .typeMask = TITANIUM,
-     .name = "TI",
-     .tcr = 350,
-     },
-    {
-     .typeMask = STAINLESS,
-     .name = "SS",
-     .tcr = 105,
-     },
-     {
-        .name = "\0",
-     }
-};
+uint8_t modeCount = 0;

@@ -1,23 +1,34 @@
 #include <Dataflash.h>
 
+#include <stdio.h>
+
 #include "dataflash.h"
+#include "debug.h"
 #include "helper.h"
 #include "settings.h"
 
-#define CR(A,B,C,D) if(B >= C && B <= D) A = B
+
+
 void DFSettingsToGlobals(struct baseSettings_1 *b, struct freqSettings_1 *f, uint8_t isDef) {
     s.fromRom = isDef;
-    CR(s.mode, f->mode, 0, 2);
-    CR(s.screenTimeout, b->screenTimeout, 1, 1000);
-    CR(s.displayTemperature, f->displayTemperature, 0, 600);
-    CR(s.targetTemperature, f->targetTemperature,0,600);
-    CR(s.materialIndex, b->materialIndex, 0,4);
-    CR(s.tempScaleTypeIndex, b->tempScaleTypeIndex,0,2);
-    CR(s.pidP, b->pidP, 0, 0xFFFF);
-    CR(s.pidI, b->pidI, 0, 0xFFFF);
-    CR(s.pidD, b->pidD, 0, 0xFFFF);
-    CR(s.initWatts, b->initWatts,0, 60000);
-    CR(s.pidSwitch, b->pidSwitch,0, 600);
+
+    // Must set material before temperature stuff
+    materialIndexSet(b->materialIndex);
+    // Must set scale type before temperature
+    // dependant values
+    tempScaleTypeIndexSet(b->tempScaleTypeIndex);
+    displayTemperatureSet(f->displayTemperature);
+    targetTemperatureSet(f->targetTemperature);
+
+    screenTimeoutSet(b->screenTimeout);
+    pidPSet(b->pidP);
+    pidISet(b->pidI);
+    pidDSet(b->pidD);
+    initWattsSet(b->initWatts);
+    pidSwitchSet(b->pidSwitch);
+
+    // Setting mode may depend on the rest of the settings being setup so just set it last
+    modeSet(f->mode);
 }
 
 void globalsToDFSettings(struct baseSettings_1 *b, struct freqSettings_1 *f) {
@@ -35,20 +46,20 @@ void globalsToDFSettings(struct baseSettings_1 *b, struct freqSettings_1 *f) {
 }
 
 void default_base(struct baseSettings_1 *b) {
-    b->pidP = 17000;
-    b->pidI = 5500;
-    b->pidD = 0;
-    b->initWatts = 15000;
-    b->pidSwitch = 600;
-    b->screenTimeout = 30;   // 100s of s
-    b->materialIndex = 1;
-    b->tempScaleTypeIndex = 1;
+    b->pidP = DEFPIDP;
+    b->pidI = DEFPIDI;
+    b->pidD = DEFPIDD;
+    b->initWatts = DEFWATTS;
+    b->pidSwitch = STEMPDEF;
+    b->screenTimeout = SCREENDEFAUTLTIMEOUT;
+    b->materialIndex = DEFAULTMATERIAL;
+    b->tempScaleTypeIndex = DEFAULTTEMPSCALE;
 }
 
 void default_freq(struct freqSettings_1 *f) {
-    f->mode = 2;
-    f->displayTemperature = tempScaleType[1].def;
-    f->targetTemperature = displayToC(tempScaleType[1].def);
+    f->mode = DEFAULTMODE;
+    f->displayTemperature = tempScaleType[DEFAULTTEMPSCALE].def;
+    f->targetTemperature = displayToC(tempScaleType[DEFAULTTEMPSCALE].def);
 }
 
 int defaultSettings() {
