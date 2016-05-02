@@ -7,11 +7,12 @@ enum {
     STAINLESS = 1 << 3,
     MAX_MATERIAL
 };
-#define MATERIAL_COUNT 4
 
 struct vapeMaterials {
     int8_t typeMask;
     char name[3];
     uint16_t tcr;
 };
+extern struct vapeMaterials vapeMaterialList[];
+extern uint8_t vapeMaterialsCount;
 #endif

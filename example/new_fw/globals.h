@@ -44,6 +44,4 @@ struct globalVols {
 
 extern volatile struct globalVols gv;
 
-extern struct vapeMaterials vapeMaterialList[];
-
 #endif

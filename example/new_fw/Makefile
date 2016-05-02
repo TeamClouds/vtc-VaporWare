@@ -2,6 +2,8 @@ TARGET = atomizer
 
 OBJS = \
     globals.o \
+    materials.o \
+    settings_helpers.o \
     dataflash.o \
     button.o \
     menu.o \

@@ -3,6 +3,7 @@
 #include "globals.h"
 #include "helper.h"
 #include "settings.h"
+#include "materials.h"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -59,6 +60,7 @@ void Communication_Command(char *buffer) {
     USB_VirtualCOM_SendString(response);
 }
 
+// Lower levels assume 'C' is at INDEX 0, so don't change it
 struct tempScale tempScaleType[] = {
     {
       .display = "C",
@@ -82,7 +84,9 @@ struct tempScale tempScaleType[] = {
         .display = "\0",
     }
 };
-#define SCALE_CNT 3
+/* tempScaleType has a 'sentinel' at the end, so -1 */
+uint8_t tempScaleCount = sizeof(tempScaleType)/sizeof(struct tempScale) - 1;
+
 
 int8_t parseUInt32(char *V, const char *C, char *R, uint32_t M, uint32_t m, uint32_t *o) {
     char *endptr;
@@ -189,12 +193,12 @@ void updateSettings(char *buffer, char *response) {
         s.targetTemperature = displayToC(s.displayTemperature);
     } else if (strncmp(setting, "materialIndex", 13) == 0) {
         uint8_t tindex = 0;
-        if (parseUInt8(value, "materialIndex", response, MATERIAL_COUNT, 0, &tindex))
+        if (parseUInt8(value, "materialIndex", response, vapeMaterialsCount, 0, &tindex))
             return;
-        setVapeMaterial(tindex);
+        materialIndexSet(tindex);
     } else if (strncmp(setting, "tempScaleTypeIndex", 13) == 0) {
         uint8_t tindex;
-        if (parseUInt8(value, "tempScaleTypeIndex", response, SCALE_CNT - 1, 0, &tindex))
+        if (parseUInt8(value, "tempScaleTypeIndex", response, tempScaleCount, 0, &tindex))
             return;
         s.tempScaleTypeIndex = tindex;
         s.targetTemperature = tempScaleType[s.tempScaleTypeIndex].def;
