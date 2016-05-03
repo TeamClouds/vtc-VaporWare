@@ -83,6 +83,10 @@ void updateMode(uint16_t index) {
     setVapeMode(index);
 }
 
+void updateScreenBrightness(uint8_t brightnessLevel) {
+    Display_SetContrast(brightnessLevel);
+}
+
 char *scaleIdString[MAXOPTIONS];
 int scaleIdMapping[MAXOPTIONS];
 
@@ -165,6 +169,10 @@ void flipSet(uint8_t a) {
 	s.flipOnVape = a;
 }
 
+void formatBrightnessNumber(int32_t value, char *formatted) {
+    siprintf(formatted, "%d", value);
+}
+
 struct menuItem displaySubMenuItems[] = {
 	{
 	    .type = SELECT,
@@ -175,6 +183,16 @@ struct menuItem displaySubMenuItems[] = {
 	    .populateCallback = &populateScales,
 	    .selectCallback = &updateScale,
 	},
+    {
+        .type = EDIT,
+        .label = "Brightness",
+        .editMin = 0,
+        .editMax = 255,
+        .editStart = &s.screenBrightness,
+        .editCallback = &updateScreenBrightness,
+        .editStep = 10,
+        .editFormat = &formatBrightnessNumber
+    },
 	{
 	    .type = TOGGLE,
 	    .label = "FlipVape",
@@ -461,6 +479,7 @@ int load_settings(void) {
     s.dumpPids = 0;
     readSettings();
     s.flipOnVape = 0;
+    s.screenBrightness = 50;
     s.invertDisplay = 0;
     return 1;
 }
