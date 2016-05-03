@@ -328,7 +328,6 @@ void formatINT(int32_t value, char *formatted) {
     siprintf(formatted, "%ld", value);
 }
 
-int32_t temp_TCR = TCRDEF;
 void saveTCR(int32_t value) {
     if (value < 0) {
         /* don't set a default if it's invalid, somehow */
@@ -337,15 +336,10 @@ void saveTCR(int32_t value) {
     tcrSet(value & 0xFFFF);
 }
 
-int32_t temp_baseTemp = BTEMPDEF;
 void saveTemp(int32_t value) {
-    if(value < 0)
-        baseTempSet(-1 * (value & 0xFFFF));
-    else
-        baseTempSet(value & 0xFFFF);
+    baseTempSet(value & 0xFFFF);
 }
 
-int32_t temp_baseRes = BRESDEF;
 void saveBaseRes(int32_t value) {
     baseResSet(value & 0xFFFF);
 }
@@ -356,7 +350,7 @@ struct menuItem dragonMenuItems[] = {
         .label = "TCR",
         .editMin = TCRMIN,
         .editMax = TCRMAX,
-        .editStart = &temp_TCR,
+        .editStart = (int32_t *)&s.tcr,
         .editStep = 1,
         .editFormat = &formatINT,
         .editCallback = &saveTCR,
@@ -366,7 +360,7 @@ struct menuItem dragonMenuItems[] = {
         .label = "B.Temp",
         .editMin = BTEMPMIN,
         .editMax = BTEMPMAX,
-        .editStart = &temp_baseTemp,
+        .editStart = (int32_t *)&s.baseTemp,
         .editStep = 1,
         .editFormat = &formatINT,
         .editCallback = &saveTemp,
@@ -376,7 +370,7 @@ struct menuItem dragonMenuItems[] = {
         .label = "B.Res",
         .editMin = 50,
         .editMax = 3450,
-        .editStart = &temp_baseRes,
+        .editStart = (int32_t *)&s.baseRes,
         .editStep = 5,
         .editFormat = &formatThousandths,
         .editCallback = &saveBaseRes
@@ -403,9 +397,6 @@ struct menuDefinition TheDragonning = {
 
 void showAdvanced(struct menuItem *MI) {
     if (Button_GetState() & BUTTON_MASK_RIGHT) {
-        temp_TCR = g.atomInfo.tcr;
-        temp_baseRes = g.atomInfo.base_resistance;
-        temp_baseTemp = g.atomInfo.base_temperature;
         MI->subMenu = &TheDragonning;
     } else {
         MI->subMenu = &advancedMenu;
