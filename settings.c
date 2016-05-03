@@ -247,6 +247,9 @@ struct menuItem advancedMenuItems[] = {
         .type = STARTBOTTOM,
     },
     {
+        .type = LINE,
+    },
+    {
         .type = EXITMENU,
         .label = "Back",
     },
@@ -301,10 +304,10 @@ struct menuItem settingsMenuItems[] = {
         .rows = 1,
     },
     {
-        .type = LINE,
+        .type = STARTBOTTOM,
     },
     {
-        .type = STARTBOTTOM,
+        .type = LINE,
     },
     {
         .type = ACTION,

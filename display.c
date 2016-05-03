@@ -97,7 +97,7 @@ void updateScreen(struct globals *g) {
 
     Display_Clear();
 
-    Display_PutLine(0, 24, 63, 24);
+    Display_PutLine(0, 30, 63, 30);
 
     g->vapeModes[s.mode]->display(atomizerOn);
 
