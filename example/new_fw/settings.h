@@ -39,6 +39,22 @@
 // Flip display while vaping
 #define FLIPDEF 1
 
+// TCR
+#define TCRMIN 0
+#define TCRMAX 1000
+#define TCRDEF 0
+
+// Base Temp degrees C
+#define BTEMPMIN -20
+#define BTEMPMAX 50
+#define BTEMPDEF -20
+
+// Base Res, mOhm
+#define BRESMIN 50
+#define BRESMAX 3450
+#define BRESDEF 0
+
+
 struct settings {
     uint8_t fromRom;
     uint8_t mode;
@@ -54,8 +70,13 @@ struct settings {
     int32_t pidSwitch;
     uint8_t dumpPids;
     uint8_t tunePids;
+/* Adding in V2 of dataflash */
     uint8_t invertDisplay;
     uint8_t flipOnVape;
+
+    uint16_t tcr;
+    int16_t baseTemp;
+    uint16_t baseRes;
 };
 
 extern struct settings s;
@@ -91,5 +112,7 @@ void pidSwitchSet(int32_t pidSwitch);
 void invertDisplaySet(uint8_t invertDisplay);
 void flipOnVapeSet(uint8_t flipOnVape);
 
-
+void tcrSet(uint16_t tcr);
+void baseTempSet(int16_t baseTemp);
+void baseResSet(uint16_t baseRes);
 #endif
