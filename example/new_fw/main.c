@@ -23,6 +23,7 @@
 #include <M451Series.h>
 #include <Atomizer.h>
 #include <Battery.h>
+#include <Button.h>
 #include <TimerUtils.h>
 #include <Display.h>
 #include <System.h>
@@ -80,7 +81,9 @@ void uptime(uint32_t param) {
 
 void fire(uint8_t status, uint32_t held) {
     screenOn();
-    if (status & BUTTON_PRESS) {
+    if (Button_GetState() & BUTTON_MASK_RIGHT) {
+        stealthModeSet(!s.stealthMode);
+    } else if (status & BUTTON_PRESS) {
         __vape();
     }
     screenOn();
@@ -188,7 +191,10 @@ int main() {
     if (gv.shouldShowMenu) {
         showMenu();
         gv.shouldShowMenu = 0;
-    } else if ((g.nextRefresh < gv.uptime) && ((g.screenState >= gv.uptime) || g.charging)) {
+    } else if (s.stealthMode) {
+        Display_Clear();
+        Display_SetOn(0);
+    } else if (!s.stealthMode && (g.nextRefresh < gv.uptime) && ((g.screenState >= gv.uptime) || g.charging)) {
         g.nextRefresh = gv.uptime + 6;
         Display_SetOn(1);
         updateScreen(&g);
@@ -208,10 +214,12 @@ int main() {
             if (gv.uptime > g.sysSleepAt) {
                 gv.sleeping = 1;
                 Sys_Sleep();
-                Display_SetOn(1);
-                screenOn();
-                screenOff();
-                updateScreen(&g);
+                if (!s.stealthMode) {
+                    Display_SetOn(1);
+                    screenOn();
+                    screenOff();
+                    updateScreen(&g);
+                }
             }
         }
     }

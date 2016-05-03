@@ -227,3 +227,13 @@ void screenBrightnessSet(uint8_t brightness) {
 	}
     g.settingsChanged = 1;
 }
+
+void stealthModeSet(uint8_t stealthMode) {
+    if (stealthMode != 0 &&
+        stealthMode != 1) {
+        s.stealthMode = STEALTHDEF;
+    } else {
+        s.stealthMode = stealthMode;
+    }
+    g.settingsChanged = 1;
+}

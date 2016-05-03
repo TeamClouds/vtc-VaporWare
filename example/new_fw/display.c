@@ -58,6 +58,9 @@ uint8_t* getBatteryIcon() {
 }
 
 void updateScreen(struct globals *g) {
+    if (s.stealthMode)
+        return;
+
     char buff[9];
 
     if (g->charging && !g->pauseScreenOff && (g->screenState < gv.uptime)) {
