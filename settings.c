@@ -272,6 +272,7 @@ struct menuItem advancedMenuItems[] = {
     }
 };
 
+
 struct menuDefinition advancedMenu = {
     .name = "Advanced Settings",
     .font = FONT_SMALL,
@@ -281,7 +282,108 @@ struct menuDefinition advancedMenu = {
     .less_sel = "-",
     .more_sel = "+",
     .menuItems = &advancedMenuItems,
+
 };
+
+/* Will always show 3 decimals, todo: make the '3' a param */
+void formatFixedPoint(int32_t value, int32_t divisor, char *formatted) {
+    if(divisor == 0)
+        siprintf(formatted, "infin");
+    else
+        siprintf(formatted, "%ld.%03ld", value/divisor, value % divisor);
+}
+
+void formatThousandths(int32_t value, char *formatted) {
+    formatFixedPoint(value, 1000, formatted);
+}
+
+void formatINT(int32_t value, char *formatted) {
+    siprintf(formatted, "%ld", value);
+}
+
+int32_t temp_TCR = TCRDEF;
+void saveTCR(int32_t value) {
+    if (value < 0) {
+        /* don't set a default if it's invalid, somehow */
+        return;
+    }
+    tcrSet(value & 0xFFFF);
+}
+
+int32_t temp_baseTemp = BTEMPDEF;
+void saveTemp(int32_t value) {
+    if(value < 0)
+        baseTempSet(-1 * (value & 0xFFFF));
+    else
+        baseTempSet(value & 0xFFFF);
+}
+
+int32_t temp_baseRes = BRESDEF;
+void saveBaseRes(int32_t value) {
+    baseResSet(value & 0xFFFF);
+}
+
+struct menuItem dragonMenuItems[] = {
+    {
+        .type = EDIT,
+        .label = "TCR",
+        .editMin = TCRMIN,
+        .editMax = TCRMAX,
+        .editStart = &temp_TCR,
+        .editStep = 1,
+        .editFormat = &formatINT,
+        .editCallback = &saveTCR,
+    },
+    {
+        .type = EDIT,
+        .label = "B.Temp",
+        .editMin = BTEMPMIN,
+        .editMax = BTEMPMAX,
+        .editStart = &temp_baseTemp,
+        .editStep = 1,
+        .editFormat = &formatINT,
+        .editCallback = &saveTemp,
+    },
+    {
+        .type = EDIT,
+        .label = "B.Res",
+        .editMin = 50,
+        .editMax = 3450,
+        .editStart = &temp_baseRes,
+        .editStep = 5,
+        .editFormat = &formatThousandths,
+        .editCallback = &saveBaseRes
+    },
+    {
+        .type = EXITMENU,
+        .label = "Back",
+    },
+    {
+        .type = END,
+    }
+};
+
+struct menuDefinition TheDragonning = {
+    .name = "Dragon Mode On",
+    .font = FONT_SMALL,
+    .cursor = "*",
+    .prev_sel = "<",
+    .next_sel = ">",
+    .less_sel = "-",
+    .more_sel = "+",
+    .menuItems = &dragonMenuItems,
+};
+
+void showAdvanced(struct menuItem *MI) {
+    if (Button_GetState() & BUTTON_MASK_RIGHT) {
+        temp_TCR = g.atomInfo.tcr;
+        temp_baseRes = g.atomInfo.base_resistance;
+        temp_baseTemp = g.atomInfo.base_temperature;
+        MI->subMenu = &TheDragonning;
+    } else {
+        MI->subMenu = &advancedMenu;
+    }
+}
 
 struct menuItem settingsMenuItems[] = {
     {
@@ -330,8 +432,8 @@ struct menuItem settingsMenuItems[] = {
     },
     {
         .type = SUBMENU,
-        .label = "Advanced",
-        .subMenu = &advancedMenu,
+        .label = "Advnced",
+        .getMenuDef = &showAdvanced,
     },
     {
         .type = EXITMENU,

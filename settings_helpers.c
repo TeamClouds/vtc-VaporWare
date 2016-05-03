@@ -151,3 +151,39 @@ void flipOnVapeSet(uint8_t flipOnVape) {
         s.flipOnVape = flipOnVape;
     }
 }
+
+void tcrSet(uint16_t tcr) {
+    if (tcr < TCRMIN) {
+        s.tcr = TCRDEF;
+    } else if (tcr > TCRMAX) {
+        s.tcr = TCRDEF;
+    } else {
+        s.tcr = tcr;
+    }
+
+    g.atomInfo.tcr = s.tcr;
+}
+
+void baseTempSet(int16_t baseTemp) {
+    if (baseTemp < BTEMPMIN) {
+        s.baseTemp = BTEMPDEF;
+    } else if (baseTemp > BTEMPMAX) {
+        s.baseTemp = BTEMPDEF;
+    } else {
+        s.baseTemp = baseTemp;
+    }
+
+    g.atomInfo.base_temperature = baseTemp;
+}
+
+void baseResSet(uint16_t baseRes) {
+    if (baseRes < BRESMIN) {
+        s.baseRes = BRESDEF;
+    } else if (baseRes > BRESMAX) {
+        s.baseRes = BRESDEF;
+    } else {
+        s.baseRes = baseRes;
+    }
+
+    g.atomInfo.base_resistance = baseRes;
+}
