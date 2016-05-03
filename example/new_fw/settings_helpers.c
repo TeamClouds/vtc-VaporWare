@@ -237,3 +237,13 @@ void stealthModeSet(uint8_t stealthMode) {
     }
     g.settingsChanged = 1;
 }
+
+void vsetLockSet(uint8_t vsetLock) {
+    if (vsetLock !=0 &&
+        vsetLock != 1) {
+        s.vsetLock = VSETLOCKDEF;
+    } else {
+        s.vsetLock = vsetLock;
+    }
+    g.settingsChanged = 1;
+}

@@ -83,6 +83,8 @@ void fire(uint8_t status, uint32_t held) {
     screenOn();
     if (Button_GetState() & BUTTON_MASK_RIGHT) {
         stealthModeSet(!s.stealthMode);
+    } else if (Button_GetState() & BUTTON_MASK_LEFT) {
+        vsetLockSet(!s.vsetLock);
     } else if (status & BUTTON_PRESS) {
         __vape();
     }
@@ -92,9 +94,11 @@ void fire(uint8_t status, uint32_t held) {
 }
 
 void left(uint8_t status, uint32_t held) {
+
+
     screenOn();
-    if ((status & BUTTON_PRESS) ||
-        ((held > 30) && status & BUTTON_HELD))
+    if (!s.vsetLock && ((status & BUTTON_PRESS) ||
+        ((held > 30) && status & BUTTON_HELD)))
         __down();
     else 
         screenOff();
@@ -102,8 +106,8 @@ void left(uint8_t status, uint32_t held) {
 
 void right(uint8_t status, uint32_t held) {
     screenOn();
-    if ((status & BUTTON_PRESS) ||
-        ((held > 30) && status & BUTTON_HELD))
+    if (!s.vsetLock && ((status & BUTTON_PRESS) ||
+        ((held > 30) && status & BUTTON_HELD)))
         __up();
     else
         screenOff();
