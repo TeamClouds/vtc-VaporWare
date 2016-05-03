@@ -234,8 +234,10 @@ void Display_PutLine(int x0, int y0, int x1, int y1) {
 	  int dy = abs(y1-y0), sy = y0<y1 ? 1 : -1;
 	  int err = (dx>dy ? dx : -dy)/2, e2;
 
+	  uint8_t *buff[] = { 0xFF };
+
 	  for(;;){
-		Display_BitCopy(&Display_framebuf[(x0) * (DISPLAY_HEIGHT / 8)], 1, y0, 20);
+		Display_PutPixels(x0, y0, buff, 1, 1);
 	    if (x0==x1 && y0==y1) break;
 	    e2 = err;
 	    if (e2 >-dx) { err -= dy; x0 += sx; }
