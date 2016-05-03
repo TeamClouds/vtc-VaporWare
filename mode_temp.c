@@ -367,23 +367,24 @@ void tempUp() {
     uint32_t dT = s.displayTemperature + 10;
     uint32_t mT = tempScaleType[s.tempScaleTypeIndex].max;
     if (dT <= mT) {
-	s.displayTemperature = dT;
-        s.targetTemperature = displayToC(dT);
+        displayTemperatureSet(dT);
+        targetTemperatureSet(displayToC(dT));
     } else {
-        s.displayTemperature = mT;
-	s.targetTemperature = displayToC(mT);
+        displayTemperatureSet(mT);
+        targetTemperatureSet(displayToC(mT));
     }
 }
 
 void tempDown() {
     uint32_t dT = s.displayTemperature - 10;
     uint32_t mT = tempScaleType[s.tempScaleTypeIndex].min;
-    if (dT >= mT) {
-        s.displayTemperature = dT;
-	s.targetTemperature = displayToC(dT);
+    uint32_t MT = tempScaleType[s.tempScaleTypeIndex].max;
+    if (dT >= mT && dT < MT) {
+        displayTemperatureSet(dT);
+        targetTemperatureSet(displayToC(dT));
     } else {
-        s.displayTemperature = mT;
-	s.targetTemperature = displayToC(mT);
+        displayTemperatureSet(mT);
+        targetTemperatureSet(displayToC(mT));
     }
 }
 
