@@ -83,8 +83,13 @@ void updateMode(uint16_t index) {
     setVapeMode(index);
 }
 
-void updateScreenBrightness(uint8_t brightnessLevel) {
-    Display_SetContrast(brightnessLevel);
+void formatBrightnessNumber(int32_t value, char *formatted) {
+    Display_SetContrast((char*)value);
+    siprintf(formatted, "%lu", value);
+}
+
+void updateScreenBrightness(int32_t value) {
+	screenBrightnessSet(value);
 }
 
 char *scaleIdString[MAXOPTIONS];
@@ -169,10 +174,8 @@ void flipSet(uint8_t a) {
 	s.flipOnVape = a;
 }
 
-void formatBrightnessNumber(int32_t value, char *formatted) {
-    siprintf(formatted, "%d", value);
-}
-
+uint8_t display_flip = FLIPDEF;
+uint8_t display_invert = INVERTDEF;
 struct menuItem displaySubMenuItems[] = {
 	{
 	    .type = SELECT,
@@ -188,7 +191,7 @@ struct menuItem displaySubMenuItems[] = {
         .label = "Brightness",
         .editMin = 0,
         .editMax = 255,
-        .editStart = &s.screenBrightness,
+        .editStart = (int32_t *)&s.screenBrightness,
         .editCallback = &updateScreenBrightness,
         .editStep = 10,
         .editFormat = &formatBrightnessNumber
@@ -198,7 +201,7 @@ struct menuItem displaySubMenuItems[] = {
 	    .label = "FlipVape",
 	    .on = "On",
 	    .off = "Off",
-	    .isSet = &s.flipOnVape,
+	    .isSet = &display_flip,
 	    .toggleCallback = &flipSet,
 	},
 	{
@@ -206,7 +209,7 @@ struct menuItem displaySubMenuItems[] = {
 	    .label = "Invert",
 	    .on = "On",
 	    .off = "Off",
-	    .isSet = &s.invertDisplay,
+	    .isSet = &display_invert,
 	    .toggleCallback = &invertSet,
 	},
     {
@@ -238,6 +241,12 @@ struct menuDefinition displaySettingsMenu = {
     .more_sel = "+",
     .menuItems = &displaySubMenuItems,
 };
+
+void showDisplay(struct menuItem *MI) {
+	display_flip = s.flipOnVape;
+	display_invert = s.invertDisplay;
+	MI->subMenu = &displaySettingsMenu;
+}
 
 void showModeSettings(struct menuItem *MI) {
 	MI->subMenu = &(*g.vapeModes[s.mode]->vapeModeMenu);
@@ -403,6 +412,7 @@ void showAdvanced(struct menuItem *MI) {
     }
 }
 
+
 struct menuItem settingsMenuItems[] = {
     {
         .type = SELECT,
@@ -431,7 +441,7 @@ struct menuItem settingsMenuItems[] = {
 	{
 		.type = SUBMENU,
 		.label = "Display",
-		.subMenu = &displaySettingsMenu,
+		.getMenuDef = &showDisplay,
 	},
     {
         .type = STARTBOTTOM,

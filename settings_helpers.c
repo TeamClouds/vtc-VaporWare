@@ -216,3 +216,14 @@ void baseResSet(uint16_t baseRes) {
     g.atomInfo.base_resistance = baseRes;
     g.settingsChanged = 1;
 }
+
+void screenBrightnessSet(uint8_t brightness) {
+	if (brightness < SBRIGHTMIN) {
+		s.screenBrightness = SBRIGHTDEF;
+	} else if (brightness > SBRIGHTMAX) {
+		s.screenBrightness = SBRIGHTDEF;
+	} else {
+		s.screenBrightness = brightness;
+	}
+    g.settingsChanged = 1;
+}

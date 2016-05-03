@@ -41,15 +41,15 @@ void formatNumber(int32_t value, char *formatted) {
     siprintf(formatted, "%lu", value);
 }
 
-void setP(uint32_t p) {
+void setP(int32_t p) {
 	s.pidP = p;
 }
 
-void setI(uint32_t i) {
+void setI(int32_t i) {
 	s.pidI = i;
 }
 
-void setD(uint32_t d) {
+void setD(int32_t d) {
 	s.pidD = d;
 }
 
@@ -59,7 +59,7 @@ struct menuItem dragonItems[] = {
         .label = "P",
         .editMin = 0,
         .editMax = 20000,
-        .editStart = &s.pidP,
+        .editStart = (int32_t *)&s.pidP,
         .editCallback = &setP,
         .editStep = 100,
         .editFormat = &formatNumber
@@ -69,7 +69,7 @@ struct menuItem dragonItems[] = {
         .label = "I",
         .editMin = 0,
         .editMax = 20000,
-        .editStart = &s.pidI,
+        .editStart = (int32_t *)&s.pidI,
         .editCallback = &setI,
         .editStep = 100,
         .editFormat = &formatNumber
@@ -79,7 +79,7 @@ struct menuItem dragonItems[] = {
         .label = "D",
         .editMin = 0,
         .editMax = 20000,
-        .editStart = &s.pidD,
+        .editStart = (int32_t *)&s.pidD,
         .editCallback = &setD,
         .editStep = 100,
         .editFormat = &formatNumber
