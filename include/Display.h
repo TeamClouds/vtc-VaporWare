@@ -166,6 +166,12 @@ void Display_PutLine(int startX, int startY, int endX, int endY);
  */
 void Display_PutText(int x, int y, const char *txt, const Font_Info_t *font);
 
+/**
+ * Sets the contrast
+ * char is between 0 - 256
+ */
+void Display_SetContrast(char *contrast);
+
 #ifdef __cplusplus
 }
 #endif

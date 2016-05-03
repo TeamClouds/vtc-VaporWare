@@ -284,3 +284,12 @@ void Display_PutText(int x, int y, const char *txt, const Font_Info_t *font) {
 		curX += font->charInfo[charIdx].width;
 	}
 }
+
+void Display_SetContrast(char *contrast) {
+	// Contrast is between 1 - 256
+	uint8_t Display_ContrastCommand[] = {
+	    SSD_SET_CONTRAST_LEVEL, contrast,
+	};
+
+	Display_SSD_Write(0, Display_ContrastCommand, sizeof(Display_ContrastCommand));
+}
