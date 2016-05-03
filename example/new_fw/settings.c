@@ -142,10 +142,16 @@ void factoryReset() {
 
 #ifdef WITHFLASHDAMAGESUPPORT
 void invalidateDataFlash() {
+    if(!(Button_GetState() & BUTTON_MASK_RIGHT))
+        return;
+
     makeDFInvalid();
 }
 
 void eraseDataFlash() {
+    if(!(Button_GetState() & BUTTON_MASK_RIGHT))
+        return;
+
     eraseDF();
 }
 #endif
