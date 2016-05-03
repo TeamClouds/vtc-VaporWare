@@ -59,6 +59,11 @@
 #define BRESMAX 3450
 #define BRESDEF 0
 
+// Screen brightness
+#define SBRIGHTMIN 0
+#define SBRIGHTMAX 255
+#define SBRIGHTDEF 50
+
 
 struct settings {
     uint8_t fromRom;
@@ -120,4 +125,6 @@ void flipOnVapeSet(uint8_t flipOnVape);
 void tcrSet(uint16_t tcr);
 void baseTempSet(int16_t baseTemp);
 void baseResSet(uint16_t baseRes);
+
+void screenBrightnessSet(uint8_t brightness);
 #endif
