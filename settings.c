@@ -140,6 +140,16 @@ void factoryReset() {
     reboot();
 }
 
+#ifdef WITHFLASHDAMAGESUPPORT
+void invalidateDataFlash() {
+    makeDFInvalid();
+}
+
+void eraseDataFlash() {
+    eraseDF();
+}
+#endif
+
 void invertSet(uint8_t a){
 	s.invertDisplay = a;
     Display_SetInverted(s.invertDisplay);
@@ -214,6 +224,18 @@ struct menuItem advancedMenuItems[] = {
         .label = "F.Reset",
         .actionCallback = &factoryReset,
     },
+#ifdef WITHFLASHDAMAGESUPPORT
+    {
+        .type = ACTION,
+        .label = "Inv.Fla",
+        .actionCallback = &invalidateDataFlash,
+    },
+    {
+        .type = ACTION,
+        .label = "Era.Fla",
+        .actionCallback = &eraseDataFlash,
+    },
+#endif
 
     {
         .type = STARTBOTTOM,

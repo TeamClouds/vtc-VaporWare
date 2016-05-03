@@ -186,3 +186,13 @@ int writeSettings() {
     return 1;
 }
 
+#ifdef WITHFLASHDAMAGESUPPORT
+void makeDFInvalid() {
+    Dataflash_InvalidateStruct(&CURBASESTRINFO);
+    Dataflash_InvalidateStruct(&CURFREQSTRINFO);
+}
+
+void eraseDF() {
+    Dataflash_Erase();
+}
+#endif
