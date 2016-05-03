@@ -390,6 +390,7 @@ void drawMenu() {
 
 void runMenu(struct menuDefinition *menuDef) {
     //while (USB_VirtualCOM_GetAvailableSize() == 0){;}
+    Display_SetOn(1);
     struct menuGlobals _mg = {0};
     mg = &_mg;
 

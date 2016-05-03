@@ -64,6 +64,9 @@
 #define SBRIGHTMAX 255
 #define SBRIGHTDEF 50
 
+// Default stealth mode off
+#define STEALTHDEF 0
+
 
 struct settings {
     uint8_t fromRom;
@@ -87,6 +90,7 @@ struct settings {
     int16_t baseTemp;
     uint16_t baseRes;
     int screenBrightness;
+    uint8_t stealthMode;
 };
 
 extern struct settings s;
@@ -127,4 +131,5 @@ void baseTempSet(int16_t baseTemp);
 void baseResSet(uint16_t baseRes);
 
 void screenBrightnessSet(uint8_t brightness);
+void stealthModeSet(uint8_t stealthMode);
 #endif
