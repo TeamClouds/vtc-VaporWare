@@ -1,5 +1,7 @@
 TARGET = atomizer
 
+#ISDEV := "Yes, damange my device"
+
 OBJS = \
     globals.o \
     materials.o \
@@ -21,5 +23,9 @@ OBJS = \
     mode_volt.o \
     mode_temp.o \
     main.o
+
+ifeq ($(ISDEV),"Yes, damange my device")
+	CFLAGS += -DWITHFLASHDAMAGESUPPORT=1
+endif
 
 include $(EVICSDK)/make/Base.mk

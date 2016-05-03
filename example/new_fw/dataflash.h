@@ -76,4 +76,9 @@ struct freqSettings_1 {
 int readSettings();
 int writeSettings();
 int defaultSettings();
+
+#ifdef WITHFLASHDAMAGESUPPORT
+void makeDFInvalid();
+void eraseDF();
+#endif
 #endif
