@@ -73,10 +73,10 @@ struct settings {
 /* Adding in V2 of dataflash */
     uint8_t invertDisplay;
     uint8_t flipOnVape;
-
     uint16_t tcr;
     int16_t baseTemp;
     uint16_t baseRes;
+    int screenBrightness;
 };
 
 extern struct settings s;
