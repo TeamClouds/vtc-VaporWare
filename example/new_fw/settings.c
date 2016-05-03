@@ -192,8 +192,18 @@ struct menuItem displaySubMenuItems[] = {
 	    .toggleCallback = &invertSet,
 	},
     {
+        .type = STARTBOTTOM,
+    },
+    {
+        .type = LINE,
+    },
+    {
+        .type = SPACE,
+        .rows = 2,
+    },
+    {
         .type = EXITMENU,
-        .label = "Exit",
+        .label = "Back",
     },
     {
         .type = END,
@@ -250,6 +260,10 @@ struct menuItem advancedMenuItems[] = {
         .type = LINE,
     },
     {
+        .type = SPACE,
+        .rows = 2,
+    },
+    {
         .type = EXITMENU,
         .label = "Back",
     },
@@ -300,14 +314,14 @@ struct menuItem settingsMenuItems[] = {
 		.subMenu = &displaySettingsMenu,
 	},
     {
-        .type = SPACE,
-        .rows = 1,
-    },
-    {
         .type = STARTBOTTOM,
     },
     {
         .type = LINE,
+    },
+    {
+        .type = SPACE,
+        .rows = 2,
     },
     {
         .type = ACTION,

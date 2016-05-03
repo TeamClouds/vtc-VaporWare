@@ -84,6 +84,16 @@ struct menuItem dragonItems[] = {
         .editStep = 100,
         .editFormat = &formatNumber
     },
+    {
+        .type = STARTBOTTOM,
+    },
+    {
+        .type = LINE,
+    },
+    {
+        .type = SPACE,
+        .rows = 2,
+    },
 	{
 		.type = EXITMENU,
 	    .label = "Back",
@@ -123,7 +133,7 @@ struct menuItem tempSettingsOptions[] = {
     },
     {
         .type = SPACE,
-        .rows = 8,
+        .rows = 2,
     },
     {
         .type = SUBMENU,
