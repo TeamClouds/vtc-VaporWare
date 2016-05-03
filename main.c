@@ -30,6 +30,7 @@
 
 #include "button.h"
 #include "communication.h"
+#include "dataflash.h"
 #include "display.h"
 #include "globals.h"
 #include "materials.h"
@@ -179,6 +180,11 @@ int main() {
     if (g.pauseScreenOff)
         screenOn();
 
+    if (g.settingsChanged && gv.uptime > g.writeSettingsAt) {
+        writeSettings();
+        g.writeSettingsAt = 0;
+    }
+
     if (gv.shouldShowMenu) {
         showMenu();
         gv.shouldShowMenu = 0;
@@ -189,14 +195,25 @@ int main() {
     } else if (gv.sleeping) {
         gv.sleeping = 0;
     } else if ((g.screenState < gv.uptime) && !g.charging) {
-        gv.sleeping = 1;
+
+        if (g.settingsChanged && !g.writeSettingsAt)
+            g.writeSettingsAt = gv.uptime + SETTINGSWRITEDEFAULT;
+
+        if (g.sysSleepAt == 0)
+            g.sysSleepAt = gv.uptime + SYSSLEEPDEFAULT;
+
         Display_Clear();
         Display_SetOn(0);
-        Sys_Sleep();
-        Display_SetOn(1);
-        screenOn();
-        screenOff();
-        updateScreen(&g);
+        if (!g.settingsChanged) {
+            if (gv.uptime > g.sysSleepAt) {
+                gv.sleeping = 1;
+                Sys_Sleep();
+                Display_SetOn(1);
+                screenOn();
+                screenOff();
+                updateScreen(&g);
+            }
+        }
     }
     while(USB_VirtualCOM_GetAvailableSize() > 0) {
         uint8_t C = 0;

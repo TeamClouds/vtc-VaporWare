@@ -487,5 +487,7 @@ int load_settings(void) {
 
 void showMenu() {
     runMenu(&settingsMenu);
-    writeSettings();
+    if (g.settingsChanged == 1) {
+        writeSettings();
+    }
 }

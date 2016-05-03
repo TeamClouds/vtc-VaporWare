@@ -6,6 +6,11 @@
 #define SCREENMAXTIMEOUT 600
 #define SCREENDEFAUTLTIMEOUT 30
 
+// After screen off
+#define SYSSLEEPDEFAULT 180 * 10
+// After screen off, may block sys sleep
+#define SETTINGSWRITEDEFAULT 300 * 10
+
 // Kanthal Default
 #define DEFAULTMATERIAL 0
 
