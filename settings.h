@@ -67,6 +67,9 @@
 // Default stealth mode off
 #define STEALTHDEF 0
 
+// Default temp change on
+#define VSETLOCKDEF 0
+
 
 struct settings {
     uint8_t fromRom;
@@ -91,6 +94,7 @@ struct settings {
     uint16_t baseRes;
     int screenBrightness;
     uint8_t stealthMode;
+    uint8_t vsetLock;
 };
 
 extern struct settings s;
@@ -132,4 +136,5 @@ void baseResSet(uint16_t baseRes);
 
 void screenBrightnessSet(uint8_t brightness);
 void stealthModeSet(uint8_t stealthMode);
+void vsetLockSet(uint8_t vsetLock);
 #endif
