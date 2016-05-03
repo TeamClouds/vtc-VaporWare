@@ -63,6 +63,7 @@ void setVapeMode(int newMode) {
 }
 
 inline void screenOn() {
+    g.sysSleepAt = 0;
     g.screenState = gv.uptime + s.screenTimeout * 10;
     g.pauseScreenOff = 1;
 }
