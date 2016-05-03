@@ -18,6 +18,8 @@ void materialIndexSet(uint32_t materialIndex) {
     }
 
     g.atomInfo.tcr = vapeMaterialList[materialIndex].tcr;
+    g.baseSettingsChanged = 1;
+    g.settingsChanged = 1;
 }
 
 void modeSet(uint8_t mode) {
@@ -37,6 +39,9 @@ void modeSet(uint8_t mode) {
         s.mode = mode;
     }
     setVapeMode(mode);
+
+    g.freqSettingsChanged = 1;
+    g.settingsChanged = 1;
 }
 
 void screenTimeoutSet(uint16_t screenTimeout) {
@@ -47,6 +52,9 @@ void screenTimeoutSet(uint16_t screenTimeout) {
     } else {
         s.screenTimeout = screenTimeout;
     }
+
+    g.baseSettingsChanged = 1;
+    g.settingsChanged = 1;
 }
 
 void tempScaleTypeIndexSet(uint8_t tempScaleTypeIndex) {
@@ -60,6 +68,8 @@ void tempScaleTypeIndexSet(uint8_t tempScaleTypeIndex) {
     } else {
         s.tempScaleTypeIndex = tempScaleTypeIndex;
     }
+    g.baseSettingsChanged = 1;
+    g.settingsChanged = 1;
 }
 
 void displayTemperatureSet(uint32_t displayTemperature) {
@@ -70,6 +80,8 @@ void displayTemperatureSet(uint32_t displayTemperature) {
     } else {
         s.displayTemperature = displayTemperature;
     }
+    g.freqSettingsChanged = 1;
+    g.settingsChanged = 1;
     // Todo set target temp based on display?
 }
 
@@ -82,6 +94,8 @@ void targetTemperatureSet(uint32_t targetTemperature) {
     } else {
         s.targetTemperature = targetTemperature;
     }
+    g.freqSettingsChanged = 1;
+    g.settingsChanged = 1;
 }
 
 void pidPSet(uint32_t pidP) {
@@ -92,6 +106,8 @@ void pidPSet(uint32_t pidP) {
     } else {
         s.pidP = pidP;
     }
+    g.baseSettingsChanged = 1;
+    g.settingsChanged = 1;
 }
 
 void pidISet(uint32_t pidI){
@@ -102,6 +118,8 @@ void pidISet(uint32_t pidI){
     } else {
         s.pidI = pidI;
     }
+    g.baseSettingsChanged = 1;
+    g.settingsChanged = 1;
 }
 
 void pidDSet(uint32_t pidD) {
@@ -112,6 +130,8 @@ void pidDSet(uint32_t pidD) {
     } else {
         s.pidD = pidD;
     }
+    g.baseSettingsChanged = 1;
+    g.settingsChanged = 1;
 }
 
 void initWattsSet(int32_t initWatts) {
@@ -122,6 +142,8 @@ void initWattsSet(int32_t initWatts) {
     } else {
         s.initWatts = initWatts;
     }
+    g.baseSettingsChanged = 1;
+    g.settingsChanged = 1;
 }
 
 void pidSwitchSet(int32_t pidSwitch) {
@@ -132,6 +154,8 @@ void pidSwitchSet(int32_t pidSwitch) {
     } else {
         s.pidSwitch = pidSwitch;
     }
+    g.baseSettingsChanged = 1;
+    g.settingsChanged = 1;
 }
 
 void invertDisplaySet(uint8_t invertDisplay) {
@@ -141,6 +165,7 @@ void invertDisplaySet(uint8_t invertDisplay) {
     } else {
         s.invertDisplay = invertDisplay;
     }
+    g.settingsChanged = 1;
 }
 
 void flipOnVapeSet(uint8_t flipOnVape) {
@@ -150,6 +175,7 @@ void flipOnVapeSet(uint8_t flipOnVape) {
     } else {
         s.flipOnVape = flipOnVape;
     }
+    g.settingsChanged = 1;
 }
 
 void tcrSet(uint16_t tcr) {
@@ -162,6 +188,7 @@ void tcrSet(uint16_t tcr) {
     }
 
     g.atomInfo.tcr = s.tcr;
+    g.settingsChanged = 1;
 }
 
 void baseTempSet(int16_t baseTemp) {
@@ -174,6 +201,7 @@ void baseTempSet(int16_t baseTemp) {
     }
 
     g.atomInfo.base_temperature = baseTemp;
+    g.settingsChanged = 1;
 }
 
 void baseResSet(uint16_t baseRes) {
@@ -186,4 +214,5 @@ void baseResSet(uint16_t baseRes) {
     }
 
     g.atomInfo.base_resistance = baseRes;
+    g.settingsChanged = 1;
 }

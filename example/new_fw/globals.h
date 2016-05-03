@@ -26,6 +26,12 @@ struct globals {
     uint32_t screenState;
     int8_t pauseScreenOff;
     uint32_t nextRefresh;
+
+    uint8_t settingsChanged;
+    uint8_t baseSettingsChanged;
+    uint8_t freqSettingsChanged;
+    uint32_t writeSettingsAt;
+    uint32_t sysSleepAt;
 };
 extern struct globals g;
 

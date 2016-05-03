@@ -4,6 +4,7 @@
 
 #include "dataflash.h"
 #include "debug.h"
+#include "globals.h"
 #include "helper.h"
 #include "settings.h"
 
@@ -181,8 +182,13 @@ int writeSettings() {
     struct CURFREQTYPE f;
 
     globalsToDFSettings(&b,&f);
-    Dataflash_UpdateStruct(&CURBASESTRINFO, &b);
-    Dataflash_UpdateStruct(&CURFREQSTRINFO, &f);
+    if (g.baseSettingsChanged)
+        Dataflash_UpdateStruct(&CURBASESTRINFO, &b);
+    if (g.freqSettingsChanged)
+        Dataflash_UpdateStruct(&CURFREQSTRINFO, &f);
+    g.freqSettingsChanged = 0;
+    g.baseSettingsChanged = 0;
+    g.settingsChanged = 0;
     return 1;
 }
 
