@@ -59,13 +59,17 @@ typedef struct {
 	 */
 	uint16_t current;
 	/**
-	 * Estimated Coil Temp
+	 * Atomizer resistance when cold, in mOhm.
+	 * If this is 0, an error occurred.
+	 * Check the atomizer error code.
 	 */
-	uint32_t temperature;
+	uint16_t baseResistance;
 	/**
-	 * Coil TCR
+	 * Temperature at which baseResistance is
+	 * measured, in °C. Only valid if baseResistance
+	 * is not zero.
 	 */
-	uint16_t tcr;
+	uint8_t baseTemperature;
 } Atomizer_Info_t;
 
 /**
@@ -93,6 +97,28 @@ typedef enum {
 	 */
 	OVER_TEMP
 } Atomizer_Error_t;
+
+/**
+ * Function pointer type for atomizer base update callbacks.
+ * This callback will be invoked when base resistance and/or
+ * temperature are going to be updated. The callback is executed
+ * in user context, so it doesn't have to be fast and it can
+ * block. In that case, it will block inside your most recent
+ * call to Atomizer_ReadInfo().
+ *
+ * @param oldRes  Old base resistance. Only valid if not zero.
+ *                If zero, newRes is the first stable measure for this
+ *                atomizer. Ignoring a first measure causes the measure
+ *                to be repeated until it is accepted.
+ * @param oldTemp Old base temperature. Only valid if oldRes is not zero.
+ * @param newRes  Pointer to proposed new resistance. You can modify
+ *                its value to change the updated base resistance.
+ * @param newTemp Pointer to proposed new temperature. You can modify
+ *                its value to change the updated base temperature.
+ *
+ * @return True to update, false to ignore the new values.
+ */
+typedef uint8_t (*Atomizer_BaseUpdateCallback_t)(uint16_t oldRes, uint8_t oldTemp, uint16_t *newRes, uint8_t *newTemp);
 
 /**
  * Initializes the atomizer library.
@@ -144,12 +170,13 @@ Atomizer_Error_t Atomizer_GetError();
 void Atomizer_ReadInfo(Atomizer_Info_t *info);
 
 /**
- * Estimates coil temp
+ * Sets a callback that will be invoked when base resistance
+ * and/or temperature are going to be updated.
+ * If a callback was previously set, it will be replaced.
  *
- * @return temperature, in °F.
- *
+ * @param callbackPtr Callback function pointer, or NULL to disable.
  */
-void Atomizer_EstimateCoilTemp(Atomizer_Info_t *info);
+void Atomizer_SetBaseUpdateCallback(Atomizer_BaseUpdateCallback_t callbackPtr);
 
 /**
  * Reads the DC/DC converter temperature.
