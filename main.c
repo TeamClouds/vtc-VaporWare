@@ -195,6 +195,7 @@ int main() {
     i = 0;
     while (1) {
     g.charging = Battery_IsCharging();
+    Atomizer_ReadInfo(&g.atomInfo);
 
     if ((s.dumpPids || s.tunePids) && !g.charging)
                 s.dumpPids = s.tunePids = 0;
