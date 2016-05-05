@@ -93,6 +93,6 @@ void wattBottomDisplay(uint8_t atomizerOn) {
     char buff[9];
 	Display_PutPixels(0, 100, tempImage, tempImage_width, tempImage_height);
 
-	printNumber(buff, CToDisplay(g.atomInfo.temperature));
+	printNumber(buff, CToDisplay(g.curTemp));
 	Display_PutText(24, 107, buff, FONT_MEDIUM);
 }

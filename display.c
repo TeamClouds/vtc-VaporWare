@@ -119,9 +119,9 @@ void updateScreen(struct globals *g) {
     	Display_PutPixels(0, 70, ohm, ohm_width, ohm_height);
 
     	if (atomizerOn) {
-    	getFloating(buff, g->atomInfo.resistance);
+    	getFloating(buff, g->baseRes);
     	} else {
-    	getFloating(buff, g->atomInfo.base_resistance);
+    	getFloating(buff, g->baseRes);
     	}
     	Display_PutText(26, 75, buff, FONT_MEDIUM);
         g->vapeModes[s.mode]->bottomDisplay(atomizerOn);

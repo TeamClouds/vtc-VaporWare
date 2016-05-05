@@ -337,10 +337,12 @@ void saveTCR(int32_t value) {
 }
 
 void saveTemp(int32_t value) {
+    g.fromUser = 1;
     baseTempSet(value & 0xFFFF);
 }
 
 void saveBaseRes(int32_t value) {
+    g.fromUser = 1;
     baseResSet(value & 0xFFFF);
 }
 
@@ -350,7 +352,7 @@ struct menuItem dragonMenuItems[] = {
         .label = "TCR",
         .editMin = TCRMIN,
         .editMax = TCRMAX,
-        .editStart = (int32_t *)&g.atomInfo.tcr,
+        .editStart = &g.m3,
         .editStep = 1,
         .editFormat = &formatINT,
         .editCallback = &saveTCR,
@@ -360,7 +362,7 @@ struct menuItem dragonMenuItems[] = {
         .label = "B.Temp",
         .editMin = BTEMPMIN,
         .editMax = BTEMPMAX,
-        .editStart = (int32_t *)&g.atomInfo.base_temperature,
+        .editStart = &g.m2,
         .editStep = 1,
         .editFormat = &formatINT,
         .editCallback = &saveTemp,
@@ -370,7 +372,7 @@ struct menuItem dragonMenuItems[] = {
         .label = "B.Res",
         .editMin = 50,
         .editMax = 3450,
-        .editStart = (int32_t *)&g.atomInfo.base_resistance,
+        .editStart = &g.m1,
         .editStep = 5,
         .editFormat = &formatThousandths,
         .editCallback = &saveBaseRes

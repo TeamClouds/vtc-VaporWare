@@ -17,7 +17,7 @@ void materialIndexSet(uint32_t materialIndex) {
         s.materialIndex = materialIndex;
     }
 
-    g.atomInfo.tcr = vapeMaterialList[materialIndex].tcr;
+    g.tcr = vapeMaterialList[materialIndex].tcr;
     g.baseSettingsChanged = 1;
     g.settingsChanged = 1;
 }
@@ -187,7 +187,8 @@ void tcrSet(uint16_t tcr) {
         s.tcr = tcr;
     }
 
-    g.atomInfo.tcr = s.tcr;
+    g.m3 = tcr;
+    g.tcr = s.tcr;
     g.settingsChanged = 1;
 }
 
@@ -200,7 +201,8 @@ void baseTempSet(int16_t baseTemp) {
         s.baseTemp = baseTemp;
     }
 
-    g.atomInfo.base_temperature = baseTemp;
+    g.m2 = baseTemp;
+    g.baseTemp = baseTemp;
     g.settingsChanged = 1;
 }
 
@@ -213,7 +215,8 @@ void baseResSet(uint16_t baseRes) {
         s.baseRes = baseRes;
     }
 
-    g.atomInfo.base_resistance = baseRes;
+    g.m1 = baseRes;
+    g.baseRes = baseRes;
     g.settingsChanged = 1;
 }
 
