@@ -63,6 +63,9 @@ void setVapeMode(int newMode) {
 }
 
 inline void screenOn() {
+    if (!s.stealthMode)
+        Display_SetOn(1);
+
     g.sysSleepAt = 0;
     g.screenState = gv.uptime + s.screenTimeout * 10;
     g.pauseScreenOff = 1;
@@ -81,6 +84,7 @@ void uptime(uint32_t param) {
 }
 
 void fire(uint8_t status, uint32_t held) {
+
     screenOn();
     if (Button_GetState() & BUTTON_MASK_RIGHT) {
         stealthModeSet(!s.stealthMode);
