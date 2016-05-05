@@ -135,8 +135,8 @@ uint8_t newReading(uint16_t oldRes, uint8_t oldTemp, uint16_t *newRes, uint8_t *
     // Todo, check with the user, etc
     if (!g.fromUser) {
         if (*newRes < g.baseRes && g.baseRes > 0) {
-            g.baseRes = *newRes;
-            g.baseTemp = *newTemp;
+            baseResSet(*newRes);
+            baseTempSet(*newTemp);
         }
     }
     return 1;
