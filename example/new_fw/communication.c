@@ -271,13 +271,13 @@ void updateAtomizer(char *buffer, char *response) {
     }
 
     if (strncmp(setting,"base_resistance",15) == 0) {
-        if (parseUInt16(value, "base_resistance", response, 3500, 0, &g.atomInfo.base_resistance))
+        if (parseUInt16(value, "base_resistance", response, 3500, 0, &g.baseRes))
             return;
     } else if (strncmp(setting,"base_temperature", 16) == 0) {
-        if (parseUInt32(value, "base_temperature", response, 200, 0, &g.atomInfo.base_temperature))
+        if (parseInt16(value, "base_temperature", response, 200, 0, &g.baseTemp))
             return;
     } else if (strncmp(setting,"tcr", 3) == 0) {
-        if (parseUInt16(value, "tcr", response, 1000, 10, &g.atomInfo.tcr))
+        if (parseUInt16(value, "tcr", response, 1000, 10, &g.tcr))
             return;
     }
     if (response[0] == '$') {
@@ -294,15 +294,15 @@ void dumpAtomizer(char *buffer, char *response) {
     USB_VirtualCOM_SendString(buff);
     siprintf(buff, "atomInfo,%s,%i\r\n","resistance",a->resistance);
     USB_VirtualCOM_SendString(buff);
-    siprintf(buff, "atomInfo,%s,%i\r\n","base_resistance",a->base_resistance);
+    siprintf(buff, "atomInfo,%s,%i\r\n","base_resistance",g.baseRes);
     USB_VirtualCOM_SendString(buff);
-    siprintf(buff, "atomInfo,%s,%ld\r\n","base_temperature",a->base_temperature);
+    siprintf(buff, "atomInfo,%s,%d\r\n","base_temperature",g.baseTemp);
     USB_VirtualCOM_SendString(buff);
     siprintf(buff, "atomInfo,%s,%i\r\n","current",a->current);
     USB_VirtualCOM_SendString(buff);
-    siprintf(buff, "atomInfo,%s,%ld\r\n","temperature",a->temperature);
+    siprintf(buff, "atomInfo,%s,%d\r\n","temperature",g.curTemp);
     USB_VirtualCOM_SendString(buff);
-    siprintf(buff, "atomInfo,%s,%i\r\n","tcr",a->tcr);
+    siprintf(buff, "atomInfo,%s,%i\r\n","tcr",g.tcr);
     USB_VirtualCOM_SendString(buff);
  
 }

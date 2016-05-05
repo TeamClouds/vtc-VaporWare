@@ -47,14 +47,6 @@ typedef struct {
 	 */
 	uint16_t resistance;
 	/**
-	 * Atomizer base resistance, in mOhm
-	 */
-	uint16_t base_resistance;
-	/**
-	 * Temperature resistance was measured at
-	 */
-	uint32_t base_temperature;
-	/**
 	 * Output current in mA, measured at the atomizer.
 	 */
 	uint16_t current;

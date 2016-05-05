@@ -15,6 +15,7 @@ void DFSettingsToGlobals(struct baseSettings_1 *b, struct freqSettings_1 *f, uin
 
     // Must set material before temperature stuff
     materialIndexSet(b->materialIndex);
+    tcrSet(vapeMaterialList[s.materialIndex].tcr);
     // Must set scale type before temperature
     // dependant values
     tempScaleTypeIndexSet(b->tempScaleTypeIndex);

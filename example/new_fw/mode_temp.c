@@ -271,13 +271,15 @@ void tempFire() {
 	// Update info
 	// If resistance is zero voltage will be zero
 	Atomizer_ReadInfo(&g.atomInfo);
+    EstimateCoilTemp();
+
         if (!pidactive) {
-            if ((int32_t)s.targetTemperature - (int32_t)g.atomInfo.temperature >= s.pidSwitch) {
+            if ((int32_t)s.targetTemperature - (int32_t)g.curTemp >= s.pidSwitch) {
                 g.watts = s.initWatts;
             } else {
                 if (s.dumpPids) {
                     char b[63];
-                    siprintf(b, "INFO,Switching to PID %ld %ld\r\n", s.targetTemperature, g.atomInfo.temperature);
+                    siprintf(b, "INFO,Switching to PID %ld %d\r\n", s.targetTemperature, g.curTemp);
                     USB_VirtualCOM_SendString(b);
                 }
                 pidactive = 1;
@@ -327,10 +329,11 @@ void tempFire() {
 	    Atomizer_SetOutputVoltage(g.volts);
 	}
 	Atomizer_ReadInfo(&g.atomInfo);
+    EstimateCoilTemp();
 	// TODO: We might need a short sleep here?
 //        if (pidactive || s.targetTemperature < g.atomInfo.temperature + 50) 
 {
-	    g.watts = getNext(g.atomInfo.temperature);
+	    g.watts = getNext(g.curTemp);
             pidactive = 1;
         } 
         if (g.watts < 0)
@@ -346,9 +349,9 @@ void tempFire() {
 	if (1 || prline) {
 	     if (s.dumpPids) {
                  char buff[63];
-                 siprintf(buff, "PID,%ld,%ld,%ld,%d\r\n",
+                 siprintf(buff, "PID,%ld,%d,%ld,%d\r\n",
                           s.targetTemperature, 
-                          g.atomInfo.temperature,
+                          g.curTemp,
                           g.watts,
 	                  g.atomInfo.resistance);
                  USB_VirtualCOM_SendString(buff);
@@ -391,7 +394,7 @@ void tempDown() {
 void tempDisplay(uint8_t atomizerOn) {
     char buff[9];
     if (atomizerOn) {
-        printNumber(buff, CToDisplay(g.atomInfo.temperature));
+        printNumber(buff, CToDisplay(g.curTemp));
     } else {
         printNumber(buff, s.displayTemperature);
     }

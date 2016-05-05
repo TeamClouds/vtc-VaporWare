@@ -131,12 +131,24 @@ struct buttonHandler mainButtonHandler = {
 
 };
 
+uint8_t newReading(uint16_t oldRes, uint8_t oldTemp, uint16_t *newRes, uint8_t *newTemp) {
+    // Todo, check with the user, etc
+    if (!g.fromUser) {
+        if (*newRes < g.baseRes && g.baseRes > 0) {
+            g.baseRes = *newRes;
+            g.baseTemp = *newTemp;
+        }
+    }
+    return 1;
+}
+
 int main() {
     int i = 0;
     gv.uptimeTimer = Timer_CreateTimer(100, 1, uptime, 3);
     Communication_Init();
     initHandlers();
     setHandler(&mainButtonHandler);
+    Atomizer_SetBaseUpdateCallback(newReading);
 
 #define REGISTER_MODE(X) modeCount++; g.vapeModes[X.index] = &X
     REGISTER_MODE(variableVoltage);
@@ -163,12 +175,15 @@ int main() {
         i++;
     } while (i < 100 && g.atomInfo.resistance == 0);
 
-    while (g.atomInfo.resistance - g.atomInfo.base_resistance > 10) {
+    while (g.atomInfo.resistance - g.atomInfo.baseResistance > 10) {
         Atomizer_ReadInfo(&g.atomInfo);
         updateScreen(&g);
     }
     screenOn();
     screenOff();
+
+    baseResSet(g.atomInfo.baseResistance);
+    baseTempSet(g.atomInfo.baseTemperature);
 
     if (!s.fromRom)
     gv.shouldShowMenu = 1;

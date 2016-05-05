@@ -704,10 +704,6 @@ void Atomizer_ReadInfo(Atomizer_Info_t *info) {
 
 		info->voltage = 0;
 		info->current = 0;
-		if (Atomizer_baseRes && (info->base_resistance >= Atomizer_baseRes || info->base_resistance == 0)) {
-	            info->base_resistance = Atomizer_baseRes;
-		    info->base_temperature = Atomizer_ReadBoardTemp();
-		}
 		info->resistance = Atomizer_baseRes;
 	}
 	else {

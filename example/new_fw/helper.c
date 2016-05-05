@@ -52,3 +52,19 @@ uint32_t CToDisplay(uint32_t T) {
     // Something Bad Happened
     return T;
 }
+
+void EstimateCoilTemp() {
+    uint32_t boardTemp = g.baseTemp;
+    if (g.atomInfo.resistance > g.baseRes && g.tcr) {
+        // TODO: make suck less
+        uint32_t baseRes = g.baseRes;
+        uint32_t current = g.atomInfo.resistance;
+        if (current > baseRes) {
+            boardTemp = ((((float)current / baseRes) - 1.0) / (g.tcr)) * 100000;
+        }
+        // TODO: give options other than just F
+        g.curTemp = g.baseTemp + boardTemp;
+    } else {
+        g.curTemp = boardTemp;
+    }
+}
