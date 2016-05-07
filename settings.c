@@ -123,14 +123,18 @@ void showInfo(void) {
 
     Display_PutText(0, 0, "FW Ver", FONT_SMALL);
     siprintf(buff, "%s", "-0.01");
-    Display_PutText(10, 15, buff, FONT_SMALL);
+    Display_PutText(10, 10, buff, FONT_SMALL);
 
-    Display_PutText(0, 40, "HW Ver", FONT_SMALL);
+    Display_PutText(0, 25, "HW Ver", FONT_SMALL);
     siprintf(buff, "%d.%02d", hwVerMajor, hwVerMinor);
-    Display_PutText(10, 55, buff, FONT_SMALL);
+    Display_PutText(10, 35, buff, FONT_SMALL);
 
-    Display_PutText(0, 80, "Display", FONT_DEJAVU_8PT);
-    Display_PutText(10, 95, Display_GetType() == DISPLAY_SSD1327 ? "1327" : "1306", FONT_SMALL);
+    Display_PutText(0, 50, "Display", FONT_SMALL);
+    Display_PutText(10, 60, Display_GetType() == DISPLAY_SSD1327 ? "1327" : "1306", FONT_SMALL);
+
+    Display_PutText(0, 75, "Uptime", FONT_SMALL);
+    siprintf(buff, "%lu", gv.uptime / 100);
+    Display_PutText(10,85, buff, FONT_SMALL);
 
     Display_Update();
 
