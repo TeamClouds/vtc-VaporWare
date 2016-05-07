@@ -110,7 +110,7 @@ void populateScales(struct menuItem *MI) {
 }
 
 void updateScale(uint16_t index) {
-    s.tempScaleTypeIndex = index;
+    tempScaleTypeIndexSet(index);
 }
 
 void showInfo(void) {
