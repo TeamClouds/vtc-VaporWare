@@ -286,9 +286,10 @@ void tempFire() {
             }
         }
 	// Don't allow firing > 1 ohm in temp mode.
-	if (g.atomInfo.resistance > 1000) {
+/*	TODO: Maybe make this baseRes dependant
+    if (g.atomInfo.resistance > 1000) {
 	    g.watts = 0;
-	}
+	} */
 
         if (g.watts < 0)
             g.watts = 1000;
