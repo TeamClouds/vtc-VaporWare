@@ -38,7 +38,7 @@
 
 // Temp mode watts (and wattage mode default)
 #define MINWATTS 0
-#define MAXWATTS 60000
+#define MAXWATTS 75000
 #define DEFWATTS 15000
 
 // Volt mode
