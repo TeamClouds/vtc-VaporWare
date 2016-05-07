@@ -136,6 +136,8 @@ void showInfo(void) {
     siprintf(buff, "%lu", gv.uptime / 100);
     Display_PutText(10,85, buff, FONT_SMALL);
 
+    Display_PutText(0,100, GIT_VERSION, FONT_SMALL);
+
     Display_Update();
 
     while(Button_GetState()){;}
