@@ -61,9 +61,45 @@ void updateScreen(struct globals *g) {
     if (s.stealthMode)
         return;
 
+    uint32_t uptime = gv.uptime;
+    uint32_t targetBrightness = s.screenBrightness;
+
     char buff[9];
 
-    if (g->charging && !g->pauseScreenOff && (g->screenState < gv.uptime)) {
+    if (g->screenFadeInTime == 0) {
+        g->screenFadeInTime = uptime + FADEINTIME;
+    }
+
+    int chargeScreen = (g->charging && !g->pauseScreenOff && (g->screenOffTime < uptime));
+
+    if (!g->pauseScreenOff && FADEOUTTIME >= g->screenOffTime - uptime && g->screenOffTime >= uptime) {
+
+        // fade out if timing out
+        g->currentBrightness = (((g->screenOffTime - uptime) * 1000 / FADEOUTTIME) * targetBrightness) / 1000;
+
+    } else if (!chargeScreen && g->screenFadeInTime != 0 && uptime <= g->screenFadeInTime) {
+
+        // fade in
+        uint32_t startTime = g->screenFadeInTime - FADEINTIME;
+        g->currentBrightness = (((uptime - startTime) * 1000 / FADEINTIME) * targetBrightness) / 1000;
+
+    } else if (chargeScreen) {
+
+        g->currentBrightness = 40;
+
+    }
+
+    bool needBrightness = g->currentBrightness <= targetBrightness;
+    if (needBrightness && !chargeScreen) {
+        // update animation time left
+        g->screenFadeInTime = uptime +
+                (FADEINTIME - (((g->currentBrightness * 1000 / targetBrightness) * FADEINTIME) / 1000));
+
+    }
+
+    Display_SetContrast((char *)  g->currentBrightness);
+
+    if (chargeScreen) {
         Display_Clear();
         // update the battery percent all the time if
         // we are charging
@@ -74,6 +110,9 @@ void updateScreen(struct globals *g) {
         Display_PutText((DISPLAY_WIDTH/2)-((12*size)/2),
             (DISPLAY_HEIGHT/2)-12, buff, FONT_LARGE);
         Display_Update();
+        if (g->screenFadeInTime != 0) {
+            g->screenFadeInTime = 0;
+        }
         return;
     }
 

@@ -67,7 +67,7 @@ inline void screenOn() {
         Display_SetOn(1);
 
     g.sysSleepAt = 0;
-    g.screenState = gv.uptime + s.screenTimeout * 10;
+    g.screenOffTime = gv.uptime + s.screenTimeout * 10;
     g.pauseScreenOff = 1;
 }
 
@@ -219,13 +219,13 @@ int main() {
     } else if (s.stealthMode) {
         Display_Clear();
         Display_SetOn(0);
-    } else if (!s.stealthMode && (g.nextRefresh < gv.uptime) && ((g.screenState >= gv.uptime) || g.charging)) {
+    } else if (!s.stealthMode && (g.nextRefresh < gv.uptime) && ((g.screenOffTime >= gv.uptime) || g.charging)) {
         g.nextRefresh = gv.uptime + 6;
         Display_SetOn(1);
         updateScreen(&g);
     } else if (gv.sleeping) {
         gv.sleeping = 0;
-    } else if ((g.screenState < gv.uptime) && !g.charging) {
+    } else if ((g.screenOffTime < gv.uptime) && !g.charging) {
 
         if (g.settingsChanged && !g.writeSettingsAt)
             g.writeSettingsAt = gv.uptime + SETTINGSWRITEDEFAULT;
@@ -233,6 +233,7 @@ int main() {
         if (g.sysSleepAt == 0)
             g.sysSleepAt = gv.uptime + SYSSLEEPDEFAULT;
 
+        g.screenFadeInTime = 0;
         Display_Clear();
         Display_SetOn(0);
         if (!g.settingsChanged) {
