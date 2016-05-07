@@ -3,9 +3,6 @@
 #include <USB_VirtualCOM.h>
 #include <stdarg.h>
 
-#define D() ;{char __buff[63];siprintf(__buff, "File: %s Line: %i\r\n", __FILE__, __LINE__);USB_VirtualCOM_SendString(__buff);};
-#define W() ;{while(USB_VirtualCOM_GetAvailableSize() == 0){;}};
-
 static inline void writeUsb(const char *format, ...) {
     va_list args;
     va_start(args, format);
@@ -16,5 +13,8 @@ static inline void writeUsb(const char *format, ...) {
 
     va_end(args);
 }
+
+#define D() do {writeUsb("File: %s Line: %i\r\n", __FILE__, __LINE__);} while(0)
+#define W() do {;} while(USB_VirtualCOM_GetAvailableSize() == 0)
 
 #endif
