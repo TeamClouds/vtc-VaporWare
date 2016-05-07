@@ -44,6 +44,9 @@
  */
 static uint8_t Display_framebuf[DISPLAY_FRAMEBUFFER_SIZE];
 
+/**
+ * Display type. Depends on hardware version.
+ */
 static Display_Type_t Display_type;
 
 void Display_SetupSPI() {
@@ -292,4 +295,8 @@ void Display_SetContrast(char *contrast) {
 	};
 
 	Display_SSD_Write(0, Display_ContrastCommand, sizeof(Display_ContrastCommand));
+}
+
+uint8_t *Display_GetFramebuffer() {
+	return Display_framebuf;
 }
