@@ -1,6 +1,9 @@
 TARGET = atomizer
 
 #ISDEV := "Yes, damange my device"
+GIT_VERSION := $(shell git describe --abbrev=4 --dirty --always --tags)
+
+CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
 
 OBJS = \
     globals.o \
