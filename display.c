@@ -158,7 +158,7 @@ void updateScreen(struct globals *g) {
     	Display_PutPixels(0, 70, ohm, ohm_width, ohm_height);
 
     	if (atomizerOn) {
-    	getFloating(buff, g->baseRes);
+            getFloating(buff, g->atomInfo.resistance);
     	} else {
     	getFloating(buff, g->baseRes);
     	}
