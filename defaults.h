@@ -7,6 +7,12 @@
 
 #define FADEOUTTIME 60
 #define FADEINTIME 50
+#define MAXFADE (SCREENDEFAUTLTIMEOUT / 2)
+#define MINFADE 0
+
+#define MINBRIGHTNESS 0
+#define MAXBRIGHTNESS 100
+#define DEFBRIGHTNESS 50
 
 // After screen off
 #define SYSSLEEPDEFAULT 180 * 10
@@ -30,10 +36,16 @@
 #define DEFPIDI 5500
 #define DEFPIDD 0
 
-// Temp mode watts (and wattage mode default?)
+// Temp mode watts (and wattage mode default)
 #define MINWATTS 0
 #define MAXWATTS 60000
 #define DEFWATTS 15000
+
+// Volt mode
+#define MINVOLTS 0
+// May not be sane... 60 watts at 3.5o
+#define MAXVOLTS 14000
+#define DEFVOLTS 3000
 
 // Temp mode pid handoff temp differential
 #define STEMPMIN -600

@@ -118,17 +118,17 @@ void showInfo(void) {
     uint8_t hwVerMajor, hwVerMinor;
     hwVerMajor = gSysInfo.hwVersion / 100;
     hwVerMinor = gSysInfo.hwVersion % 100;
-    
+
     Display_Clear();
 
     Display_PutText(0, 0, "FW Ver", FONT_SMALL);
     siprintf(buff, "%s", "-0.01");
     Display_PutText(10, 15, buff, FONT_SMALL);
-    
+
     Display_PutText(0, 40, "HW Ver", FONT_SMALL);
     siprintf(buff, "%d.%02d", hwVerMajor, hwVerMinor);
     Display_PutText(10, 55, buff, FONT_SMALL);
-    
+
     Display_PutText(0, 80, "Display", FONT_DEJAVU_8PT);
     Display_PutText(10, 95, Display_GetType() == DISPLAY_SSD1327 ? "1327" : "1306", FONT_SMALL);
 
@@ -166,12 +166,12 @@ void eraseDataFlash() {
 #endif
 
 void invertSet(uint8_t a){
-	s.invertDisplay = a;
-    Display_SetInverted(s.invertDisplay);
+	invertDisplaySet(a);
+
 }
 
 void flipSet(uint8_t a) {
-	s.flipOnVape = a;
+	flipOnVapeSet(s.flipOnVape);
 }
 
 uint8_t display_flip = FLIPDEF;
@@ -337,12 +337,12 @@ void saveTCR(int32_t value) {
 }
 
 void saveTemp(int32_t value) {
-    g.fromUser = 1;
+    g.baseFromUser = 1;
     baseTempSet(value & 0xFFFF);
 }
 
 void saveBaseRes(int32_t value) {
-    g.fromUser = 1;
+    g.baseFromUser = 1;
     baseResSet(value & 0xFFFF);
 }
 
@@ -481,9 +481,7 @@ int load_settings(void) {
     // Should become part of globals instead of settings
     s.dumpPids = 0;
     readSettings();
-    s.flipOnVape = 0;
-    s.screenBrightness = 50;
-    s.invertDisplay = 0;
+
     return 1;
 }
 

@@ -11,7 +11,7 @@
 
 struct globals {
     Atomizer_Info_t atomInfo;
-    uint8_t fromUser;
+    uint8_t baseFromUser;
     int32_t m1;
     uint16_t baseRes;
     int32_t m2;

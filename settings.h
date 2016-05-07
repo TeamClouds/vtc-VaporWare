@@ -8,8 +8,12 @@ struct settings {
     uint8_t fromRom;
     uint8_t mode;
     uint16_t screenTimeout;
+    uint8_t fadeInTime;
+    uint8_t fadeOutTime;
     volatile uint32_t displayTemperature;
     volatile uint32_t targetTemperature;
+    uint32_t targetWatts;
+    uint16_t targetVolts;
     uint8_t materialIndex;
     uint8_t tempScaleTypeIndex;
     uint32_t pidP;
@@ -17,17 +21,20 @@ struct settings {
     uint32_t pidD;
     int32_t initWatts;
     int32_t pidSwitch;
-    uint8_t dumpPids;
-    uint8_t tunePids;
-/* Adding in V2 of dataflash */
     uint8_t invertDisplay;
     uint8_t flipOnVape;
     uint16_t tcr;
+    uint8_t baseFromUser;
     int16_t baseTemp;
     uint16_t baseRes;
     uint32_t screenBrightness;
+
+
+    /* Runtime settings that don't need to  be persisted */
     uint8_t stealthMode;
     uint8_t vsetLock;
+    uint8_t dumpPids;
+    uint8_t tunePids;
 };
 
 extern struct settings s;
@@ -64,10 +71,16 @@ void invertDisplaySet(uint8_t invertDisplay);
 void flipOnVapeSet(uint8_t flipOnVape);
 
 void tcrSet(uint16_t tcr);
+void baseFromUserSet(uint8_t baseFromuser);
 void baseTempSet(int16_t baseTemp);
 void baseResSet(uint16_t baseRes);
 
 void screenBrightnessSet(uint8_t brightness);
 void stealthModeSet(uint8_t stealthMode);
 void vsetLockSet(uint8_t vsetLock);
+
+void fadeInTimeSet(uint8_t fadeInTime);
+void fadeOutTimeSet(uint8_t fadeOutTime);
+void targetWattsSet(uint32_t targetWatts);
+void targetVoltsSet(uint16_t targetVolts);
 #endif
