@@ -47,9 +47,9 @@ void modeSet(uint8_t mode) {
 
 void screenTimeoutSet(uint16_t screenTimeout) {
     if (screenTimeout < SCREENMINTIMEOUT) {
-        s.screenTimeout = SCREENDEFAUTLTIMEOUT;
+        s.screenTimeout = SCREENDEFAULTTIMEOUT;
     } else if (screenTimeout > SCREENMAXTIMEOUT) {
-        s.screenTimeout = SCREENDEFAUTLTIMEOUT;
+        s.screenTimeout = SCREENDEFAULTTIMEOUT;
     } else {
         s.screenTimeout = screenTimeout;
     }

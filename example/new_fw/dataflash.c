@@ -84,7 +84,7 @@ void default_base_2(struct baseSettings_2 *b) {
     b->pidD = DEFPIDD;
     b->initWatts = DEFWATTS;
     b->pidSwitch = STEMPDEF;
-    b->screenTimeout = SCREENDEFAUTLTIMEOUT;
+    b->screenTimeout = SCREENDEFAULTTIMEOUT;
     b->fadeInTime = FADEINTIME;
     b->fadeOutTime = FADEOUTTIME;
     b->materialIndex = DEFAULTMATERIAL;
@@ -112,7 +112,7 @@ void default_base_1(struct baseSettings_1 *b) {
     b->pidD = DEFPIDD;
     b->initWatts = DEFWATTS;
     b->pidSwitch = STEMPDEF;
-    b->screenTimeout = SCREENDEFAUTLTIMEOUT;
+    b->screenTimeout = SCREENDEFAULTTIMEOUT;
     b->materialIndex = DEFAULTMATERIAL;
     b->tempScaleTypeIndex = DEFAULTTEMPSCALE;
 }
