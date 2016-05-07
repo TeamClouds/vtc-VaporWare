@@ -6,6 +6,9 @@
 #define SCREENMAXTIMEOUT 600
 #define SCREENDEFAUTLTIMEOUT 30
 
+#define FADEOUTTIME 60
+#define FADEINTIME 50
+
 // After screen off
 #define SYSSLEEPDEFAULT 180 * 10
 // After screen off, may block sys sleep
@@ -92,7 +95,7 @@ struct settings {
     uint16_t tcr;
     int16_t baseTemp;
     uint16_t baseRes;
-    int screenBrightness;
+    uint32_t screenBrightness;
     uint8_t stealthMode;
     uint8_t vsetLock;
 };

@@ -32,10 +32,11 @@ struct globals {
     uint32_t maxTemp;
     uint32_t minTemp;
     uint8_t batteryPercent;
-    uint32_t screenState;
+    uint32_t screenOffTime;
+    uint32_t screenFadeInTime;
     int8_t pauseScreenOff;
     uint32_t nextRefresh;
-
+    uint32_t currentBrightness;
     uint8_t settingsChanged;
     uint8_t baseSettingsChanged;
     uint8_t freqSettingsChanged;
