@@ -67,21 +67,21 @@ void updateScreen(struct globals *g) {
     char buff[9];
 
     if (g->screenFadeInTime == 0) {
-        g->screenFadeInTime = uptime + FADEINTIME;
+        g->screenFadeInTime = uptime + s.fadeInTime;
     }
 
     int chargeScreen = (g->charging && !g->pauseScreenOff && (g->screenOffTime < uptime));
 
-    if (!g->pauseScreenOff && FADEOUTTIME >= g->screenOffTime - uptime && g->screenOffTime >= uptime) {
+    if (!g->pauseScreenOff && s.fadeOutTime >= g->screenOffTime - uptime && g->screenOffTime >= uptime) {
 
         // fade out if timing out
-        g->currentBrightness = (((g->screenOffTime - uptime) * 1000 / FADEOUTTIME) * targetBrightness) / 1000;
+        g->currentBrightness = (((g->screenOffTime - uptime) * 1000 / s.fadeOutTime) * targetBrightness) / 1000;
 
     } else if (!chargeScreen && g->screenFadeInTime != 0 && uptime <= g->screenFadeInTime) {
 
         // fade in
-        uint32_t startTime = g->screenFadeInTime - FADEINTIME;
-        g->currentBrightness = (((uptime - startTime) * 1000 / FADEINTIME) * targetBrightness) / 1000;
+        uint32_t startTime = g->screenFadeInTime - s.fadeInTime;
+        g->currentBrightness = (((uptime - startTime) * 1000 / s.fadeInTime) * targetBrightness) / 1000;
 
     } else if (chargeScreen) {
 
@@ -93,7 +93,7 @@ void updateScreen(struct globals *g) {
     if (needBrightness && !chargeScreen) {
         // update animation time left
         g->screenFadeInTime = uptime +
-                (FADEINTIME - (((g->currentBrightness * 1000 / targetBrightness) * FADEINTIME) / 1000));
+                (s.fadeInTime - (((g->currentBrightness * 1000 / targetBrightness) * s.fadeInTime) / 1000));
 
     }
 
