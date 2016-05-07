@@ -315,7 +315,7 @@ void drawMenu() {
             toggles[0] = MI->off;
             toggles[1] = MI->on;
             MI->items = &toggles;
-            MI->startAt = !!MI->isSet;
+            MI->startAt = !!(*MI->isSet);
             MI->count = 2;
         }
 
