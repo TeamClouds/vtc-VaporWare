@@ -137,11 +137,10 @@ struct buttonHandler mainButtonHandler = {
 
 uint8_t newReading(uint16_t oldRes, uint8_t oldTemp, uint16_t *newRes, uint8_t *newTemp) {
     // Todo, check with the user, etc
-    if (!g.fromUser) {
-        if (*newRes < g.baseRes && g.baseRes > 0) {
+    if ((!g.baseFromUser && *newRes < g.baseRes && *newRes > 0) ||
+          g.baseRes == 0) {
             baseResSet(*newRes);
             baseTempSet(*newTemp);
-        }
     }
     return 1;
 }

@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <Display.h>
 #include "globals.h"
 #include "debug.h"
 #include "materials.h"
@@ -26,7 +27,7 @@ void modeSet(uint8_t mode) {
     if (mode < 0) {
         s.mode = DEFAULTMODE;
     } else if (mode >= modeCount) {
-        /* This is currently 'not perfect' as vapemodes is a larger 
+        /* This is currently 'not perfect' as vapemodes is a larger
            array than we use.  Point to cleanup */
         s.mode = DEFAULTMODE;
     } else if (g.vapeModes[mode] == NULL) {
@@ -64,7 +65,7 @@ void tempScaleTypeIndexSet(uint8_t tempScaleTypeIndex) {
     } else if (tempScaleTypeIndex >= tempScaleCount) {
         s.tempScaleTypeIndex = DEFAULTTEMPSCALE;
     } else if (tempScaleType[tempScaleTypeIndex].display[0] == '\0') {
-        s.tempScaleTypeIndex = DEFAULTTEMPSCALE;   
+        s.tempScaleTypeIndex = DEFAULTTEMPSCALE;
     } else {
         s.tempScaleTypeIndex = tempScaleTypeIndex;
     }
@@ -165,6 +166,8 @@ void invertDisplaySet(uint8_t invertDisplay) {
     } else {
         s.invertDisplay = invertDisplay;
     }
+    Display_SetInverted(s.invertDisplay);
+    g.baseSettingsChanged = 1;
     g.settingsChanged = 1;
 }
 
@@ -175,6 +178,7 @@ void flipOnVapeSet(uint8_t flipOnVape) {
     } else {
         s.flipOnVape = flipOnVape;
     }
+    g.baseSettingsChanged = 1;
     g.settingsChanged = 1;
 }
 
@@ -189,6 +193,7 @@ void tcrSet(uint16_t tcr) {
 
     g.m3 = tcr;
     g.tcr = s.tcr;
+    g.baseSettingsChanged = 1;
     g.settingsChanged = 1;
 }
 
@@ -203,6 +208,19 @@ void baseTempSet(int16_t baseTemp) {
 
     g.m2 = baseTemp;
     g.baseTemp = baseTemp;
+    g.freqSettingsChanged = 1;
+    g.settingsChanged = 1;
+}
+
+void baseFromUserSet(uint8_t baseFromUser) {
+    if (baseFromUser != 0 &&
+        baseFromUser != 1) {
+        s.baseFromUser = 0;
+    } else {
+        s.baseFromUser = baseFromUser;
+    }
+    g.baseFromUser = s.baseFromUser;
+    g.freqSettingsChanged = 1;
     g.settingsChanged = 1;
 }
 
@@ -217,6 +235,7 @@ void baseResSet(uint16_t baseRes) {
 
     g.m1 = baseRes;
     g.baseRes = baseRes;
+    g.freqSettingsChanged = 1;
     g.settingsChanged = 1;
 }
 
@@ -228,6 +247,7 @@ void screenBrightnessSet(uint8_t brightness) {
 	} else {
 		s.screenBrightness = brightness;
 	}
+    g.baseSettingsChanged = 1;
     g.settingsChanged = 1;
 }
 
@@ -238,15 +258,61 @@ void stealthModeSet(uint8_t stealthMode) {
     } else {
         s.stealthMode = stealthMode;
     }
-    g.settingsChanged = 1;
 }
 
 void vsetLockSet(uint8_t vsetLock) {
-    if (vsetLock !=0 &&
+    if (vsetLock != 0 &&
         vsetLock != 1) {
         s.vsetLock = VSETLOCKDEF;
     } else {
         s.vsetLock = vsetLock;
     }
+}
+
+void fadeInTimeSet(uint8_t fadeInTime) {
+    if (fadeInTime > MAXFADE) {
+        s.fadeInTime = FADEINTIME;
+    } else if (fadeInTime < MINFADE) {
+        s.fadeInTime = FADEINTIME;
+    } else {
+        s.fadeInTime = fadeInTime;
+    }
+    g.baseSettingsChanged = 1;
+    g.settingsChanged = 1;
+}
+
+void fadeOutTimeSet(uint8_t fadeOutTime) {
+    if (fadeOutTime > MAXFADE) {
+        s.fadeOutTime = FADEOUTTIME;
+    } else if (fadeOutTime < MINFADE) {
+        s.fadeOutTime = FADEOUTTIME;
+    } else {
+        s.fadeOutTime = fadeOutTime;
+    }
+    g.baseSettingsChanged = 1;
+    g.settingsChanged = 1;
+}
+
+void targetWattsSet(uint32_t targetWatts) {
+    if (targetWatts > MAXWATTS) {
+        s.targetWatts = DEFWATTS;
+    } else if (targetWatts < MINWATTS) {
+        s.targetWatts = DEFWATTS;
+    } else {
+        s.targetWatts = targetWatts;
+    }
+    g.freqSettingsChanged = 1;
+    g.settingsChanged = 1;
+}
+
+void targetVoltsSet(uint16_t targetVolts) {
+    if (targetVolts > MAXVOLTS) {
+        s.targetVolts = DEFVOLTS;
+    } else if (targetVolts > MINVOLTS) {
+        s.targetVolts = DEFVOLTS;
+    } else {
+        s.targetVolts = targetVolts;
+    }
+    g.freqSettingsChanged = 1;
     g.settingsChanged = 1;
 }

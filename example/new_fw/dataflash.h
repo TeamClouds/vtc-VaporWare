@@ -43,16 +43,31 @@
 // NEVER CHANGE THIS NUMBER
 #define MYSTRUCT_FREQ_MAGIC 0x500
 
-#define BASE_VER 1
-#define FREQ_VER 1
+#define BASE_VER 2
+#define FREQ_VER 2
 /*
  * NEVER EVER CHANGE THESE.  If something needs changed, copy/paste, re-name
  * and add an upgrade path.  
  */
+#define SETTINGS_V2 (MYSTRUCT_MAGIC + 2)
+struct baseSettings_2 {
+    uint32_t pidP;
+    uint32_t pidI;
+    uint32_t pidD;
+    int32_t initWatts;
+    int32_t pidSwitch;
+    uint16_t screenTimeout;
+    uint8_t fadeInTime;
+    uint8_t fadeOutTime;
+    uint8_t materialIndex;
+    uint8_t tempScaleTypeIndex;
+    uint16_t tcr;
+    uint8_t flipOnVape;
+    uint8_t invertDisplay;
+    uint32_t screenBrightness;
+};
 
-#define SETTINGS_V1 (MYSTRUCT_MAGIC + BASE_VER)
-#define SETTINGS_MAX SETTINGS_V1
-#define SETTINGS_VCNT (SETTINGS_MAX - MYSTRUCT_MAGIC + 1)
+#define SETTINGS_V1 (MYSTRUCT_MAGIC + 1)
 struct baseSettings_1 {
     uint32_t pidP;
     uint32_t pidI;
@@ -64,14 +79,30 @@ struct baseSettings_1 {
     uint8_t tempScaleTypeIndex;
 };
 
-#define FREQ_SETTINGS_V1 (MYSTRUCT_MAGIC + MYSTRUCT_FREQ_MAGIC + FREQ_VER)
-#define FREQ_SETTINGS_MAX FREQ_SETTINGS_V1
-#define FREQ_SETTINGS_VCNT (FREQ_SETTINGS_MAX - MYSTRUCT_MAGIC - MYSTRUCT_FREQ_MAGIC + 1)
+#define FREQ_SETTINGS_V2 (MYSTRUCT_MAGIC + MYSTRUCT_FREQ_MAGIC + 2)
+struct freqSettings_2 {
+    uint32_t displayTemperature;
+    uint32_t targetTemperature;
+    uint32_t targetWatts;
+    uint16_t targetVolts;
+    uint8_t mode;
+    uint8_t baseFromUser;
+    int16_t baseTemp;
+    uint16_t baseRes;
+};
+
+#define FREQ_SETTINGS_V1 (MYSTRUCT_MAGIC + MYSTRUCT_FREQ_MAGIC + 1)
 struct freqSettings_1 {
     uint32_t displayTemperature;
     uint32_t targetTemperature;
     uint8_t mode;
 };
+
+#define SETTINGS_MAX SETTINGS_V2
+#define SETTINGS_VCNT (SETTINGS_MAX - MYSTRUCT_MAGIC + BASE_VER)
+
+#define FREQ_SETTINGS_MAX FREQ_SETTINGS_V2
+#define FREQ_SETTINGS_VCNT (FREQ_SETTINGS_MAX - MYSTRUCT_MAGIC - MYSTRUCT_FREQ_MAGIC + 1)
 
 int readSettings();
 int writeSettings();
@@ -81,4 +112,8 @@ int defaultSettings();
 void makeDFInvalid();
 void eraseDF();
 #endif
+#define XSTR(x) STR(x)
+#define STR(x) #x
+#pragma message "Base Dataflash version " XSTR(BASE_VER)
+#pragma message "Freq Dataflash version " XSTR(FREQ_VER)
 #endif
