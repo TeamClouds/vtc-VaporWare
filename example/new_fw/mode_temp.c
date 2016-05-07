@@ -119,7 +119,7 @@ struct menuItem tempSettingsOptions[] = {
 	    .type = EDIT,
 		.label = "Watts",
 		.editMin = 0,
-		.editMax = 60000,
+		.editMax = MAXWATTS,
 		.editStart = &s.initWatts,
 		.editCallback = &updateInitWatts,
 		.editStep = 100,
@@ -173,7 +173,7 @@ void initPid() {
     I.I = s.pidI;
     I.D = s.pidD;
     g.watts = s.initWatts;
-    I.Max = 60000;		// Never fire over 60 watts
+    I.Max = MAXWATTS;
     I.Min = 0;
     g.volts = wattsToVolts(g.watts, g.atomInfo.resistance);
     Atomizer_SetOutputVoltage(g.volts);
@@ -297,8 +297,8 @@ void tempFire() {
         if (g.watts > 100000)
             g.watts = 1000;
 
-        if (g.watts > 60000)
-            g.watts = 60000;
+        if (g.watts > MAXWATTS)
+            g.watts = MAXWATTS;
            
 
 	g.newVolts = wattsToVolts(g.watts, g.atomInfo.resistance);
@@ -343,8 +343,8 @@ void tempFire() {
         if (g.watts > 100000)
             g.watts = 1000;
 
-        if (g.watts > 60000)
-            g.watts = 60000;
+        if (g.watts > MAXWATTS)
+            g.watts = MAXWATTS;
         prline = now - last >= 10;
         now = last;
 	if (1 || prline) {
