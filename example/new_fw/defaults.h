@@ -43,8 +43,8 @@
 
 // Volt mode
 #define MINVOLTS 0
-// May not be sane... 60 watts at 3.5o
-#define MAXVOLTS 14000
+// May not be sane... 60 watts at 3.5o = 14V, cap at 9 like OFW
+#define MAXVOLTS 9000
 #define DEFVOLTS 3000
 
 // Temp mode pid handoff temp differential
