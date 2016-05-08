@@ -30,6 +30,10 @@ struct IntPID {
 } I = {
 };
 
+int32_t getInitWattsDefault() {
+    return s.initWatts;
+}
+
 void updateInitWatts(int32_t newWatts) {
     initWattsSet(newWatts);
 }
@@ -40,6 +44,18 @@ void formatWatts(int32_t value, char *formatted) {
 
 void formatNumber(int32_t value, char *formatted) {
     siprintf(formatted, "%lu", value);
+}
+
+int32_t getPDefault() {
+    return s.pidP;
+}
+
+int32_t getIDefault() {
+    return s.pidI;
+}
+
+int32_t getDDefault() {
+    return s.pidD;
 }
 
 void setP(int32_t p) {
@@ -60,7 +76,7 @@ struct menuItem dragonItems[] = {
         .label = "P",
         .editMin = MINPID,
         .editMax = MAXPID,
-        .editStart = (int32_t *)&s.pidP,
+        .getEditStart = &getPDefault,
         .editCallback = &setP,
         .editStep = 100,
         .editFormat = &formatNumber
@@ -70,7 +86,7 @@ struct menuItem dragonItems[] = {
         .label = "I",
         .editMin = MINPID,
         .editMax = MAXPID,
-        .editStart = (int32_t *)&s.pidI,
+        .getEditStart = &getIDefault,
         .editCallback = &setI,
         .editStep = 100,
         .editFormat = &formatNumber
@@ -80,7 +96,7 @@ struct menuItem dragonItems[] = {
         .label = "D",
         .editMin = MINPID,
         .editMax = MAXPID,
-        .editStart = (int32_t *)&s.pidD,
+        .getEditStart = &getDDefault,
         .editCallback = &setD,
         .editStep = 100,
         .editFormat = &formatNumber
@@ -121,7 +137,7 @@ struct menuItem tempSettingsOptions[] = {
         .label = "Watts",
         .editMin = MINWATTS,
         .editMax = MAXWATTS,
-        .editStart = &s.initWatts,
+        .getEditStart = &getInitWattsDefault,
         .editCallback = &updateInitWatts,
         .editStep = 100,
         .editFormat = &formatWatts
