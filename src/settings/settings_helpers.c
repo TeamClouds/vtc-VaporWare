@@ -213,8 +213,8 @@ void baseTempSet(int16_t baseTemp) {
 }
 
 void baseFromUserSet(uint8_t baseFromUser) {
-    if (baseFromUser != 0 &&
-        baseFromUser != 1) {
+    if (baseFromUser < AUTORES ||
+        baseFromUser > USERLOCK) {
         s.baseFromUser = 0;
     } else {
         s.baseFromUser = baseFromUser;

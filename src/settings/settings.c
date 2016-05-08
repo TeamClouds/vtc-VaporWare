@@ -331,12 +331,12 @@ void saveTCR(int32_t value) {
 }
 
 void saveTemp(int32_t value) {
-    g.baseFromUser = 1;
+    baseFromUserSet(USERSET);
     baseTempSet(value & 0xFFFF);
 }
 
 void saveBaseRes(int32_t value) {
-    g.baseFromUser = 1;
+    baseFromUserSet(USERSET);
     baseResSet(value & 0xFFFF);
 }
 
