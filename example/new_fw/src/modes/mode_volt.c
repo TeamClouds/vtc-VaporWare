@@ -35,8 +35,7 @@ void voltFire() {
     }
 
     if (Atomizer_IsOn())
-    Atomizer_Control(0);
-    g.vapeCnt = 0;
+        Atomizer_Control(0);
 }
 
 void voltUp() {
