@@ -13,6 +13,7 @@
 #include "images/watts.h"
 
 
+// TODO: Move IntPid out to its own c/h for reuse
 #define HISTLEN 16
 struct IntPID {
     int32_t targetTemp;
@@ -30,7 +31,7 @@ struct IntPID {
 };
 
 void updateInitWatts(int32_t newWatts) {
-	s.initWatts = newWatts;
+    initWattsSet(newWatts);
 }
 
 void formatWatts(int32_t value, char *formatted) {
@@ -42,33 +43,33 @@ void formatNumber(int32_t value, char *formatted) {
 }
 
 void setP(int32_t p) {
-	s.pidP = p;
+    pidPSet(p);
 }
 
 void setI(int32_t i) {
-	s.pidI = i;
+    pidISet(i);
 }
 
 void setD(int32_t d) {
-	s.pidD = d;
+    pidDSet(d);
 }
 
 struct menuItem dragonItems[] = {
-	{
+    {
         .type = EDIT,
         .label = "P",
-        .editMin = 0,
-        .editMax = 20000,
+        .editMin = MINPID,
+        .editMax = MAXPID,
         .editStart = (int32_t *)&s.pidP,
         .editCallback = &setP,
         .editStep = 100,
         .editFormat = &formatNumber
     },
-	{
+    {
         .type = EDIT,
         .label = "I",
-        .editMin = 0,
-        .editMax = 20000,
+        .editMin = MINPID,
+        .editMax = MAXPID,
         .editStart = (int32_t *)&s.pidI,
         .editCallback = &setI,
         .editStep = 100,
@@ -77,8 +78,8 @@ struct menuItem dragonItems[] = {
     {
         .type = EDIT,
         .label = "D",
-        .editMin = 0,
-        .editMax = 20000,
+        .editMin = MINPID,
+        .editMax = MAXPID,
         .editStart = (int32_t *)&s.pidD,
         .editCallback = &setD,
         .editStep = 100,
@@ -94,36 +95,36 @@ struct menuItem dragonItems[] = {
         .type = SPACE,
         .rows = 2,
     },
-	{
-		.type = EXITMENU,
-	    .label = "Back",
+    {
+        .type = EXITMENU,
+        .label = "Back",
     },
-	{
+    {
         .type = END,
-	}
+    }
 };
 
 struct menuDefinition dragonMenu = {
-	    .name = "Display Settings",
-	    .font = FONT_SMALL,
-	    .cursor = "*",
-	    .prev_sel = "<",
-	    .next_sel = ">",
-	    .less_sel = "-",
-	    .more_sel = "+",
-	    .menuItems = &dragonItems,
+        .name = "Display Settings",
+        .font = FONT_SMALL,
+        .cursor = "*",
+        .prev_sel = "<",
+        .next_sel = ">",
+        .less_sel = "-",
+        .more_sel = "+",
+        .menuItems = &dragonItems,
 };
 
 struct menuItem tempSettingsOptions[] = {
     {
-	    .type = EDIT,
-		.label = "Watts",
-		.editMin = 0,
-		.editMax = MAXWATTS,
-		.editStart = &s.initWatts,
-		.editCallback = &updateInitWatts,
-		.editStep = 100,
-		.editFormat = &formatWatts
+        .type = EDIT,
+        .label = "Watts",
+        .editMin = MINWATTS,
+        .editMax = MAXWATTS,
+        .editStart = &s.initWatts,
+        .editCallback = &updateInitWatts,
+        .editStep = 100,
+        .editFormat = &formatWatts
     },
     {
         .type = STARTBOTTOM,
@@ -172,9 +173,11 @@ void initPid() {
     I.P = s.pidP;
     I.I = s.pidI;
     I.D = s.pidD;
-    g.watts = s.initWatts;
+    
     I.Max = MAXWATTS;
-    I.Min = 0;
+    I.Min = MINWATTS;
+
+    g.watts = s.initWatts;
     g.volts = wattsToVolts(g.watts, g.atomInfo.resistance);
     Atomizer_SetOutputVoltage(g.volts);
 }
@@ -183,6 +186,7 @@ void setTarget(int32_t ttemp) {
     I.targetTemp = ttemp;
 }
 
+// TODO: Move to pidTuning struct and make compilation optional
 uint32_t start = 0;
 uint32_t atTemp = 0;
 uint32_t freqNow = 0;
@@ -219,7 +223,7 @@ int32_t getNext(int32_t c_temp) {
     I.Perror = error;
 
     int32_t next = error * I.P / 100 +
-	           aveError * I.I / 100 +
+               aveError * I.I / 100 +
                    diffError * I.D / 100;
 
     if (s.tunePids) {
@@ -235,7 +239,7 @@ int32_t getNext(int32_t c_temp) {
                           I.I,
                           aveError,
                           I.D,
-	                  diffError,
+                      diffError,
                           g.watts + next
                  );
                  USB_VirtualCOM_SendString(buff);
@@ -252,7 +256,8 @@ void tempInit() {
 }
 
 void tempFire() {
-    g.vapeCnt++;
+    uint16_t newVolts;
+
     setTarget(s.targetTemperature);
     initPid();
     int pidactive = 0;
@@ -262,16 +267,17 @@ void tempFire() {
     uint32_t now;
     while (gv.fireButtonPressed) {
         now = gv.uptime;
-        // Handle fire button
+        
         if (!Atomizer_IsOn() && g.atomInfo.resistance != 0
-	    && Atomizer_GetError() == OK) {
-	    // Power on
-	    Atomizer_Control(1);
-	}
-	// Update info
-	// If resistance is zero voltage will be zero
-	Atomizer_ReadInfo(&g.atomInfo);
-    EstimateCoilTemp();
+            && Atomizer_GetError() == OK) {
+            // Power on
+            Atomizer_Control(1);
+        }
+
+        // Update info
+        // If resistance is zero voltage will be zero
+        Atomizer_ReadInfo(&g.atomInfo);
+        EstimateCoilTemp();
 
         if (!pidactive) {
             if ((int32_t)s.targetTemperature - (int32_t)g.curTemp >= s.pidSwitch) {
@@ -285,58 +291,54 @@ void tempFire() {
                 pidactive = 1;
             }
         }
-	// Don't allow firing > 1 ohm in temp mode.
-/*	TODO: Maybe make this baseRes dependant
+    // Don't allow firing > 1 ohm in temp mode.
+/*  TODO: Maybe make this baseRes dependant
     if (g.atomInfo.resistance > 1000) {
-	    g.watts = 0;
-	} */
+        g.watts = 0;
+    } */
 
         if (g.watts < 0)
             g.watts = 1000;
 
-        if (g.watts > 100000)
+        if (g.watts > 100000) // Pid probably went c-razy on us, so drop watts.
             g.watts = 1000;
 
         if (g.watts > MAXWATTS)
             g.watts = MAXWATTS;
            
 
-	g.newVolts = wattsToVolts(g.watts, g.atomInfo.resistance);
+        newVolts = wattsToVolts(g.watts, g.atomInfo.resistance);
 
-	if (g.newVolts != g.volts) {
-	    if (Atomizer_IsOn()) {
+        if (newVolts != g.volts) {
+            if (Atomizer_IsOn()) {
+                // Update output voltage to correct res variations:
+                // If the new voltage is lower, we only correct it in
+                // 10mV steps, otherwise a flake res reading might
+                // make the voltage plummet to zero and stop.
+                // If the new voltage is higher, we push it up by 100mV
+                // to make it hit harder on TC coils, but still keep it
+                // under control.
+                if (newVolts < g.volts) {
+                    newVolts = g.volts - (g.volts >= 10 ? 10 : 0);
+                } else {
+                    newVolts = g.volts + 100;
+                }
+            }
 
-		// Update output voltage to correct res variations:
-		// If the new voltage is lower, we only correct it in
-		// 10mV steps, otherwise a flake res reading might
-		// make the voltage plummet to zero and stop.
-		// If the new voltage is higher, we push it up by 100mV
-		// to make it hit harder on TC coils, but still keep it
-		// under control.
-		if (g.newVolts < g.volts) {
-		    g.newVolts = g.volts - (g.volts >= 10 ? 10 : 0);
-		} else {
-		    g.newVolts = g.volts + 100;
-		}
+            if (newVolts > MAXVOLTS) {
+                newVolts = MAXVOLTS;
+            }
 
-	    }
+            g.volts = newVolts;
 
-	    if (g.newVolts > ATOMIZER_MAX_VOLTS) {
-		g.newVolts = ATOMIZER_MAX_VOLTS;
-	    }
+            Atomizer_SetOutputVoltage(g.volts);
+        }
 
-	    g.volts = g.newVolts;
+        Atomizer_ReadInfo(&g.atomInfo);
+        EstimateCoilTemp();
 
-	    Atomizer_SetOutputVoltage(g.volts);
-	}
-	Atomizer_ReadInfo(&g.atomInfo);
-    EstimateCoilTemp();
-	// TODO: We might need a short sleep here?
-//        if (pidactive || s.targetTemperature < g.atomInfo.temperature + 50) 
-{
-	    g.watts = getNext(g.curTemp);
-            pidactive = 1;
-        } 
+        g.watts = getNext(g.curTemp);
+
         if (g.watts < 0)
             g.watts = 1000;
 
@@ -345,26 +347,26 @@ void tempFire() {
 
         if (g.watts > MAXWATTS)
             g.watts = MAXWATTS;
+
         prline = now - last >= 10;
         now = last;
-	if (1 || prline) {
-	     if (s.dumpPids) {
+
+        if (1 || prline) {
+            if (s.dumpPids) {
                  char buff[63];
                  siprintf(buff, "PID,%ld,%d,%ld,%d\r\n",
                           s.targetTemperature, 
                           g.curTemp,
                           g.watts,
-	                  g.atomInfo.resistance);
+                      g.atomInfo.resistance);
                  USB_VirtualCOM_SendString(buff);
              }
              updateScreen(&g);
         }
-	g.vapeCnt++;
-        prline = (g.vapeCnt % 10) == 0;
     }
+
     if (Atomizer_IsOn())
-	Atomizer_Control(0);
-    g.vapeCnt = 0;
+        Atomizer_Control(0);
 }
 
 void tempUp() {
@@ -403,19 +405,19 @@ void tempDisplay(uint8_t atomizerOn) {
     getString(buff, (char *) tempScaleType[s.tempScaleTypeIndex].display);
     Display_PutText(48, 2, buff, FONT_SMALL);
 
-	// Material
-	getString(buff, vapeMaterialList[s.materialIndex].name);
-	Display_PutText(48, 15, buff, FONT_SMALL);
+    // Material
+    getString(buff, vapeMaterialList[s.materialIndex].name);
+    Display_PutText(48, 15, buff, FONT_SMALL);
 }
 
 void tempBottomDisplay(uint8_t atomizerOn) {
     char buff[9];
-	Display_PutPixels(0, 100, watts, watts_width, watts_height);
+    Display_PutPixels(0, 100, watts, watts_width, watts_height);
 
-	if (atomizerOn) {
-	    getFloating(buff, g.watts);
-	} else {
-		getFloating(buff, s.initWatts);
-	}
-	Display_PutText(26, 105, buff, FONT_MEDIUM);
+    if (atomizerOn) {
+        getFloating(buff, g.watts);
+    } else {
+        getFloating(buff, s.initWatts);
+    }
+    Display_PutText(26, 105, buff, FONT_MEDIUM);
 }
