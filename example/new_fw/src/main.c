@@ -134,10 +134,9 @@ int main() {
     setHandler(&mainButtonHandler);
     Atomizer_SetBaseUpdateCallback(newReading);
 
-#define REGISTER_MODE(X) modeCount++; g.vapeModes[X.index] = &X
-    REGISTER_MODE(variableVoltage);
-    REGISTER_MODE(variableWattage);
-    REGISTER_MODE(variableTemp);
+    addVapeMode(&variableVoltage);
+    addVapeMode(&variableWattage);
+    addVapeMode(&variableTemp);
 
     load_settings();
 
@@ -146,7 +145,7 @@ int main() {
         .index = MAX_CONTROL,
     };
 
-    REGISTER_MODE(THEMAX);
+    addVapeMode(&THEMAX);
 
     setVapeMode(s.mode);
     

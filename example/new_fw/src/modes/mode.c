@@ -1,9 +1,11 @@
+#include <stdlib.h>
+
 #include "globals.h"
 #include "mode.h"
 #include "settings.h"
 
 void setVapeMode(int newMode) {
-    if (newMode >= modeCount)
+    if (newMode >= g.modeCount)
         return;
 
     s.mode = newMode;
@@ -15,4 +17,19 @@ void setVapeMode(int newMode) {
         __init = g.vapeModes[newMode]->init;
         __init();
     }
+}
+
+void addVapeMode(struct vapeMode *vm) {
+    if (g.vapeModes == NULL) {
+        g.modeCount = vm->index + 1;
+        g.vapeModes = (struct vapeMode **)malloc(g.modeCount * sizeof(struct vapemode *));
+
+    } else {
+        if (vm->index + 1 > g.modeCount) {
+            g.modeCount = vm->index + 1;
+            g.vapeModes = (struct vapeMode **)realloc(g.vapeModes, g.modeCount * sizeof(struct vapeMode *));
+        }
+    }
+
+    g.vapeModes[vm->index] = vm;
 }

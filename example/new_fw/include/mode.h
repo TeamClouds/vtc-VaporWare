@@ -26,8 +26,8 @@ struct vapeMode {
     void (*bottomDisplay) (uint8_t atomizerOn);
     struct menuDefinition *vapeModeMenu;
 };
-extern uint8_t modeCount;
 
+void addVapeMode(struct vapeMode *vm);
 void setVapeMode(int newMode);
 void setVapeMaterial(int index);
 

@@ -20,7 +20,9 @@ struct globals {
     int32_t m3;
     uint16_t tcr;
 
-    struct vapeMode *vapeModes[MODE_COUNT];
+    struct vapeMode **vapeModes;
+    uint8_t modeCount;
+
     uint32_t watts;
     uint16_t volts;
     uint16_t newVolts;

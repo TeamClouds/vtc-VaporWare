@@ -26,7 +26,7 @@ void materialIndexSet(uint32_t materialIndex) {
 void modeSet(uint8_t mode) {
     if (mode < 0) {
         s.mode = DEFAULTMODE;
-    } else if (mode >= modeCount) {
+    } else if (mode >= g.modeCount) {
         /* This is currently 'not perfect' as vapemodes is a larger
            array than we use.  Point to cleanup */
         s.mode = DEFAULTMODE;
