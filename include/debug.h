@@ -1,6 +1,8 @@
 #ifndef ____DEBUG
 #define ____DEBUG
 #include <USB_VirtualCOM.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <stdarg.h>
 
 static inline void writeUsb(const char *format, ...) {
