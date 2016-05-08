@@ -46,6 +46,10 @@
 #define BASE_VER 2
 #define FREQ_VER 2
 /*
+   TODO for v3:
+   screenBrightness: uint8_t
+ */
+/*
  * NEVER EVER CHANGE THESE.  If something needs changed, copy/paste, re-name
  * and add an upgrade path.  
  */
