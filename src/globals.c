@@ -8,6 +8,5 @@ struct globals g = { };
 volatile struct globalVols gv = {
     .fireButtonPressed = 0,
 };
-struct settings s = { };
 
-uint8_t modeCount = 0;
+struct settings s = { };
