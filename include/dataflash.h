@@ -48,6 +48,8 @@
 /*
    TODO for v3:
    screenBrightness: uint8_t
+   displayTemperature: int16_t
+   targetTemperature: int16_t
  */
 /*
  * NEVER EVER CHANGE THESE.  If something needs changed, copy/paste, re-name

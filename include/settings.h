@@ -16,8 +16,8 @@ struct settings {
     uint16_t screenTimeout;
     uint8_t fadeInTime;
     uint8_t fadeOutTime;
-    volatile uint32_t displayTemperature;
-    volatile uint32_t targetTemperature;
+    volatile int32_t displayTemperature;
+    volatile int32_t targetTemperature;
     uint32_t targetWatts;
     uint16_t targetVolts;
     uint8_t materialIndex;
@@ -47,9 +47,9 @@ extern struct settings s;
 
 struct tempScale {
     char display[2];
-    uint32_t max;
-    uint32_t min;
-    uint32_t def;
+    int32_t max;
+    int32_t min;
+    int32_t def;
 };
 // Definition in communication.c
 extern struct tempScale tempScaleType[];
@@ -63,8 +63,8 @@ void saveSettings();
    this change might need.  If the passed value is not sane, it sets the default */
 void modeSet(uint8_t mode);
 void screenTimeoutSet(uint16_t screenTimeout);
-void displayTemperatureSet(uint32_t displayTemperature);
-void targetTemperatureSet(uint32_t targetTemperature);
+void displayTemperatureSet(int32_t displayTemperature);
+void targetTemperatureSet(int32_t targetTemperature);
 void materialIndexSet(uint32_t materialIndex);
 void tempScaleTypeIndexSet(uint8_t tempScaleTypeIndex);
 void pidPSet(uint32_t pidP);
