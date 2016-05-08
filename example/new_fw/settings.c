@@ -177,7 +177,7 @@ void invertSet(uint8_t a){
 }
 
 void flipSet(uint8_t a) {
-	flipOnVapeSet(s.flipOnVape);
+	flipOnVapeSet(a);
 }
 
 uint8_t display_flip = FLIPDEF;
