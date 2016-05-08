@@ -165,11 +165,9 @@ int main() {
     screenOn();
     screenOff();
 
-    baseResSet(g.atomInfo.baseResistance);
-    baseTempSet(g.atomInfo.baseTemperature);
-
     if (!s.fromRom)
-    gv.shouldShowMenu = 1;
+        gv.shouldShowMenu = 1;
+
     uint8_t rcmd[63];
     i = 0;
     while (1) {
