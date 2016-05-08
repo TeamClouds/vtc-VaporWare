@@ -42,8 +42,16 @@ void formatWatts(int32_t value, char *formatted) {
     siprintf(formatted, "%lu.%02lu", value / 1000, value % 1000 / 10);
 }
 
+int32_t getPidSwitchDefault() {
+    return s.pidSwitch;
+}
+
+void updatePidSwitch(int32_t newpidswitch) {
+    pidSwitchSet(newpidswitch);
+}
+
 void formatNumber(int32_t value, char *formatted) {
-    siprintf(formatted, "%lu", value);
+    siprintf(formatted, "%ld", value);
 }
 
 int32_t getPDefault() {
@@ -140,7 +148,17 @@ struct menuItem tempSettingsOptions[] = {
         .getEditStart = &getInitWattsDefault,
         .editCallback = &updateInitWatts,
         .editStep = 100,
-        .editFormat = &formatWatts
+        .editFormat = &formatWatts,
+    },
+    {
+        .type = EDIT,
+        .label = "PID Switch",
+        .editMin = STEMPMIN,
+        .editMax = STEMPMAX,
+        .getEditStart = &getPidSwitchDefault,
+        .editCallback = &updatePidSwitch,
+        .editStep = 10,
+        .editFormat = &formatNumber,
     },
     {
         .type = STARTBOTTOM,
