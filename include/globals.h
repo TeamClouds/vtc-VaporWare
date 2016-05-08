@@ -12,11 +12,8 @@
 struct globals {
     Atomizer_Info_t atomInfo;
     uint8_t baseFromUser;
-    int32_t m1;
     uint16_t baseRes;
-    int32_t m2;
     int16_t baseTemp;
-    int32_t m3;
     uint16_t tcr;
 
     struct vapeMode **vapeModes;

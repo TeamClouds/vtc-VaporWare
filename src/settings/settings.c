@@ -32,6 +32,7 @@
 
 #include "button.h"
 #include "dataflash.h"
+ #include "debug.h"
 #include "display.h"
 #include "globals.h"
 #include "helper.h"
@@ -43,44 +44,37 @@ void saveDefaultSettings();
 
 #define MAXOPTIONS 16
 
-char *typeIdString[MAXOPTIONS];
-int typeIdMapping[MAXOPTIONS];
+uint8_t getTypeDefault() {
+    return s.materialIndex;
+}
 
-void populateTypes(struct menuItem *MI) {
-    uint8_t index = 0;
-    struct vapeMaterials *VM;
-    while ((VM = &vapeMaterialList[index])->name[0] != '\0') {
-        typeIdString[index] = VM->name;
-        typeIdMapping[index] = index;
-        index++;
-    }
-    MI->items = &typeIdString;
-    MI->count = index;
-    MI->startAt = s.materialIndex;
+char *getTypeString(uint8_t index) {
+    return vapeMaterialList[index].name;
 }
 
 void updateType(uint16_t index) {
     materialIndexSet(index);
+    refreshMenu();
 }
 
-char *modeIdString[MAXOPTIONS];
-int modeIdMapping[MAXOPTIONS];
+uint8_t getModeDefault() {
+    return s.mode;
+}
 
-void populateModes(struct menuItem *MI) {
-    uint8_t index = 0;
-    struct vapeMode *VPM;
-    while ((VPM = g.vapeModes[index])->name[0] != '\0') {
-        modeIdString[index] = VPM->name;
-        modeIdMapping[index] = VPM->index;
-        index++;
-    }
-    MI->items = &modeIdString;
-    MI->count = index;
-    MI->startAt = s.mode;
+char *getModeString(uint8_t index) {
+    if (g.vapeModes[index]->supportedMaterials &
+        vapeMaterialList[s.materialIndex].typeMask)
+        return g.vapeModes[index]->name;
+    else
+        return NULL;
 }
 
 void updateMode(uint16_t index) {
-    setVapeMode(index);
+    modeSet(index);
+}
+
+int32_t getScreenBrightnessDefault() {
+    return s.screenBrightness;
 }
 
 void formatBrightnessNumber(int32_t value, char *formatted) {
@@ -92,21 +86,12 @@ void updateScreenBrightness(int32_t value) {
 	screenBrightnessSet(value);
 }
 
-char *scaleIdString[MAXOPTIONS];
-int scaleIdMapping[MAXOPTIONS];
+char *getScaleString(uint8_t index) {
+    return tempScaleType[index].display;
+}
 
-void populateScales(struct menuItem *MI) {
-    uint8_t index = 0;
-    struct tempScale *TS;
-    index = 0;
-    while ((TS = &tempScaleType[index])->display[0] != '\0') {
-        scaleIdString[index] = TS->display;
-        scaleIdMapping[index] = index;
-        index++;
-    }
-    MI->items = &scaleIdString;
-    MI->count = index;
-    MI->startAt = s.tempScaleTypeIndex;
+uint8_t getScaleDefault() {
+    return s.tempScaleTypeIndex;
 }
 
 void updateScale(uint16_t index) {
@@ -180,16 +165,13 @@ void flipSet(uint8_t a) {
 	flipOnVapeSet(a);
 }
 
-uint8_t display_flip = FLIPDEF;
-uint8_t display_invert = INVERTDEF;
 struct menuItem displaySubMenuItems[] = {
 	{
 	    .type = SELECT,
 	    .label = "Scale",
-	    /* .items = assigned before calling */
-	    /* .startAt assinged before calling */
-	    /* .count = assigned before calling */
-	    .populateCallback = &populateScales,
+        .count = &tempScaleCount,
+        .getDefaultCallback = &getScaleDefault,
+	    .getValueCallback = &getScaleString,
 	    .selectCallback = &updateScale,
 	},
     {
@@ -197,7 +179,7 @@ struct menuItem displaySubMenuItems[] = {
         .label = "Brightness",
         .editMin = 0,
         .editMax = 255,
-        .editStart = (int32_t *)&s.screenBrightness,
+        .getEditStart = &getScreenBrightnessDefault,
         .editCallback = &updateScreenBrightness,
         .editStep = 10,
         .editFormat = &formatBrightnessNumber
@@ -207,7 +189,7 @@ struct menuItem displaySubMenuItems[] = {
 	    .label = "FlipVape",
 	    .on = "On",
 	    .off = "Off",
-	    .isSet = &display_flip,
+	    .isSet = &s.flipOnVape,
 	    .toggleCallback = &flipSet,
 	},
 	{
@@ -215,7 +197,7 @@ struct menuItem displaySubMenuItems[] = {
 	    .label = "Invert",
 	    .on = "On",
 	    .off = "Off",
-	    .isSet = &display_invert,
+	    .isSet = &s.invertDisplay,
 	    .toggleCallback = &invertSet,
 	},
     {
@@ -247,12 +229,6 @@ struct menuDefinition displaySettingsMenu = {
     .more_sel = "+",
     .menuItems = &displaySubMenuItems,
 };
-
-void showDisplay(struct menuItem *MI) {
-	display_flip = s.flipOnVape;
-	display_invert = s.invertDisplay;
-	MI->subMenu = &displaySettingsMenu;
-}
 
 void showModeSettings(struct menuItem *MI) {
 	MI->subMenu = &(*g.vapeModes[s.mode]->vapeModeMenu);
@@ -334,6 +310,18 @@ void formatINT(int32_t value, char *formatted) {
     siprintf(formatted, "%ld", value);
 }
 
+int32_t getTCRDefault() {
+    return s.tcr;
+}
+
+int32_t getBaseTempDefault() {
+    return s.baseTemp;
+}
+
+int32_t getBaseResDefault() {
+    return s.baseRes;
+}
+
 void saveTCR(int32_t value) {
     if (value < 0) {
         /* don't set a default if it's invalid, somehow */
@@ -358,7 +346,7 @@ struct menuItem dragonMenuItems[] = {
         .label = "TCR",
         .editMin = TCRMIN,
         .editMax = TCRMAX,
-        .editStart = &g.m3,
+        .getEditStart = &getTCRDefault,
         .editStep = 1,
         .editFormat = &formatINT,
         .editCallback = &saveTCR,
@@ -368,7 +356,7 @@ struct menuItem dragonMenuItems[] = {
         .label = "B.Temp",
         .editMin = BTEMPMIN,
         .editMax = BTEMPMAX,
-        .editStart = &g.m2,
+        .getEditStart = &getBaseTempDefault,
         .editStep = 1,
         .editFormat = &formatINT,
         .editCallback = &saveTemp,
@@ -378,7 +366,7 @@ struct menuItem dragonMenuItems[] = {
         .label = "B.Res",
         .editMin = 50,
         .editMax = 3450,
-        .editStart = &g.m1,
+        .getEditStart = &getBaseResDefault,
         .editStep = 5,
         .editFormat = &formatThousandths,
         .editCallback = &saveBaseRes
@@ -416,19 +404,17 @@ struct menuItem settingsMenuItems[] = {
     {
         .type = SELECT,
         .label = "Type",
-        /* .items = assigned before calling */
-        /* .startAt assinged before calling */
-        /* .count = assigned before calling */
-        .populateCallback = &populateTypes,
+        .count = &vapeMaterialsCount,
+        .getDefaultCallback = &getTypeDefault,
+        .getValueCallback = &getTypeString,
         .selectCallback = &updateType,
     },
     {
         .type = SELECT,
         .label = "Mode",
-        /* .items = assigned before calling */
-        /* .startAt assinged before calling */
-        /* .count = assigned before calling */
-        .populateCallback = &populateModes,
+        .count = &g.modeCount,
+        .getDefaultCallback = &getModeDefault,
+        .getValueCallback = &getModeString,
         .selectCallback = &updateMode,
     },
 	{
@@ -440,7 +426,7 @@ struct menuItem settingsMenuItems[] = {
 	{
 		.type = SUBMENU,
 		.label = "Display",
-		.getMenuDef = &showDisplay,
+		.subMenu = &displaySettingsMenu,
 	},
     {
         .type = STARTBOTTOM,

@@ -18,9 +18,11 @@ void materialIndexSet(uint32_t materialIndex) {
         s.materialIndex = materialIndex;
     }
 
-    g.tcr = vapeMaterialList[materialIndex].tcr;
+    tcrSet(vapeMaterialList[materialIndex].tcr);
     g.baseSettingsChanged = 1;
     g.settingsChanged = 1;
+    modeSet(s.mode);
+
 }
 
 void modeSet(uint8_t mode) {
@@ -32,8 +34,8 @@ void modeSet(uint8_t mode) {
         s.mode = DEFAULTMODE;
     } else if (g.vapeModes[mode] == NULL) {
         s.mode = DEFAULTMODE;
-    } else if (g.vapeModes[mode]->supportedMaterials &
-        vapeMaterialList[s.materialIndex].typeMask) {
+    } else if (!(g.vapeModes[mode]->supportedMaterials &
+        vapeMaterialList[s.materialIndex].typeMask)) {
         // TODO: Extract this out as its own helper function in modes
         s.mode = DEFAULTMODE;
     } else {
@@ -191,7 +193,6 @@ void tcrSet(uint16_t tcr) {
         s.tcr = tcr;
     }
 
-    g.m3 = tcr;
     g.tcr = s.tcr;
     g.baseSettingsChanged = 1;
     g.settingsChanged = 1;
@@ -206,7 +207,6 @@ void baseTempSet(int16_t baseTemp) {
         s.baseTemp = baseTemp;
     }
 
-    g.m2 = baseTemp;
     g.baseTemp = baseTemp;
     g.freqSettingsChanged = 1;
     g.settingsChanged = 1;
@@ -219,6 +219,7 @@ void baseFromUserSet(uint8_t baseFromUser) {
     } else {
         s.baseFromUser = baseFromUser;
     }
+
     g.baseFromUser = s.baseFromUser;
     g.freqSettingsChanged = 1;
     g.settingsChanged = 1;
@@ -233,7 +234,6 @@ void baseResSet(uint16_t baseRes) {
         s.baseRes = baseRes;
     }
 
-    g.m1 = baseRes;
     g.baseRes = baseRes;
     g.freqSettingsChanged = 1;
     g.settingsChanged = 1;

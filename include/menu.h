@@ -28,9 +28,9 @@ struct menuItem {
 
     /* SELECT */
     char *(*items)[];
-    uint16_t startAt; // Might be modified
-    uint8_t count;
-    void (*populateCallback)(struct menuItem *this);
+    uint8_t *count;
+    uint8_t (*getDefaultCallback)();
+    char *(*getValueCallback)(uint8_t index);
     void (*selectCallback)(uint16_t index);
 
     /* TOGGLE */
@@ -42,7 +42,7 @@ struct menuItem {
     /* EDIT */
     int32_t editMin;
     int32_t editMax;
-    int32_t *editStart; // Might be modified
+    int32_t (*getEditStart)();
     int32_t editStep;
     void (*editFormat)(int32_t value, char *formatted);
     void (*editCallback)(int32_t);
@@ -78,5 +78,6 @@ struct menuDefinition {
 
 
 void runMenu(struct menuDefinition *menuDef);
+void refreshMenu();
 
 #endif

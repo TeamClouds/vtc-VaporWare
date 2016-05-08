@@ -5,6 +5,7 @@
 #include <USB_VirtualCOM.h>
 
 #include "button.h"
+#include "debug.h"
 #include "globals.h"
 #include "menu.h"
 
@@ -23,6 +24,8 @@ struct menuGlobals {
     uint8_t menuItemCount;
     uint8_t ItemOffsets[MAXMENUITEMS];
     uint8_t selectIndexToMD[MAXMENUITEMS];
+    int32_t ItemValues[MAXMENUITEMS];
+    uint8_t ItemLoaded[MAXMENUITEMS];
     struct menuDefinition *MD;
 };
 
@@ -106,17 +109,17 @@ void menuSelect(uint8_t state, uint32_t duration) {
         case SELECT:
             switchHandler(&selectButtonHandler);
             doSelectEdit(MI);
-            MI->selectCallback(MI->startAt);
+            MI->selectCallback(mg->ItemValues[mIndex]);
             returnHandler();
             break;
         case TOGGLE:
             toggleSelect();
-            MI->toggleCallback(MI->startAt);
+            MI->toggleCallback(mg->ItemValues[mIndex]);
             break;
         case EDIT:
             switchHandler(&editButtonHandler);
             doEditEdit(MI);
-            MI->editCallback(*MI->editStart);
+            MI->editCallback(mg->ItemValues[mIndex]);
             returnHandler();
             break;
         case EXITMENU:
@@ -141,13 +144,16 @@ void selectLeft(uint8_t state, uint32_t duration) {
     struct menuItem *menuItems = *(mg->MD->menuItems);
     struct menuItem *MI = &menuItems[mIndex];
 
+skip:
     if (state == BUTTON_PRESS) {
-        if (MI->startAt - 1 < 0) {
-            MI->startAt = MI->count - 1;
+        if (mg->ItemValues[mIndex] - 1 < 0) {
+            mg->ItemValues[mIndex] = *MI->count - 1;
         }  else {
-            MI->startAt--;
+            mg->ItemValues[mIndex]--;
         }
     }
+    if (MI->getValueCallback(mg->ItemValues[mIndex])[0] == '\0')
+        goto skip;
 }
 
 void selectRight(uint8_t state, uint32_t duration) {
@@ -155,12 +161,15 @@ void selectRight(uint8_t state, uint32_t duration) {
     struct menuItem *menuItems = *(mg->MD->menuItems);
     struct menuItem *MI = &menuItems[mIndex];
     
+skip:
     if (state == BUTTON_PRESS) {
-        MI->startAt++;
-        if (MI->startAt >= MI->count) {
-            MI->startAt = 0;
+        mg->ItemValues[mIndex]++;
+        if (mg->ItemValues[mIndex] >= *MI->count) {
+            mg->ItemValues[mIndex] = 0;
         } 
     }
+    if (MI->getValueCallback(mg->ItemValues[mIndex])[0] == '\0')
+        goto skip;
 }
 
 void selectSelect(uint8_t state, uint32_t duration) {
@@ -180,10 +189,8 @@ void doSelectEdit(struct menuItem *MI) {
 
 void toggleSelect() {
     uint8_t mIndex = mg->selectIndexToMD[mg->selectIndex];
-    struct menuItem *menuItems = *(mg->MD->menuItems);
-    struct menuItem *MI = &menuItems[mIndex];
 
-    MI->startAt = !MI->startAt;
+    mg->ItemValues[mIndex] = !mg->ItemValues[mIndex];
 }
 
 void editLeft(uint8_t state, uint32_t duration) {
@@ -193,9 +200,9 @@ void editLeft(uint8_t state, uint32_t duration) {
     
     if (state == BUTTON_PRESS ||
         ((duration > 30) && state & BUTTON_HELD)) {
-        *MI->editStart -= MI->editStep;
-        if (*MI->editStart < MI->editMin) {
-            *MI->editStart = MI->editMin;
+        mg->ItemValues[mIndex] -= MI->editStep;
+        if (mg->ItemValues[mIndex] < MI->editMin) {
+            mg->ItemValues[mIndex] = MI->editMin;
         } 
     }
 }
@@ -207,9 +214,9 @@ void editRight(uint8_t state, uint32_t duration) {
     
     if (state == BUTTON_PRESS ||
         ((duration > 30) && state & BUTTON_HELD)) {
-        *MI->editStart += MI->editStep;
-        if (*MI->editStart > MI->editMax) {
-            *MI->editStart= MI->editMax;
+        mg->ItemValues[mIndex] += MI->editStep;
+        if (mg->ItemValues[mIndex] > MI->editMax) {
+            mg->ItemValues[mIndex] = MI->editMax;
         } 
     }
 }
@@ -257,8 +264,10 @@ int8_t getItemHeight(struct menuItem *MI, const Font_Info_t *font) {
     return used;
 }
 
-void drawMenuItem(struct menuItem *MI, uint8_t y, uint8_t x, uint8_t x2, const Font_Info_t *font) {
+void drawMenuItem(uint8_t index, uint8_t y, uint8_t x, uint8_t x2, const Font_Info_t *font) {
+    struct menuItem *MI = &((*(mg->MD->menuItems))[index]);
     char buff[63];
+    char *label;
     uint8_t rowHeight = font->height;
     int used = 0;
 
@@ -271,11 +280,18 @@ void drawMenuItem(struct menuItem *MI, uint8_t y, uint8_t x, uint8_t x2, const F
     }
     switch(MI->type) {
         case SELECT:
+            label = MI->getValueCallback(mg->ItemValues[index]);
+            Display_PutText(x2, y + used, label, font);
+            break;
         case TOGGLE:
-            Display_PutText(x2, y + used, (*MI->items)[MI->startAt], font);
+            if (mg->ItemValues[index]) {
+                Display_PutText(x2, y + used, MI->on, font);
+            } else {
+                Display_PutText(x2, y + used, MI->off, font);
+            }
             break;
         case EDIT:
-            MI->editFormat(*MI->editStart, buff);
+            MI->editFormat(mg->ItemValues[index], buff);
             Display_PutText(x2, y + used, buff, font);
             break;
         case LINE:
@@ -289,7 +305,29 @@ void drawMenuItem(struct menuItem *MI, uint8_t y, uint8_t x, uint8_t x2, const F
     }
 }
 
-char *toggles[2];
+void refreshMenu() {
+    struct menuItem *MI;
+    int i = 0;
+    
+    while ((MI = &((*(mg->MD->menuItems))[i]))->type != END)
+    {
+        switch (MI->type) {
+            case SELECT:
+                mg->ItemValues[i] = MI->getDefaultCallback();
+                break;
+            case TOGGLE:
+                mg->ItemValues[i] = !!*MI->isSet;
+                break;
+            case EDIT:
+                mg->ItemValues[i] = MI->getEditStart();
+                break;
+            default:
+                mg->ItemValues[i] = 0;
+                break;    
+        }
+        i++;
+    }
+}
 
 void drawMenu() {
     uint8_t menuIndex = 0;
@@ -305,18 +343,22 @@ void drawMenu() {
     Display_Clear();
 
     while ((MI = &menuItems[menuIndex])->type != END) {
-        if (MI->type == SELECT && 
-            MI->populateCallback != NULL &&
-            MI->count == 0)
-            MI->populateCallback(MI);
-
-        if (MI->type == TOGGLE &&
-            MI->count == 0) {
-            toggles[0] = MI->off;
-            toggles[1] = MI->on;
-            MI->items = &toggles;
-            MI->startAt = !!(*MI->isSet);
-            MI->count = 2;
+        if (mg->ItemLoaded[menuIndex] == 0) {
+            switch (MI->type) {
+                case SELECT:
+                    mg->ItemValues[menuIndex] = MI->getDefaultCallback();
+                    break;
+                case TOGGLE:
+                    mg->ItemValues[menuIndex] = !!*MI->isSet;
+                    break;
+                case EDIT:
+                    mg->ItemValues[menuIndex] = MI->getEditStart();
+                    break;
+                default:
+                    mg->ItemValues[menuIndex] = 0;
+                    break;    
+            }
+            mg->ItemLoaded[menuIndex] = 1;
         }
 
         if (menuIndex == mg->selectIndexToMD[mg->selectIndex] && mg->editOpen)
@@ -326,7 +368,7 @@ void drawMenu() {
 
         if (!findEnd && (MI->hidden == NULL || !MI->hidden())) {
             if (MI->type != STARTBOTTOM) {
-                drawMenuItem(MI, rowStart, colStart, colStart + valOffset, mg->MD->font);
+                drawMenuItem(menuIndex, rowStart, colStart, colStart + valOffset, mg->MD->font);
             } else {
                 findEnd = 1;
             }
@@ -358,7 +400,7 @@ void drawMenu() {
 
             if (MI->hidden == NULL || !MI->hidden()) {
                 rowStart -= getItemHeight(MI, mg->MD->font);
-                drawMenuItem(MI, rowStart, colStart, colStart + valOffset, mg->MD->font);
+                drawMenuItem(menuIndex, rowStart, colStart, colStart + valOffset, mg->MD->font);
 
                 if (MI->type != LINE &&
                     MI->type != STARTBOTTOM &&
