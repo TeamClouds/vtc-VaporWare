@@ -308,7 +308,7 @@ void targetWattsSet(uint32_t targetWatts) {
 void targetVoltsSet(uint16_t targetVolts) {
     if (targetVolts > MAXVOLTS) {
         s.targetVolts = DEFVOLTS;
-    } else if (targetVolts > MINVOLTS) {
+    } else if (targetVolts < MINVOLTS) {
         s.targetVolts = DEFVOLTS;
     } else {
         s.targetVolts = targetVolts;
