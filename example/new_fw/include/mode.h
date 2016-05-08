@@ -28,8 +28,6 @@ struct vapeMode {
 };
 extern uint8_t modeCount;
 
-void getModesByMaterial(uint8_t materialMask, int8_t * modes,
-			int8_t * cnt);
 void setVapeMode(int newMode);
 void setVapeMaterial(int index);
 #endif

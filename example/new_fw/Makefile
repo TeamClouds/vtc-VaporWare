@@ -4,28 +4,30 @@ TARGET = atomizer
 GIT_VERSION := $(shell git describe --abbrev=4 --dirty --always --tags)
 
 CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
+CFLAGS += -Iinclude/
+CFLAGS += -I.
+CFLAGS += -Werror
 
 OBJS = \
-    globals.o \
-    materials.o \
-    settings_helpers.o \
-    dataflash.o \
-    button.o \
-    menu.o \
-    communication.o \
-    mode-helper.o \
+    src/globals.o \
+    src/materials.o \
+    src/settings/settings_helpers.o \
+    src/settings/dataflash.o \
+    src/utils/button.o \
+    src/utils/menu.o \
+    src/utils/communication.o \
     font/Font_Large.o \
     font/Font_Medium.o \
     font/Font_Small.o \
-    helper.o \
-    display_helper.o \
-    display.o \
-    settings.o \
+    src/utils/helper.o \
+    src/display/display_helper.o \
+    src/display/display.o \
+    src/settings/settings.o \
     images/temperature.o \
-    mode_watt.o \
-    mode_volt.o \
-    mode_temp.o \
-    main.o
+    src/modes/mode_watt.o \
+    src/modes/mode_volt.o \
+    src/modes/mode_temp.o \
+    src/main.o
 
 ifeq ($(ISDEV),"Yes, damange my device")
 	CFLAGS += -DWITHFLASHDAMAGESUPPORT=1
