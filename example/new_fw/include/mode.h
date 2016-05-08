@@ -30,4 +30,10 @@ extern uint8_t modeCount;
 
 void setVapeMode(int newMode);
 void setVapeMaterial(int index);
+
+void (*__init) (void);
+void (*__vape) (void);
+void (*__up) (void);
+void (*__down) (void);
+
 #endif

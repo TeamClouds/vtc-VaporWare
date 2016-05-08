@@ -37,30 +37,11 @@
 #include "materials.h"
 #include "settings.h"
 
+#include "mode.h"
 #include "mode_watt.h"
 #include "mode_volt.h"
 #include "mode_temp.h"
 
-// ALWAYS init it a sane mode
-void (*__init) (void);
-void (*__vape) (void);
-void (*__up) (void);
-void (*__down) (void);
-
-void setVapeMode(int newMode) {
-    if (newMode >= modeCount)
-        return;
-
-    s.mode = newMode;
-
-    __vape = g.vapeModes[newMode]->fire;
-    __up = g.vapeModes[newMode]->increase;
-    __down = g.vapeModes[newMode]->decrease;
-    if (g.vapeModes[newMode]->init) {
-        __init = g.vapeModes[newMode]->init;
-        __init();
-    }
-}
 
 inline void screenOn() {
     if (!s.stealthMode)

@@ -24,6 +24,7 @@ OBJS = \
     src/display/display.o \
     src/settings/settings.o \
     images/temperature.o \
+    src/modes/mode.o \
     src/modes/mode_watt.o \
     src/modes/mode_volt.o \
     src/modes/mode_temp.o \
