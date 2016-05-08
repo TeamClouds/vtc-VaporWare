@@ -6,93 +6,95 @@
 #include "display.h"
 #include "font/font_vaporware.h"
 #include "globals.h"
+#include "settings.h"
 #include "helper.h"
 #include "images/temperature.h"
 
 void wattInit() {
-	// set this initial value because we may be switching
-	// from another mode that changes our watts.
-    g.watts = 15000;
-    g.volts = wattsToVolts(g.watts, g.atomInfo.resistance);
+    g.volts = wattsToVolts(s.targetWatts, g.atomInfo.resistance);
     Atomizer_SetOutputVoltage(g.volts);
 }
 
 void wattFire() {
-    g.vapeCnt++;
+    uint32_t newVolts;
+
     while (gv.fireButtonPressed) {
-	// Handle fire button
-	if (!Atomizer_IsOn() && g.atomInfo.resistance != 0
-	    && Atomizer_GetError() == OK) {
-	    // Power on
-	    Atomizer_Control(1);
-	}
-	// Update info
-	// If resistance is zero voltage will be zero
-	Atomizer_ReadInfo(&g.atomInfo);
+        // Handle fire button
+        if (!Atomizer_IsOn() && g.atomInfo.resistance != 0
+            && Atomizer_GetError() == OK) {
+            // Power on
+            Atomizer_Control(1);
+        }
+        // Update info
+        // If resistance is zero voltage will be zero
+        Atomizer_ReadInfo(&g.atomInfo);
 
-	g.newVolts = wattsToVolts(g.watts, g.atomInfo.resistance);
+        newVolts = wattsToVolts(s.targetWatts, g.atomInfo.resistance);
 
-	if (g.newVolts != g.volts || !g.volts) {
-	    if (Atomizer_IsOn()) {
+        if (newVolts != g.volts || !g.volts) {
+            if (Atomizer_IsOn()) {
 
-		// Update output voltage to correct res variations:
-		// If the new voltage is lower, we only correct it in
-		// 10mV steps, otherwise a flake res reading might
-		// make the voltage plummet to zero and stop.
-		// If the new voltage is higher, we push it up by 100mV
-		// to make it hit harder on TC coils, but still keep it
-		// under control.
-		if (g.newVolts < g.volts) {
-		    g.newVolts = g.volts - (g.volts >= 10 ? 10 : 0);
-		} else {
-		    g.newVolts = g.volts + 100;
-		}
+            // Update output voltage to correct res variations:
+            // If the new voltage is lower, we only correct it in
+            // 10mV steps, otherwise a flake res reading might
+            // make the voltage plummet to zero and stop.
+            // If the new voltage is higher, we push it up by 100mV
+            // to make it hit harder on TC coils, but still keep it
+            // under control.
+            if (newVolts < g.volts) {
+                newVolts = g.volts - (g.volts >= 10 ? 10 : 0);
+            } else {
+                newVolts = g.volts + 100;
+            }
 
-	    }
+            }
 
-	    if (g.newVolts > ATOMIZER_MAX_VOLTS) {
-		g.newVolts = ATOMIZER_MAX_VOLTS;
-	    }
+            if (newVolts > ATOMIZER_MAX_VOLTS) {
+                newVolts = ATOMIZER_MAX_VOLTS;
+            }
 
-	    g.volts = g.newVolts;
+            g.volts = newVolts;
 
-	    Atomizer_SetOutputVoltage(g.volts);
-	}
-	g.vapeCnt++;
-	updateScreen(&g);
+            Atomizer_SetOutputVoltage(g.volts);
+        }
+
+        updateScreen(&g);
     }
+    
     if (Atomizer_IsOn())
-	Atomizer_Control(0);
-    g.vapeCnt = 0;
+        Atomizer_Control(0);
 }
 
 void wattUp() {
-    g.newVolts = wattsToVolts(g.watts + 100, g.atomInfo.resistance);
-    if (g.newVolts <= ATOMIZER_MAX_VOLTS) {
-	g.watts += 100;
-	g.volts = g.newVolts;
+    uint32_t tempWatts = s.targetWatts + 100;
+    if (tempWatts <= MAXWATTS) {
+        targetWattsSet(tempWatts);
+    } else {
+        targetWattsSet(MAXWATTS);
     }
 }
 
 void wattDown() {
-    if (g.watts >= 100) {
-	g.watts -= 100;
-	g.volts = wattsToVolts(g.watts, g.atomInfo.resistance);
+    uint32_t tempWatts = s.targetWatts - 100;
+    if (tempWatts > MINWATTS) {
+        targetWattsSet(tempWatts);
+    } else {
+        targetWattsSet(MINWATTS);
     }
 }
 
 void wattDisplay(uint8_t atomizerOn) {
     char buff[9];
-	getFloatingTenth(buff, g.watts);
-	Display_PutText(0, 5, buff, FONT_LARGE);
-	getString(buff, "W");
-	Display_PutText(48, 2, buff, FONT_SMALL);
+    getFloatingTenth(buff, s.targetWatts);
+    Display_PutText(0, 5, buff, FONT_LARGE);
+    getString(buff, "W");
+    Display_PutText(48, 2, buff, FONT_SMALL);
 }
 
 void wattBottomDisplay(uint8_t atomizerOn) {
     char buff[9];
-	Display_PutPixels(0, 100, tempImage, tempImage_width, tempImage_height);
+    Display_PutPixels(0, 100, tempImage, tempImage_width, tempImage_height);
 
-	printNumber(buff, CToDisplay(g.curTemp));
-	Display_PutText(24, 107, buff, FONT_MEDIUM);
+    printNumber(buff, CToDisplay(g.curTemp));
+    Display_PutText(24, 107, buff, FONT_MEDIUM);
 }
