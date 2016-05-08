@@ -2,6 +2,12 @@
 #define __SETTINGS_H
 #include "defaults.h"
 
+enum {
+    AUTORES = 0,
+    USERSET = 1,
+    USERLOCK = 2,
+    MAXFROMROM = USERLOCK,
+};
 
 
 struct settings {

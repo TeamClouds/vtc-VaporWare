@@ -1,6 +1,7 @@
 #include "communication.h"
 #include "mode.h"
 #include "globals.h"
+#include "debug.h"
 #include "helper.h"
 #include "settings.h"
 #include "materials.h"
@@ -90,7 +91,6 @@ uint8_t tempScaleCount = sizeof(tempScaleType)/sizeof(struct tempScale) - 1;
 
 int8_t parseUInt32(char *V, const char *C, char *R, uint32_t M, uint32_t m, uint32_t *o) {
     char *endptr;
-    char buff[63];
     errno = 0;
     uint32_t val32 = strtoul(V, &endptr, 10);
     if (V == endptr) {
@@ -100,8 +100,7 @@ int8_t parseUInt32(char *V, const char *C, char *R, uint32_t M, uint32_t m, uint
 
     if (errno || val32 < m || val32 > M) {
         R[0] = '~';
-        siprintf(buff, "INFO,%s not valid %s\r\n", V, C);
-        USB_VirtualCOM_SendString(buff);
+        writeUsb("INFO,%s not valid %s\r\n", V, C);
         return 1;
     }
     
@@ -112,7 +111,6 @@ int8_t parseUInt32(char *V, const char *C, char *R, uint32_t M, uint32_t m, uint
 
 int8_t parseInt32(char *V, const char *C, char *R, int32_t M, int32_t m, int32_t *o) {
     char *endptr;
-    char buff[63];
     errno = 0;
     int32_t val32 = strtol(V, &endptr, 10);
     if (V == endptr) {
@@ -122,8 +120,7 @@ int8_t parseInt32(char *V, const char *C, char *R, int32_t M, int32_t m, int32_t
 
     if (errno || val32 < m || val32 > M) {
         R[0] = '~';
-        siprintf(buff, "INFO,%s not valid %s\r\n", V, C);
-        USB_VirtualCOM_SendString(buff);
+        writeUsb("INFO,%s not valid %s\r\n", V, C);
         return 1;
     }
     
@@ -164,10 +161,22 @@ int8_t parseInt8(char *V, const char *C, char *R, int8_t M, int8_t m, int8_t *o)
     return 0;
 }
 
+int8_t isSetting(char *value, const char *setting) {
+    if (strlen(value) != strlen(setting))
+        return 0;
+
+    return strncmp(value, setting, strlen(setting)) == 0;
+}
+
 void updateSettings(char *buffer, char *response) {
-    char buff[63];
     char *setting;
     char *value;
+    uint8_t tu8 = 0;
+    uint16_t tu16 = 0;
+    uint32_t tu32 = 0;
+    //int8_t t8 = 0;
+    int16_t t16 = 0;
+    int32_t t32 = 0;
     const char delim = ',';
 
     strtok(buffer, &delim); // eat the 'S'
@@ -178,86 +187,148 @@ void updateSettings(char *buffer, char *response) {
         return;
     }
 
-    if (strncmp(setting,"mode",4) == 0) {
-        if (parseUInt8(value, "mode", response, MAX_CONTROL, 0, &s.mode))
+
+    /* fromRom is useless to set directly */
+    if (isSetting(setting,"mode")) {
+        if (parseUInt8(value, "mode", response, MAX_CONTROL, 0, &tu8))
             return;
-    } else if (strncmp(setting, "screenTimeout", 13) == 0) {
-        if (parseUInt16(value, "screenTimeout", response, 600, 0, &s.screenTimeout))
+        modeSet(tu8);
+    } else if (isSetting(setting, "screenTimeout")) {
+        if (parseUInt16(value, "screenTimeout", response, SCREENMAXTIMEOUT, SCREENMINTIMEOUT, &tu16))
             return;
-    } else if (strncmp(setting, "targetTemperature", 17) == 0) {
+        screenTimeoutSet(tu16);
+    } else if (isSetting(setting, "displayTemperature")) {
         struct tempScale *t = &tempScaleType[s.tempScaleTypeIndex];
-        uint32_t ttemp;
-        if (parseUInt32(value, "targetTemperature", response, t->max, t->min, &ttemp))
+        if (parseUInt32(value, "displayTemperature", response, t->max, t->min, &tu32))
             return;
-        s.displayTemperature = ttemp;
-        s.targetTemperature = displayToC(s.displayTemperature);
-    } else if (strncmp(setting, "materialIndex", 13) == 0) {
-        uint8_t tindex = 0;
-        if (parseUInt8(value, "materialIndex", response, vapeMaterialsCount, 0, &tindex))
+        displayTemperatureSet(tu32);
+        targetTemperatureSet(displayToC(tu32));
+    } else if (isSetting(setting, "targetTemperature")) {
+        struct tempScale *t = &tempScaleType[0];
+        if (parseUInt32(value, "targetTemperature", response, t->max, t->min, &tu32))
             return;
-        materialIndexSet(tindex);
-    } else if (strncmp(setting, "tempScaleTypeIndex", 13) == 0) {
-        uint8_t tindex;
-        if (parseUInt8(value, "tempScaleTypeIndex", response, tempScaleCount, 0, &tindex))
+        targetTemperatureSet(tu32);
+        displayTemperatureSet(CToDisplay(tu32));
+    } else if (isSetting(setting, "targetWatts")) {
+        if (parseUInt32(value, "targetWatts", response, MAXWATTS, MINWATTS, &tu32))
             return;
-        s.tempScaleTypeIndex = tindex;
-        s.targetTemperature = tempScaleType[s.tempScaleTypeIndex].def;
-    } else if (strncmp(setting, "pidP", 4) == 0) {
-        if (parseUInt32(value, "pidP", response, 0xFFFFFFFF, 0, &s.pidP))
+        targetWattsSet(tu32);
+    } else if (isSetting(setting, "targetVolts")) {
+        if (parseUInt16(value, "targetVolts", response, MAXVOLTS, MINVOLTS, &tu16))
             return;
-    } else if (strncmp(setting, "pidI", 4) == 0) {
-        if (parseUInt32(value, "pidI", response, 0xFFFFFFFF, 0, &s.pidI))
+        targetVoltsSet(tu16);
+    } else if (isSetting(setting, "materialIndex")) {
+        if (parseUInt8(value, "materialIndex", response, vapeMaterialsCount, 0, &tu8))
             return;
-    } else if (strncmp(setting, "pidD", 4) == 0) {
-        if (parseUInt32(value, "pidD", response, 0xFFFFFFFF, 0, &s.pidD))
+        materialIndexSet(tu8);
+    } else if (isSetting(setting, "tempScaleTypeIndex")) {
+        if (parseUInt8(value, "tempScaleTypeIndex", response, tempScaleCount, 0, &tu8))
             return;
-    } else if (strncmp(setting, "initWatts", 9) == 0) {
-        if (parseInt32(value, "initWatts", response, 60000, 0, &s.initWatts))
+        tempScaleTypeIndexSet(tu8);
+        targetTemperatureSet(tempScaleType[s.tempScaleTypeIndex].def);
+    } else if (isSetting(setting, "pidP")) {
+        if (parseUInt32(value, "pidP", response, MAXPID, MINPID, &tu32))
             return;
-    } else if (strncmp(setting, "pidSwitch", 8) == 0) {
-        if (parseInt32(value, "pidSwitch", response, 600, -600, &s.pidSwitch))
+        pidPSet(tu32);
+    } else if (isSetting(setting, "pidI")) {
+        if (parseUInt32(value, "pidI", response, MAXPID, MINPID, &tu32))
             return;
-    } else if (strncmp(setting, "dumpPids", 8) == 0) {
+        pidISet(tu32);
+    } else if (isSetting(setting, "pidD")) {
+        if (parseUInt32(value, "pidD", response, MAXPID, MINPID, &tu32))
+            return;
+        pidDSet(tu32);
+    } else if (isSetting(setting, "initWatts")) {
+        if (parseInt32(value, "initWatts", response, MAXWATTS, MINWATTS, &t32))
+            return;
+        initWattsSet(t32);
+    } else if (isSetting(setting, "pidSwitch")) {
+        if (parseInt32(value, "pidSwitch", response, STEMPMAX, STEMPMIN, &t32))
+            return;
+        pidSwitchSet(t32);
+    } else if (isSetting(setting, "invertDisplay")) {
+        if (parseUInt8(value, "invertDisplay", response, 1, 0, &tu8))
+            return;
+        invertDisplaySet(tu8);
+    } else if (isSetting(setting, "flipOnVape")) {
+        if (parseUInt8(value, "flipOnVape", response, 1, 0, &tu8))
+            return;
+        flipOnVapeSet(tu8);
+    } else if (isSetting(setting, "tcr")) {
+        if (parseUInt16(value, "tcr", response, 1, 0, &tu16))
+            return;
+        tcrSet(tu16);
+    } else if (isSetting(setting, "baseFromUser")) {
+        if (parseUInt8(value, "baseFromUser", response, MAXFROMROM, AUTORES, &tu8))
+            return;
+        baseFromUserSet(tu8);
+    } else if (isSetting(setting, "baseTemp")) {
+        if (parseInt16(value, "baseTemp", response, BTEMPMAX, BTEMPMIN, &t16))
+            return;
+        baseTempSet(t16);
+    } else if (isSetting(setting, "baseRes")) {
+        if (parseUInt16(value, "baseRes", response, BRESMIN, BRESMIN, &tu16))
+            return;
+        baseResSet(t16);
+    } else if (isSetting(setting, "screenBrightness")) {
+        if (parseUInt32(value, "screenBrightness", response, BRESMIN, BRESMIN, &tu32))
+            return;
+        screenBrightnessSet(tu32);
+
+
+    } else if (isSetting(setting, "stealthMode")) {
+        if (parseUInt8(value, "stealthMode", response, 1, 0, &s.stealthMode))
+            return;
+    } else if (isSetting(setting, "vsetLock")) {
+        if (parseUInt8(value, "vsetLock", response, 1, 0, &s.vsetLock))
+            return;
+    } else if (isSetting(setting, "dumpPids")) {
         if (parseUInt8(value, "dumpPids", response, 1, 0, &s.dumpPids))
+            return;
+    } else if (isSetting(setting, "tunePids")) {
+        if (parseUInt8(value, "tunePids", response, 1, 0, &s.tunePids))
             return;
     }
 
     if (response[0] == '$') {
-        siprintf(buff, "INFO,setting %s to %s\r\n", setting, value);
-        USB_VirtualCOM_SendString(buff);
+        writeUsb("INFO,setting %s to %s\r\n", setting, value);
     }
 }
 
 
 void dumpSettings(char *buffer, char *response) {
-    char buff[63];
-    USB_VirtualCOM_SendString("INFO,dumpSettings\r\n");
-    siprintf(buff, "setting,%s,%i\r\n","fromRom",s.fromRom);
-    USB_VirtualCOM_SendString(buff);
-    siprintf(buff, "setting,%s,%i\r\n","mode",s.mode);
-    USB_VirtualCOM_SendString(buff);
-    siprintf(buff, "setting,%s,%i\r\n","screenTimeout",s.screenTimeout);
-    USB_VirtualCOM_SendString(buff);
-    siprintf(buff, "setting,%s,%ld\r\n","targetTemperature",s.targetTemperature);
-    USB_VirtualCOM_SendString(buff);
-    siprintf(buff, "setting,%s,%i\r\n","materialIndex",s.materialIndex);
-    USB_VirtualCOM_SendString(buff);
-    siprintf(buff, "setting,%s,%i\r\n","tempScaleTypeIndex",s.tempScaleTypeIndex);
-    USB_VirtualCOM_SendString(buff);
-    siprintf(buff, "setting,%s,%ld\r\n","pidP",s.pidP);
-    USB_VirtualCOM_SendString(buff);
-    siprintf(buff, "setting,%s,%ld\r\n","pidI",s.pidI);
-    USB_VirtualCOM_SendString(buff);
-    siprintf(buff, "setting,%s,%ld\r\n","pidD",s.pidD);
-    USB_VirtualCOM_SendString(buff);
-    siprintf(buff, "setting,%s,%ld\r\n","initWatts",s.initWatts);
-    USB_VirtualCOM_SendString(buff);
-    siprintf(buff, "setting,%s,%i\r\n","dumpPids",s.dumpPids);
-    USB_VirtualCOM_SendString(buff);
+    writeUsb("INFO,dumpSettings\r\n");
+    writeUsb("setting,%s,%i\r\n","fromRom",s.fromRom);
+    writeUsb("setting,%s,%i\r\n","mode",s.mode);
+    writeUsb("setting,%s,%i\r\n","screenTimeout",s.screenTimeout);
+    writeUsb("setting,%s,%i\r\n","fadeInTime",s.fadeInTime);
+    writeUsb("setting,%s,%i\r\n","fadeOutTime",s.fadeOutTime);
+    writeUsb("setting,%s,%ld\r\n","displayTemperature",s.displayTemperature);
+    writeUsb("setting,%s,%ld\r\n","targetTemperature",s.targetTemperature);
+    writeUsb("setting,%s,%ld\r\n","targetWatts",s.targetWatts);
+    writeUsb("setting,%s,%ld\r\n","targetVolts",s.targetVolts);
+    writeUsb("setting,%s,%i\r\n","materialIndex",s.materialIndex);
+    writeUsb("setting,%s,%i\r\n","tempScaleTypeIndex",s.tempScaleTypeIndex);
+    writeUsb("setting,%s,%ld\r\n","pidP",s.pidP);
+    writeUsb("setting,%s,%ld\r\n","pidI",s.pidI);
+    writeUsb("setting,%s,%ld\r\n","pidD",s.pidD);
+    writeUsb("setting,%s,%ld\r\n","initWatts",s.initWatts);
+    writeUsb("setting,%s,%ld\r\n","pidSwitch",s.pidSwitch);
+    writeUsb("setting,%s,%ld\r\n","invertDisplay",s.invertDisplay);
+    writeUsb("setting,%s,%ld\r\n","flipOnVape",s.flipOnVape);
+    writeUsb("setting,%s,%ld\r\n","tcr",s.tcr);
+    writeUsb("setting,%s,%ld\r\n","baseFromUser",s.baseFromUser);
+    writeUsb("setting,%s,%ld\r\n","baseTemp",s.baseTemp);
+    writeUsb("setting,%s,%ld\r\n","baseRes",s.baseRes);
+    writeUsb("setting,%s,%ld\r\n","screenBrightness",s.screenBrightness);
+
+    writeUsb("setting,%s,%ld\r\n","stealthMode",s.stealthMode);
+    writeUsb("setting,%s,%ld\r\n","vsetLock",s.vsetLock);
+    writeUsb("setting,%s,%i\r\n","dumpPids",s.dumpPids);
+    writeUsb("setting,%s,%i\r\n","tunePids",s.tunePids);
 }
 
 void updateAtomizer(char *buffer, char *response) {
-    char buff[63];
     char *setting;
     char *value;
     const char delim = ',';
@@ -270,39 +341,25 @@ void updateAtomizer(char *buffer, char *response) {
         return;
     }
 
-    if (strncmp(setting,"base_resistance",15) == 0) {
-        if (parseUInt16(value, "base_resistance", response, 3500, 0, &g.baseRes))
+    if (isSetting(setting,"baseResistance")) {
+        if (parseUInt16(value, "baseResistance", response, 3500, 0, &g.atomInfo.baseResistance))
             return;
-    } else if (strncmp(setting,"base_temperature", 16) == 0) {
-        if (parseInt16(value, "base_temperature", response, 200, 0, &g.baseTemp))
-            return;
-    } else if (strncmp(setting,"tcr", 3) == 0) {
-        if (parseUInt16(value, "tcr", response, 1000, 10, &g.tcr))
+    } else if (isSetting(setting,"baseTemperature")) {
+        if (parseUInt8(value, "baseTemperature", response, 100, 0, &g.atomInfo.baseTemperature))
             return;
     }
+
     if (response[0] == '$') {
-        siprintf(buff, "INFO,setting atomInfo.%s to %s\r\n", setting, value);
-        USB_VirtualCOM_SendString(buff);
+        writeUsb("INFO,setting atomInfo.%s to %s\r\n", setting, value);
     }
 }
 
 void dumpAtomizer(char *buffer, char *response) {
-    char buff[63];
     Atomizer_Info_t *a = &g.atomInfo;
-    USB_VirtualCOM_SendString("INFO,dumpSettings\r\n");
-    siprintf(buff, "atomInfo,%s,%i\r\n","voltage",a->voltage);
-    USB_VirtualCOM_SendString(buff);
-    siprintf(buff, "atomInfo,%s,%i\r\n","resistance",a->resistance);
-    USB_VirtualCOM_SendString(buff);
-    siprintf(buff, "atomInfo,%s,%i\r\n","base_resistance",g.baseRes);
-    USB_VirtualCOM_SendString(buff);
-    siprintf(buff, "atomInfo,%s,%d\r\n","base_temperature",g.baseTemp);
-    USB_VirtualCOM_SendString(buff);
-    siprintf(buff, "atomInfo,%s,%i\r\n","current",a->current);
-    USB_VirtualCOM_SendString(buff);
-    siprintf(buff, "atomInfo,%s,%d\r\n","temperature",g.curTemp);
-    USB_VirtualCOM_SendString(buff);
-    siprintf(buff, "atomInfo,%s,%i\r\n","tcr",g.tcr);
-    USB_VirtualCOM_SendString(buff);
- 
+    writeUsb("INFO,dumpSettings\r\n");
+    writeUsb("atomInfo,%s,%i\r\n","voltage",a->voltage);
+    writeUsb("atomInfo,%s,%i\r\n","resistance",a->resistance);
+    writeUsb("atomInfo,%s,%i\r\n","current",a->current);
+    writeUsb("atomInfo,%s,%i\r\n","baseResistance",a->baseResistance);
+    writeUsb("atomInfo,%s,%d\r\n","baseTemperature",a->baseTemperature);
 }
