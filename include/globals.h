@@ -16,23 +16,19 @@ struct globals {
     uint16_t baseRes;
     int32_t m2;
     int16_t baseTemp;
-    int16_t curTemp;
     int32_t m3;
     uint16_t tcr;
 
     struct vapeMode **vapeModes;
     uint8_t modeCount;
 
+    // These represent state, not settings
     uint32_t watts;
     uint16_t volts;
-    uint16_t newVolts;
+    int16_t curTemp;
+    
     uint8_t charging;
-    uint8_t fire;
-    uint8_t minus;
-    uint8_t plus;
-    uint8_t vapeCnt;
-    uint32_t maxTemp;
-    uint32_t minTemp;
+    
     uint8_t batteryPercent;
     uint32_t screenOffTime;
     uint32_t screenFadeInTime;
