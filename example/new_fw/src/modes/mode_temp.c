@@ -314,7 +314,7 @@ void tempFire() {
         EstimateCoilTemp();
 
         if (!pidactive) {
-            if ((int32_t)s.targetTemperature - (int32_t)g.curTemp >= s.pidSwitch) {
+            if (s.targetTemperature - g.curTemp >= s.pidSwitch) {
                 g.watts = s.initWatts;
             } else {
                 if (s.dumpPids) {
@@ -404,8 +404,8 @@ void tempFire() {
 }
 
 void tempUp() {
-    uint32_t dT = s.displayTemperature + 10;
-    uint32_t mT = tempScaleType[s.tempScaleTypeIndex].max;
+    int32_t dT = s.displayTemperature + 10;
+    int32_t mT = tempScaleType[s.tempScaleTypeIndex].max;
     if (dT <= mT) {
         displayTemperatureSet(dT);
         targetTemperatureSet(displayToC(dT));
@@ -416,9 +416,9 @@ void tempUp() {
 }
 
 void tempDown() {
-    uint32_t dT = s.displayTemperature - 10;
-    uint32_t mT = tempScaleType[s.tempScaleTypeIndex].min;
-    uint32_t MT = tempScaleType[s.tempScaleTypeIndex].max;
+    int32_t dT = s.displayTemperature - 10;
+    int32_t mT = tempScaleType[s.tempScaleTypeIndex].min;
+    int32_t MT = tempScaleType[s.tempScaleTypeIndex].max;
     if (dT >= mT && dT < MT) {
         displayTemperatureSet(dT);
         targetTemperatureSet(displayToC(dT));

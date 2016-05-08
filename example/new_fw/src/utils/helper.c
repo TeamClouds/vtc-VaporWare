@@ -54,7 +54,7 @@ uint32_t CToDisplay(uint32_t T) {
 }
 
 void EstimateCoilTemp() {
-    uint32_t boardTemp = g.baseTemp;
+    int32_t boardTemp = g.baseTemp;
     if (g.atomInfo.resistance > g.baseRes && g.tcr) {
         // TODO: make suck less
         uint32_t baseRes = g.baseRes;

@@ -75,7 +75,7 @@ void tempScaleTypeIndexSet(uint8_t tempScaleTypeIndex) {
     g.settingsChanged = 1;
 }
 
-void displayTemperatureSet(uint32_t displayTemperature) {
+void displayTemperatureSet(int32_t displayTemperature) {
     if (displayTemperature > tempScaleType[s.tempScaleTypeIndex].max) {
         s.displayTemperature = tempScaleType[s.tempScaleTypeIndex].def;
     } else if (displayTemperature < tempScaleType[s.tempScaleTypeIndex].min) {
@@ -88,7 +88,7 @@ void displayTemperatureSet(uint32_t displayTemperature) {
     // Todo set target temp based on display?
 }
 
-void targetTemperatureSet(uint32_t targetTemperature) {
+void targetTemperatureSet(int32_t targetTemperature) {
     // 0 is C and the unit all the low levels use
     if (targetTemperature > tempScaleType[0].max) {
         s.targetTemperature = tempScaleType[0].def;
