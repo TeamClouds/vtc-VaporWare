@@ -184,12 +184,15 @@ uint8_t newReading(uint16_t oldRes, uint8_t oldTemp, uint16_t *newRes, uint8_t *
     switch(g.baseFromUser) {
         case AUTORES:
             if (((*newRes < g.baseRes) && (*newRes > 0)) ||
-                  g.baseRes == 0) {
+                  g.baseRes == 0 || oldRes == 0) {
                     baseResSet(*newRes);
                     baseTempSet(*newTemp);
+                    screenOn();
+                    screenOff();
             }
             break;
         case USERSET:
+            /* Only prompt during attomizer swap */
             break;
         case USERLOCK:
             if (*newRes < lowRes || *newRes > highRes) {
