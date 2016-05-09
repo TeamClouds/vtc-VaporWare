@@ -174,10 +174,11 @@ void askUserAboutTheAttomizer() {
 }
 
 uint8_t newReading(uint16_t oldRes, uint8_t oldTemp, uint16_t *newRes, uint8_t *newTemp) {
-    uint16_t lowRes;
-
+    uint16_t lowRes = (100 - BRESDIFFPCT) * g.baseRes / 100;
+    uint16_t highRes = (100 + BRESDIFFPCT) * g.baseRes / 100;
     if (oldRes == 0 && g.baseFromUser == USERSET) {
         g.baseFromUser = USERLOCK;
+
     }
 
     switch(g.baseFromUser) {
@@ -191,9 +192,7 @@ uint8_t newReading(uint16_t oldRes, uint8_t oldTemp, uint16_t *newRes, uint8_t *
         case USERSET:
             break;
         case USERLOCK:
-            lowRes = (100 - BRESDIFFPCT) * g.baseRes / 100;
-
-            if (*newRes < lowRes) {
+            if (*newRes < lowRes || *newRes > highRes) {
                 gv.fireButtonPressed = 0;
                 g.newBaseRes = *newRes;
                 g.newBaseTemp = *newTemp;
