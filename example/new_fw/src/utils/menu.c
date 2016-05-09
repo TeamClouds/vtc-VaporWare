@@ -134,6 +134,7 @@ void menuSelect(uint8_t state, uint32_t duration) {
             break;
 
     }
+    refreshMenu();
     switchHandler(&menuButtonHandler);
 
 }
