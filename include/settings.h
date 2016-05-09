@@ -9,6 +9,8 @@ enum {
     MAXFROMROM = USERLOCK,
 };
 
+extern char *fromUserStrings[];
+extern uint8_t fromUserStringsCount;
 
 struct settings {
     uint8_t fromRom;
