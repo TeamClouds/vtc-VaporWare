@@ -340,6 +340,25 @@ void saveBaseRes(int32_t value) {
     baseResSet(value & 0xFFFF);
 }
 
+char *fromUserStrings[] = {
+    "AutoRes",
+    "UserSet",
+    "UserLock",
+};
+uint8_t fromUserStringsCount = 3;
+
+uint8_t getBaseFromUserDefault() {
+    return s.baseFromUser;
+}
+
+char *getBaseFromUserString(uint8_t index) {
+    return fromUserStrings[index];
+}
+
+void updateBaseFromUser(uint16_t index) {
+    baseFromUserSet(index);
+}
+
 struct menuItem dragonMenuItems[] = {
     {
         .type = EDIT,
@@ -350,6 +369,14 @@ struct menuItem dragonMenuItems[] = {
         .editStep = 1,
         .editFormat = &formatINT,
         .editCallback = &saveTCR,
+    },
+    {
+        .type = SELECT,
+        .label = "ResType",
+        .count = &fromUserStringsCount,
+        .getDefaultCallback = &getBaseFromUserDefault,
+        .getValueCallback = &getBaseFromUserString,
+        .selectCallback = &updateBaseFromUser,
     },
     {
         .type = EDIT,
