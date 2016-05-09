@@ -267,9 +267,9 @@ void updateSettings(char *buffer, char *response) {
             return;
         baseTempSet(t16);
     } else if (isSetting(setting, "baseRes")) {
-        if (parseUInt16(value, "baseRes", response, BRESMIN, BRESMIN, &tu16))
+        if (parseUInt16(value, "baseRes", response, BRESMAX, BRESMIN, &tu16))
             return;
-        baseResSet(t16);
+        baseResSet(tu16);
     } else if (isSetting(setting, "screenBrightness")) {
         if (parseUInt32(value, "screenBrightness", response, BRESMIN, BRESMIN, &tu32))
             return;
