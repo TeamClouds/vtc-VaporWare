@@ -87,11 +87,12 @@ Menus Explained:
  - Material Type
    KA, NI, TI, SS
  - Vape Mode
-   Watt,Volt,Temp
+   Watt,Volt,Temp (NI,TI,SS only)
  - Mode Specific settings for Temp Mode
-   - Watts - Initial Firing Watts
+   - Watts - Initial Firing Watts - Only useful with next option
    - Pid Switch - How close to the target temperature to switch to pid control
                   (setting this value above targetTemp will basically disable 'Watts')
+                  ((WILL cause overshoot))
    - Dragons
       P,I,D tuning values for the PID Algorithm used to control temperature
  - Display
@@ -120,8 +121,8 @@ Menus Explained:
 USB Control:
   The device shows up as a cdc_acm serial device.  Under linux and mac, it should just
   work.  Under windows.... no clue.  To talk with it, send the 1 byte command, followed
-  by a newline.  It ignores line feeds.  Feel free to feed it them.  The response will
-  be any appropriate messages for the command, along with a command response packet.
+  by a newline.  It eats line feeds.  Feel free to feed it them.  The response will be 
+  any appropriate messages for the command, along with a command response packet.
 
   Commands are structured of the form:
 
