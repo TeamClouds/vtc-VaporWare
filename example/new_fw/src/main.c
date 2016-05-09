@@ -32,6 +32,7 @@
 #include "button.h"
 #include "communication.h"
 #include "dataflash.h"
+#include "debug.h"
 #include "display.h"
 #include "globals.h"
 #include "materials.h"
@@ -116,12 +117,89 @@ struct buttonHandler mainButtonHandler = {
 
 };
 
+void attyPromptFire(uint8_t status, uint32_t held) {
+
+}
+
+void attyPromptLeft(uint8_t status, uint32_t held) {
+    baseFromUserSet(USERSET);
+    g.askUser = 0;
+}
+
+void attyPromptRight(uint8_t status, uint32_t held) {
+    baseResSet(g.newBaseRes);
+    baseTempSet(g.newBaseTemp);
+    g.askUser = 0;
+}
+
+struct buttonHandler attyPromptHandler = {
+    .name = "attyPrompt",
+    .flags = 0,
+    .fire_handler = &attyPromptFire,
+    .left_handler = &attyPromptLeft,
+    .right_handler = &attyPromptRight,
+};
+
+void drawPrompt() {
+    Display_Clear();
+    char buff[10];
+    Display_PutText(0, 0,  "Atomizer", FONT_SMALL);
+    Display_PutText(0, 10, "Changed", FONT_SMALL);
+
+    Display_PutText(0, 30, "<Use Old", FONT_SMALL);
+    siprintf(buff, "%01u.%02u", g.baseRes / 1000, (g.baseRes % 1000)/10);
+    Display_PutText(8, 40, buff, FONT_SMALL);
+
+    Display_PutText(0, 60, "Use New>", FONT_SMALL);
+    siprintf(buff, "%01u.%02u", g.newBaseRes / 1000, (g.newBaseRes % 1000)/10);
+    Display_PutText(8, 70, buff, FONT_SMALL);
+
+    Display_Update();
+}
+
+void askUserAboutTheAttomizer() {
+    switchHandler(&attyPromptHandler);
+    do {;} while (Button_GetState());
+    while (g.askUser) {
+        if (gv.buttonEvent) {
+            handleButtonEvents();
+            gv.buttonEvent = 0;
+        }
+        drawPrompt();
+    }
+    do {;} while (Button_GetState());
+    g.newBaseRes = 0;
+    g.newBaseTemp = 0;
+    returnHandler();
+}
+
 uint8_t newReading(uint16_t oldRes, uint8_t oldTemp, uint16_t *newRes, uint8_t *newTemp) {
-    // Todo, check with the user, etc
-    if ((!g.baseFromUser && *newRes < g.baseRes && *newRes > 0) ||
-          g.baseRes == 0) {
-            baseResSet(*newRes);
-            baseTempSet(*newTemp);
+    uint16_t lowRes;
+
+    if (oldRes == 0 && g.baseFromUser == USERSET) {
+        g.baseFromUser = USERLOCK;
+    }
+
+    switch(g.baseFromUser) {
+        case AUTORES:
+            if (((*newRes < g.baseRes) && (*newRes > 0)) ||
+                  g.baseRes == 0) {
+                    baseResSet(*newRes);
+                    baseTempSet(*newTemp);
+            }
+            break;
+        case USERSET:
+            break;
+        case USERLOCK:
+            lowRes = (100 - BRESDIFFPCT) * g.baseRes / 100;
+
+            if (*newRes < lowRes) {
+                gv.fireButtonPressed = 0;
+                g.newBaseRes = *newRes;
+                g.newBaseTemp = *newTemp;
+                g.askUser = 1;
+            }
+            break;
     }
     return 1;
 }
@@ -130,6 +208,7 @@ int main() {
     int i = 0;
     gv.uptimeTimer = Timer_CreateTimer(100, 1, uptime, 3);
     Communication_Init();
+
     initHandlers();
     setHandler(&mainButtonHandler);
     Atomizer_SetBaseUpdateCallback(newReading);
@@ -149,19 +228,6 @@ int main() {
 
     setVapeMode(s.mode);
     
-    Atomizer_ReadInfo(&g.atomInfo);
-
-    // Initialize atomizer info
-    do {
-        Atomizer_ReadInfo(&g.atomInfo);
-        updateScreen(&g);
-        i++;
-    } while (i < 100 && g.atomInfo.resistance == 0);
-
-    while (g.atomInfo.resistance - g.atomInfo.baseResistance > 10) {
-        Atomizer_ReadInfo(&g.atomInfo);
-        updateScreen(&g);
-    }
     screenOn();
     screenOff();
 
@@ -171,11 +237,19 @@ int main() {
     uint8_t rcmd[63];
     i = 0;
     while (1) {
+
     g.charging = Battery_IsCharging();
     Atomizer_ReadInfo(&g.atomInfo);
 
     if ((s.dumpPids || s.tunePids) && !g.charging)
                 s.dumpPids = s.tunePids = 0;
+
+    if (g.askUser) {
+        screenOn();
+        askUserAboutTheAttomizer();
+        screenOn();
+        screenOff();
+    }
 
     if (gv.buttonEvent) {
         

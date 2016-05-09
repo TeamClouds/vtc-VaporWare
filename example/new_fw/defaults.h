@@ -72,6 +72,7 @@
 #define BRESMIN 50
 #define BRESMAX 3450
 #define BRESDEF 0
+#define BRESDIFFPCT 10
 
 // Screen brightness
 #define SBRIGHTMIN 0
