@@ -14,6 +14,10 @@ struct globals {
     uint8_t baseFromUser;
     uint16_t baseRes;
     int16_t baseTemp;
+
+    uint16_t newBaseRes;
+    int16_t newBaseTemp;
+    uint8_t askUser;
     uint16_t tcr;
 
     struct vapeMode **vapeModes;
