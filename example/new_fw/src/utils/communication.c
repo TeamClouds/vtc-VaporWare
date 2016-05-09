@@ -6,6 +6,8 @@
 #include "settings.h"
 #include "materials.h"
 
+#include <Display.h>
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -47,6 +49,9 @@ void Communication_Command(char *buffer) {
         break;
     case 's':
         dumpSettings(buffer, response);
+        break;
+    case 'd':
+        dumpDisplay(buffer, response);
         break;
     case 'U':
         SYS_UnlockReg();
@@ -362,4 +367,13 @@ void dumpAtomizer(char *buffer, char *response) {
     writeUsb("atomInfo,%s,%i\r\n","current",a->current);
     writeUsb("atomInfo,%s,%i\r\n","baseResistance",a->baseResistance);
     writeUsb("atomInfo,%s,%d\r\n","baseTemperature",a->baseTemperature);
+}
+
+void dumpDisplay(char *buffer, char *response) {
+    uint8_t *framebuf = Display_GetFramebuffer();
+    int i;
+    for(i = 0; i < DISPLAY_FRAMEBUFFER_SIZE; i++) {
+        writeUsb("%02x", framebuf[i]);
+    }
+    writeUsb("\r\nEOF\r\n");
 }

@@ -8,3 +8,5 @@ void dumpSettings(char *buffer, char *response);
 
 void updateAtomizer(char *buffer, char *response);
 void dumpAtomizer(char *buffer, char *response);
+
+void dumpDisplay(char *buffer, char *response);
