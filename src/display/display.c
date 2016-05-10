@@ -99,6 +99,13 @@ void updateScreen(struct globals *g) {
 
     Display_SetContrast((char *)  g->currentBrightness);
 
+    uint8_t atomizerOn = Atomizer_IsOn();
+
+    if (!atomizerOn) {
+	    g->batteryPercent = Battery_VoltageToPercent(
+            Battery_IsPresent()? Battery_GetVoltage() : 0);
+    }
+
     if (chargeScreen) {
         Display_Clear();
         // update the battery percent all the time if
@@ -114,13 +121,6 @@ void updateScreen(struct globals *g) {
             g->screenFadeInTime = 0;
         }
         return;
-    }
-
-    uint8_t atomizerOn = Atomizer_IsOn();
-
-    if (!atomizerOn) {
-	    g->batteryPercent = Battery_VoltageToPercent(
-            Battery_IsPresent()? Battery_GetVoltage() : 0);
     }
 
     Display_SetInverted(s.invertDisplay);
