@@ -108,8 +108,7 @@ void showInfo(void) {
         Display_Clear();
 
         Display_PutText(0, 0, "FW Ver", FONT_SMALL);
-        siprintf(buff, "%s", "-0.01");
-        Display_PutText(10, 10, buff, FONT_SMALL);
+        Display_PutText(10, 10, GIT_VERSION, FONT_SMALL);
 
         Display_PutText(0, 25, "HW Ver", FONT_SMALL);
         siprintf(buff, "%d.%02d", hwVerMajor, hwVerMinor);
@@ -121,8 +120,6 @@ void showInfo(void) {
         Display_PutText(0, 75, "Uptime", FONT_SMALL);
         siprintf(buff, "%lu", gv.uptime / 100);
         Display_PutText(10,85, buff, FONT_SMALL);
-
-        Display_PutText(0,100, GIT_VERSION, FONT_SMALL);
 
         Display_Update();
     }
