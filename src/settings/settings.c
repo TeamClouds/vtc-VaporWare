@@ -503,6 +503,7 @@ int load_settings(void) {
 
 
 void showMenu() {
+    Display_SetContrast((char *) s.screenBrightness);
     runMenu(&settingsMenu);
     if (g.settingsChanged == 1) {
         writeSettings();
