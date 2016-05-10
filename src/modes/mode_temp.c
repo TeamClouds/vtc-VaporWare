@@ -6,6 +6,7 @@
 #include <USB_VirtualCOM.h>
 
 #include "display.h"
+#include "debug.h"
 #include "font/font_vaporware.h"
 #include "globals.h"
 #include "helper.h"
@@ -371,7 +372,9 @@ void tempFire() {
         Atomizer_ReadInfo(&g.atomInfo);
         EstimateCoilTemp();
 
-        g.watts = getNext(g.curTemp);
+        // Remove || 1 once pid is tuned for it
+        if (now < gv.uptime || 1)
+            g.watts = getNext(g.curTemp);
 
         if (g.watts < 0)
             g.watts = 1000;
@@ -395,7 +398,14 @@ void tempFire() {
                       g.atomInfo.resistance);
                  USB_VirtualCOM_SendString(buff);
              }
+
              updateScreen(&g);
+
+             if (s.stealthMode) {
+                /* GROSS hack to fix stealthmode */
+                uint32_t b = gv.uptime;
+                do {;} while (b == gv.uptime);
+             }
         }
     }
 
