@@ -141,6 +141,11 @@ struct buttonHandler attyPromptHandler = {
 };
 
 void drawPrompt() {
+
+    if (Display_IsFlipped()) {
+        Display_Flip();
+    }
+
     Display_Clear();
     char buff[10];
     Display_PutText(0, 0,  "Atomizer", FONT_SMALL);
