@@ -208,11 +208,10 @@ uint8_t newReading(uint16_t oldRes, uint8_t oldTemp, uint16_t *newRes, uint8_t *
 
 int main() {
     int i = 0;
+    Communication_Init();
 
     uint8_t mainTimerSlot = requestTimerSlot();
-    requestTimer(mainTimerSlot, TimerLowres);
-
-    Communication_Init();
+    requestTimer(mainTimerSlot, TimerStdres);
 
     initHandlers();
     setHandler(&mainButtonHandler);
