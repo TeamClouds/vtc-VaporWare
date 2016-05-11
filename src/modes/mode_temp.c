@@ -269,7 +269,7 @@ void tempFire() {
     initPid();
 
     uint16_t newVolts;
- //   int pidactive = 0;
+    int pidactive = 0;
     start = uptime;
     atTemp = 0;
 
@@ -312,7 +312,9 @@ void tempFire() {
             Atomizer_ReadInfo(&g.atomInfo);
             uint32_t sampled = uptime;
             EstimateCoilTemp();
-            g.watts = getNext(g.curTemp, sampled);
+
+            if (pidactive)
+                g.watts = getNext(g.curTemp, sampled);
 
 #ifdef PROFILING
             beforeTunePid = uptime;
@@ -332,7 +334,7 @@ void tempFire() {
             afterTunePid = uptime;
 #endif
 
-/*
+
             if (!pidactive) {
                 if (s.targetTemperature - g.curTemp >= s.pidSwitch) {
                     g.watts = s.initWatts;
@@ -345,7 +347,7 @@ void tempFire() {
                     pidactive = 1;
                 }
             }
-*/
+
             /*  TODO: Maybe make this baseRes dependant
             // Don't allow firing > 1 ohm in temp mode.
             if (g.atomInfo.resistance > 1000) {
