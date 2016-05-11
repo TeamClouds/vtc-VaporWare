@@ -6,8 +6,9 @@
 // Hopefully our only lone global
 extern volatile uint32_t uptime;
 
-#define UPTIME "%8lu.%02lu"
-#define UPTIMEVAL uptime / 1000, uptime % 1000
+#define UPTIME "%8lu.%03lu"
+#define TIMEFMT(X) (X)/1000, (X)%1000
+#define UPTIMEVAL TIMEFMT(uptime)
 
 enum {
     TimerIdle = 0,
@@ -18,6 +19,7 @@ enum {
 
 uint8_t requestTimerSlot();
 uint8_t requestTimer(uint8_t slot, uint8_t freqTen);
+void waitForFasterTimer(uint8_t freqTen);
 void setTimer(uint8_t freqTen);
 
 #endif

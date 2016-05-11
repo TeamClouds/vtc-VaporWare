@@ -12,14 +12,14 @@ volatile uint32_t uptime = 0;
 struct timerData {
     uint8_t timerSlots[8];
     uint8_t timerSlotsUsed;
-    uint16_t curTimerFreq;
+    volatile uint16_t curTimerFreq;
     uint16_t newTimerFreq;
-    uint32_t curTimerStep;
+    volatile uint32_t curTimerStep;
     uint32_t newTimerStep;
-    uint16_t curTimerInt;
+    volatile uint16_t curTimerInt;
     volatile uint16_t newTimerInt;
     uint8_t ourTimer;
-    uint8_t ourSlot;
+    volatile uint8_t ourSlot;
 } td = {0};
 
 void uptimeTimer(uint32_t param) {
@@ -42,6 +42,10 @@ void uptimeTimer(uint32_t param) {
     Timer_DeleteTimer(td.ourTimer);
 
     td.ourTimer = Timer_CreateTimer(td.curTimerFreq, 1, uptimeTimer, 3);
+}
+
+void waitForFasterTimer(uint8_t freqTen) {
+    do {;} while (freqTen > td.curTimerInt);
 }
 
 uint8_t requestTimerSlot() {
@@ -80,5 +84,5 @@ static void __attribute__((constructor)) prepareTimers(void) {
     td.curTimerStep = 1000 / td.curTimerFreq;
     td.curTimerInt = TimerLowres;
     
-    td.ourTimer = Timer_CreateTimer(td.newTimerFreq, 1, uptimeTimer, 3);
+    td.ourTimer = Timer_CreateTimer(td.curTimerFreq, 1, uptimeTimer, 3);
 }
