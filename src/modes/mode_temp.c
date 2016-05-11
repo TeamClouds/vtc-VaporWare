@@ -246,6 +246,7 @@ uint32_t getNext(int32_t CurrentTemp, uint32_t Time) {
 
     if (next < 0)
         return 0;
+
     return next;
 
 
@@ -320,11 +321,10 @@ void tempFire() {
             if (uptime + 1 < nextFire) {
                 if (s.tunePids) {
                     if (1) {
-                             writeUsb("%ld,%ld,%ld,%ld,%ld,%ld,%ld\r\n",
-                                      I.P, I.Error,
-                                      I.I, I.AveError,
-                                      I.D, I.DiffError,
-                                      g.watts);
+                            writeUsb("%ld,%d,%ld,%ld,%ld,%lld,%ld,%ld,%ld\r\n",
+                                      s.targetTemperature, g.curTemp,
+                                      I.P, I.Error, I.I, I.AveError,
+                                      I.D, I.DiffError, g.watts);
                     }
                 }
             }
