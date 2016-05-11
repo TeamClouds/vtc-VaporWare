@@ -12,6 +12,7 @@
 #include "helper.h"
 #include "settings.h"
 #include "images/watts.h"
+#include "variabletimer.h"
 
 
 // TODO: Move IntPid out to its own c/h for reuse
@@ -235,11 +236,11 @@ int32_t getNext(int32_t c_temp) {
     int32_t aveError;
     int32_t diffError;
     samples++;
-    freqNow = gv.uptime;
+    freqNow = uptime;
 
     if (s.tunePids) {
         if (!atTemp && error <= 0) {
-            atTemp = gv.uptime;
+            atTemp = uptime;
             char buff[64];
             siprintf(buff, "INFO," UPTIME ",At Temp\r\n", (atTemp - start)/100, (atTemp - start)%100);
             USB_VirtualCOM_SendString(buff);
@@ -296,12 +297,12 @@ void tempFire() {
     setTarget(s.targetTemperature);
     initPid();
     int pidactive = 0;
-    start = gv.uptime;
+    start = uptime;
     atTemp = 0;
-    uint32_t last = gv.uptime;
+    uint32_t last = uptime;
     uint32_t now;
     while (gv.fireButtonPressed) {
-        now = gv.uptime;
+        now = uptime;
         
         if (!Atomizer_IsOn() && g.atomInfo.resistance != 0
             && Atomizer_GetError() == OK) {
@@ -373,7 +374,7 @@ void tempFire() {
         EstimateCoilTemp();
 
         // Remove || 1 once pid is tuned for it
-        if (now < gv.uptime || 1)
+        if (now < uptime || 1)
             g.watts = getNext(g.curTemp);
 
         if (g.watts < 0)
@@ -403,8 +404,8 @@ void tempFire() {
 
              if (s.stealthMode) {
                 /* GROSS hack to fix stealthmode */
-                uint32_t b = gv.uptime;
-                do {;} while (b == gv.uptime);
+                uint32_t b = uptime;
+                do {;} while (b == uptime);
              }
         }
     }

@@ -16,6 +16,7 @@ OBJS = \
     src/utils/button.o \
     src/utils/menu.o \
     src/utils/communication.o \
+    src/utils/variabletimer.o \
     font/Font_Large.o \
     font/Font_Medium.o \
     font/Font_Small.o \

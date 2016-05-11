@@ -6,6 +6,7 @@
 
 #include "button.h"
 #include "globals.h"
+#include "variabletimer.h"
 
 struct buttonGlobals {
     volatile uint32_t fireStart;
@@ -42,7 +43,7 @@ struct buttonGlobals {
 
 void handleButtonEvents() {
     struct buttonHandler *b = bg.currentHandler;
-    uint32_t ltime = gv.uptime;
+    uint32_t ltime = uptime;
     
     if (bg.callFireCallback) {
         b->fire_handler(bg.fireHeld, ltime - bg.fireStart);
@@ -75,7 +76,7 @@ void handleButtonEvents() {
 }
 
 void buttonTimer(uint32_t ignored) {
-    uint32_t ltime = gv.uptime;
+    uint32_t ltime = uptime;
     
     /* Fire button */
     /* Periodic callback */
@@ -83,7 +84,7 @@ void buttonTimer(uint32_t ignored) {
         bg.callFireCallback = 1;
         bg.fireHeld = BUTTON_HELD;
         bg.fireNext = ltime + bg.currentHandler->fireUpdateInterval;
-        bg.buttonTimerExpires = ltime + 500;
+        bg.buttonTimerExpires = ltime + 5000;
         gv.buttonEvent = 1;
     }
 
@@ -109,7 +110,7 @@ void buttonTimer(uint32_t ignored) {
         bg.callLeftCallback = 1;
         bg.leftHeld = BUTTON_HELD;
         bg.leftNext = ltime + bg.currentHandler->leftUpdateInterval;
-        bg.buttonTimerExpires = ltime + 500;
+        bg.buttonTimerExpires = ltime + 5000;
         gv.buttonEvent = 1;
     }
 
@@ -134,7 +135,7 @@ void buttonTimer(uint32_t ignored) {
         bg.callRightCallback = 1;
         bg.rightHeld = BUTTON_HELD;
         bg.rightNext = ltime + bg.currentHandler->rightUpdateInterval;
-        bg.buttonTimerExpires = ltime + 500;
+        bg.buttonTimerExpires = ltime + 5000;
         gv.buttonEvent = 1;
     }
 
@@ -156,7 +157,7 @@ void buttonTimer(uint32_t ignored) {
 }
 
 void buttonPressed(uint8_t state) {
-    uint32_t ltime = gv.uptime;
+    uint32_t ltime = uptime;
 
     if (state & BUTTON_MASK_FIRE) {
         gv.fireButtonPressed = 1;
@@ -217,7 +218,7 @@ void buttonPressed(uint8_t state) {
             if (bg.currentHandler->flags & RIGHT_REPEAT) {
                 bg.rightCount++;
                 bg.callRightCallback = 0;
-                bg.rightTimeout = gv.uptime + bg.currentHandler->rightRepeatTimeout;
+                bg.rightTimeout = ltime + bg.currentHandler->rightRepeatTimeout;
             }
         }
     } else if (bg.rightHeld && !(state & BUTTON_MASK_RIGHT)) {
@@ -229,7 +230,7 @@ void buttonPressed(uint8_t state) {
     }
 
     gv.buttonEvent = 1;
-    bg.buttonTimerExpires = ltime + 500;
+    bg.buttonTimerExpires = ltime + 5000;
 
 }
 

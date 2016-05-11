@@ -16,8 +16,8 @@ struct settings {
     uint8_t fromRom;
     uint8_t mode;
     uint16_t screenTimeout;
-    uint8_t fadeInTime;
-    uint8_t fadeOutTime;
+    uint16_t fadeInTime;
+    uint16_t fadeOutTime;
     volatile int32_t displayTemperature;
     volatile int32_t targetTemperature;
     uint32_t targetWatts;

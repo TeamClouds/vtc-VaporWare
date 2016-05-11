@@ -37,6 +37,7 @@
 #include "images/hot.h"
 #include "images/short.h"
 #include "images/ohm.h"
+#include "variabletimer.h"
 
 // NOTES:
 // Evic VTC mini X-MAX = 116
@@ -61,27 +62,27 @@ void updateScreen(struct globals *g) {
     if (s.stealthMode)
         return;
 
-    uint32_t uptime = gv.uptime;
+    uint32_t now = uptime;
     uint32_t targetBrightness = s.screenBrightness;
 
     char buff[9];
 
     if (g->screenFadeInTime == 0) {
-        g->screenFadeInTime = uptime + s.fadeInTime;
+        g->screenFadeInTime = now + s.fadeInTime;
     }
 
-    int chargeScreen = (g->charging && !g->pauseScreenOff && (g->screenOffTime < uptime));
+    int chargeScreen = (g->charging && !g->pauseScreenOff && (g->screenOffTime < now));
 
-    if (!g->pauseScreenOff && s.fadeOutTime >= g->screenOffTime - uptime && g->screenOffTime >= uptime) {
+    if (!g->pauseScreenOff && s.fadeOutTime >= g->screenOffTime - now && g->screenOffTime >= now) {
 
         // fade out if timing out
-        g->currentBrightness = (((g->screenOffTime - uptime) * 1000 / s.fadeOutTime) * targetBrightness) / 1000;
+        g->currentBrightness = (((g->screenOffTime - now) * 1000 / s.fadeOutTime) * targetBrightness) / 1000;
 
-    } else if (!chargeScreen && g->screenFadeInTime != 0 && uptime <= g->screenFadeInTime) {
+    } else if (!chargeScreen && g->screenFadeInTime != 0 && now <= g->screenFadeInTime) {
 
         // fade in
         uint32_t startTime = g->screenFadeInTime - s.fadeInTime;
-        g->currentBrightness = (((uptime - startTime) * 1000 / s.fadeInTime) * targetBrightness) / 1000;
+        g->currentBrightness = (((now - startTime) * 1000 / s.fadeInTime) * targetBrightness) / 1000;
 
     } else if (chargeScreen) {
 
@@ -92,7 +93,7 @@ void updateScreen(struct globals *g) {
     bool needBrightness = g->currentBrightness <= targetBrightness;
     if (needBrightness && !chargeScreen) {
         // update animation time left
-        g->screenFadeInTime = uptime +
+        g->screenFadeInTime = now +
                 (s.fadeInTime - (((g->currentBrightness * 1000 / targetBrightness) * s.fadeInTime) / 1000));
 
     }

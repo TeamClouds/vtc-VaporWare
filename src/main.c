@@ -24,7 +24,7 @@
 #include <Atomizer.h>
 #include <Battery.h>
 #include <Button.h>
-#include <TimerUtils.h>
+
 #include <Display.h>
 #include <System.h>
 #include <USB_VirtualCOM.h>
@@ -37,6 +37,7 @@
 #include "globals.h"
 #include "materials.h"
 #include "settings.h"
+#include "variabletimer.h"
 
 #include "mode.h"
 #include "mode_watt.h"
@@ -49,20 +50,12 @@ inline void screenOn() {
         Display_SetOn(1);
 
     g.sysSleepAt = 0;
-    g.screenOffTime = gv.uptime + s.screenTimeout * 10;
+    g.screenOffTime = uptime + s.screenTimeout;
     g.pauseScreenOff = 1;
 }
 
 inline void screenOff() {
     g.pauseScreenOff = 0;
-}
-
-void uptime(uint32_t param) {
-    gv.uptime++;
-    if (!gv.sleeping && (
-        (buttonTimeout && *buttonTimeout > gv.uptime) || gv.buttonEvent)
-        )
-        buttonTimer(param);
 }
 
 void fire(uint8_t status, uint32_t held) {
@@ -85,7 +78,7 @@ void left(uint8_t status, uint32_t held) {
 
     screenOn();
     if (!s.vsetLock && ((status & BUTTON_PRESS) ||
-        ((held > 30) && status & BUTTON_HELD)))
+        ((held > 300) && status & BUTTON_HELD)))
         __down();
     else 
         screenOff();
@@ -94,7 +87,7 @@ void left(uint8_t status, uint32_t held) {
 void right(uint8_t status, uint32_t held) {
     screenOn();
     if (!s.vsetLock && ((status & BUTTON_PRESS) ||
-        ((held > 30) && status & BUTTON_HELD)))
+        ((held > 300) && status & BUTTON_HELD)))
         __up();
     else
         screenOff();
@@ -107,13 +100,13 @@ struct buttonHandler mainButtonHandler = {
     .fire_handler = &fire,
     .fire_repeated = &showMenu,
     .fireRepeatCount = 3,
-    .fireRepeatTimeout = 30,
+    .fireRepeatTimeout = 300,
 
     .left_handler = &left,
-    .leftUpdateInterval = 10,
+    .leftUpdateInterval = 100,
 
     .right_handler = &right,
-    .rightUpdateInterval = 10,
+    .rightUpdateInterval = 100,
 
 };
 
@@ -211,9 +204,14 @@ uint8_t newReading(uint16_t oldRes, uint8_t oldTemp, uint16_t *newRes, uint8_t *
     return 1;
 }
 
+
+
 int main() {
     int i = 0;
-    gv.uptimeTimer = Timer_CreateTimer(100, 1, uptime, 3);
+
+    uint8_t mainTimerSlot = requestTimerSlot();
+    requestTimer(mainTimerSlot, TimerLowres);
+
     Communication_Init();
 
     initHandlers();
@@ -266,7 +264,7 @@ int main() {
     if (g.pauseScreenOff)
         screenOn();
 
-    if (g.settingsChanged && gv.uptime > g.writeSettingsAt) {
+    if (g.settingsChanged && uptime > g.writeSettingsAt) {
         writeSettings();
         g.writeSettingsAt = 0;
     }
@@ -277,25 +275,25 @@ int main() {
     } else if (s.stealthMode) {
         Display_Clear();
         Display_SetOn(0);
-    } else if (!s.stealthMode && (g.nextRefresh < gv.uptime) && ((g.screenOffTime >= gv.uptime) || g.charging)) {
-        g.nextRefresh = gv.uptime + 6;
+    } else if (!s.stealthMode && (g.nextRefresh < uptime) && ((g.screenOffTime >= uptime) || g.charging)) {
+        g.nextRefresh = uptime + 60;
         Display_SetOn(1);
         updateScreen(&g);
     } else if (gv.sleeping) {
         gv.sleeping = 0;
-    } else if ((g.screenOffTime < gv.uptime) && !g.charging) {
+    } else if ((g.screenOffTime < uptime) && !g.charging) {
 
         if (g.settingsChanged && !g.writeSettingsAt)
-            g.writeSettingsAt = gv.uptime + SETTINGSWRITEDEFAULT;
+            g.writeSettingsAt = uptime + SETTINGSWRITEDEFAULT;
 
         if (g.sysSleepAt == 0)
-            g.sysSleepAt = gv.uptime + SYSSLEEPDEFAULT;
+            g.sysSleepAt = uptime + SYSSLEEPDEFAULT;
 
         g.screenFadeInTime = 0;
         Display_Clear();
         Display_SetOn(0);
         if (!g.settingsChanged) {
-            if (gv.uptime > g.sysSleepAt) {
+            if (uptime > g.sysSleepAt) {
                 gv.sleeping = 1;
                 Sys_Sleep();
                 if (!s.stealthMode) {

@@ -1,9 +1,9 @@
 #ifndef __DEFAULTS_H
 #define __DEFAULTS_H
 // 10/second 0.5-60s range, 3s default
-#define SCREENMINTIMEOUT 5
-#define SCREENMAXTIMEOUT 600
-#define SCREENDEFAULTTIMEOUT 30
+#define SCREENMINTIMEOUT 50
+#define SCREENMAXTIMEOUT 6000
+#define SCREENDEFAULTTIMEOUT 300
 
 #define FADEOUTTIME 60
 #define FADEINTIME 50
@@ -15,9 +15,9 @@
 #define DEFBRIGHTNESS 50
 
 // After screen off
-#define SYSSLEEPDEFAULT 180 * 10
+#define SYSSLEEPDEFAULT 180 * 1000
 // After screen off, may block sys sleep
-#define SETTINGSWRITEDEFAULT 300 * 10
+#define SETTINGSWRITEDEFAULT 300 * 1000
 
 // Kanthal Default
 #define DEFAULTMATERIAL 0

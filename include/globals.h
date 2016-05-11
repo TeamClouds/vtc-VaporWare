@@ -6,9 +6,6 @@
 #include "materials.h"
 #include "mode.h"
 
-#define UPTIME "%8lu.%02lu"
-#define UPTIMEVAL gv.uptime / 100, gv.uptime % 100
-
 struct globals {
     Atomizer_Info_t atomInfo;
     uint8_t baseFromUser;
@@ -45,8 +42,6 @@ struct globals {
 extern struct globals g;
 
 struct globalVols {
-    volatile uint32_t uptime;
-    volatile uint8_t uptimeTimer;
     volatile uint8_t fireTimer;
     volatile uint8_t fireButtonPressed;
     volatile uint8_t buttonCnt;

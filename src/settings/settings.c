@@ -32,13 +32,14 @@
 
 #include "button.h"
 #include "dataflash.h"
- #include "debug.h"
+#include "debug.h"
 #include "display.h"
 #include "globals.h"
 #include "helper.h"
 #include "menu.h"
 #include "settings.h"
 #include "font/font_vaporware.h"
+#include "variabletimer.h"
 
 void saveDefaultSettings();
 
@@ -118,7 +119,7 @@ void showInfo(void) {
         Display_PutText(10, 60, Display_GetType() == DISPLAY_SSD1327 ? "1327" : "1306", FONT_SMALL);
 
         Display_PutText(0, 75, "Uptime", FONT_SMALL);
-        siprintf(buff, "%lu", gv.uptime / 100);
+        siprintf(buff, "%lu", uptime / 1000);
         Display_PutText(10,85, buff, FONT_SMALL);
 
         Display_Update();

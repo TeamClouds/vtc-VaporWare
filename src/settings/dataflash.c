@@ -58,9 +58,9 @@ void globalsToDFSettings(struct baseSettings_2 *b, struct freqSettings_2 *f) {
     b->pidD = s.pidD;
     b->initWatts = s.initWatts;
     b->pidSwitch = s.pidSwitch;
-    b->screenTimeout = s.screenTimeout;
-    b->fadeInTime = s.fadeInTime;
-    b->fadeOutTime = s.fadeOutTime;
+    b->screenTimeout = s.screenTimeout / 10;
+    b->fadeInTime = s.fadeInTime / 10;
+    b->fadeOutTime = s.fadeOutTime / 10;
     b->materialIndex = s.materialIndex;
     b->tempScaleTypeIndex = s.tempScaleTypeIndex;
     b->tcr = s.tcr;
@@ -84,9 +84,9 @@ void default_base_2(struct baseSettings_2 *b) {
     b->pidD = DEFPIDD;
     b->initWatts = DEFWATTS;
     b->pidSwitch = STEMPDEF;
-    b->screenTimeout = SCREENDEFAULTTIMEOUT;
-    b->fadeInTime = FADEINTIME;
-    b->fadeOutTime = FADEOUTTIME;
+    b->screenTimeout = SCREENDEFAULTTIMEOUT / 10;
+    b->fadeInTime = FADEINTIME / 10;
+    b->fadeOutTime = FADEOUTTIME / 10;
     b->materialIndex = DEFAULTMATERIAL;
     b->tempScaleTypeIndex = DEFAULTTEMPSCALE;
     b->tcr = TCRDEF;
