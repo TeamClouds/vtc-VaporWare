@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 
 void printNumber(char *buff, uint32_t temperature) {
     siprintf(buff, "%lu", temperature);
