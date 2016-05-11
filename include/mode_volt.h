@@ -1,6 +1,8 @@
 #ifndef __MODE_VOLT_H
 #define __MODE_VOLT_H
 
+#include <stdint.h>
+
 void voltInit(void);
 void voltFire(void);
 void voltUp(void);

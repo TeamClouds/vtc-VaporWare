@@ -1,5 +1,7 @@
 #ifndef __SETTINGS_H
 #define __SETTINGS_H
+
+#include <stdint.h>
 #include "defaults.h"
 
 enum {

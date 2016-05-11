@@ -1,6 +1,7 @@
 #ifndef __MODES_H
 #define __MODES_H
 
+#include <stdint.h>
 #include "menu.h"
 
 #define MODE_COUNT 8

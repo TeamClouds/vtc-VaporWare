@@ -1,5 +1,8 @@
 #ifndef __MATERIALS_H
 #define __MATERIALS_H
+
+#include <stdint.h>
+
 enum {
     KANTHAL = 1 << 0,
     NICKEL = 1 << 1,

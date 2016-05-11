@@ -1,6 +1,8 @@
 #ifndef __MODE_WATT_H
 #define __MODE_WATT_H
 
+#include <stdint.h>
+
 void wattInit(void);
 void wattFire(void);
 void wattUp(void);
