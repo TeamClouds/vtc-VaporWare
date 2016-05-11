@@ -15,26 +15,6 @@
 #include "variabletimer.h"
 
 
-// TODO: Move IntPid out to its own c/h for reuse
-#define HISTLEN 16
-struct IntPID {
-    int32_t targetTemp;
-    int32_t Max;
-    int32_t Min;
-    int32_t P;
-    int32_t Error;
-    int32_t I;
-    int32_t AveError;
-    int32_t D;
-    int32_t DiffError;
-    int32_t initWatts;
-    int32_t Rave;
-    int32_t Hist[HISTLEN];
-    int32_t HIndex;
-    int32_t Perror;
-} I = {
-};
-
 int32_t getInitWattsDefault() {
     return s.initWatts;
 }
@@ -200,21 +180,31 @@ struct menuDefinition tempSettings = {
     .menuItems = &tempSettingsOptions,
 };
 
-volatile int prline = 0;
+struct IntPID {
+    int32_t targetTemp;
+
+    int32_t P;
+    int32_t Error;
+
+    int32_t I;
+    int64_t AveError;
+    uint32_t LastTime;
+
+    int32_t Perror;
+
+    int32_t D;
+    int32_t DiffError;
+} I;
 
 void initPid() {
-    int i = 0;
-    for (i = 0; i<HISTLEN; i++) {
-        I.Hist[i] = 0;
-    }
-    I.HIndex = 0;
-    I.Rave = 0;
+    I.Error = 0;
+    I.AveError = 0;
+    I.LastTime = 0;
+    I.Perror = 0;
+    I.DiffError = 0;
     I.P = s.pidP;
     I.I = s.pidI;
     I.D = s.pidD;
-
-    I.Max = MAXWATTS;
-    I.Min = MINWATTS;
 
     g.watts = s.initWatts;
     g.volts = wattsToVolts(g.watts, g.atomInfo.resistance);
@@ -233,26 +223,30 @@ uint32_t count = 0;
 uint32_t samples = 0;
 int8_t curSign = 1;
 
-int32_t getNext(int32_t c_temp) {
-    I.Error = I.targetTemp - c_temp;
+uint32_t getNext(int32_t CurrentTemp, uint32_t Time) {
+    int32_t Integration;
+    I.Error = I.targetTemp - CurrentTemp;
 
     samples++;
     freqNow = uptime;
 
-    int j = I.HIndex - 1;
-    j = (j < 0) ? HISTLEN : j;
-    I.Hist[I.HIndex] = I.Error;
-    I.Rave = I.Rave + I.Error;
-    I.Rave = I.Rave - I.Hist[j];
-    I.HIndex = (I.HIndex + 1) % HISTLEN;
-
-    I.AveError = I.Rave;
-    I.DiffError = I.Perror - I.Error;
+    if (I.LastTime) {
+        Integration = I.Perror + I.Error;
+        Integration *= (Time - I.LastTime);
+        Integration /= 2; // Average of Perror and Error
+        Integration /= 50; //
+        I.AveError += Integration;
+        I.DiffError = (I.Error - I.Perror) * 50/(Time - I.LastTime);
+    }
     I.Perror = I.Error;
+    I.LastTime = Time;
+    int32_t next = I.Error * I.P / 100 +
+                   I.AveError * I.I / 100 +
+                   I.DiffError * I.D / 100;
 
-    return I.Error * I.P / 100 +
-           I.AveError * I.I / 100 +
-           I.DiffError * I.D / 100;
+    if (next < 0)
+        return 0;
+    return next;
 
 
 }
@@ -260,23 +254,25 @@ int32_t getNext(int32_t c_temp) {
 void tempInit() {
     //  set this initial value because we may be switching
     // from another mode that changes our watts.
+
 }
 
+// 50hz update on the firing.
+#define FIREPERIOD 20
 int8_t timerIndex = -1;
 void tempFire() {
     if (timerIndex == -1)
         timerIndex = requestTimerSlot();
 
-    uint16_t newVolts;
-    uint8_t refreshPid = 1;
-
     setTarget(s.targetTemperature);
     initPid();
-    int pidactive = 0;
+
+    uint16_t newVolts;
+ //   int pidactive = 0;
     start = uptime;
     atTemp = 0;
-    uint32_t last = uptime;
-    uint32_t now;
+
+    uint32_t nextFire = uptime;
 
 #ifdef PROFILING
     uint32_t beforeFire, afterFire,
@@ -295,14 +291,14 @@ void tempFire() {
 #endif
 
     while (gv.fireButtonPressed) {
-        now = uptime;
 
 #ifdef PROFILING
         loopCnt++;
         beforeFire = uptime;
 #endif
         // < 1ms
-        if (refreshPid) {
+        if (uptime > nextFire) {
+            nextFire += FIREPERIOD;
 
             if (!Atomizer_IsOn() && g.atomInfo.resistance != 0
                 && Atomizer_GetError() == OK) {
@@ -313,8 +309,30 @@ void tempFire() {
             // Update info
             // If resistance is zero voltage will be zero
             Atomizer_ReadInfo(&g.atomInfo);
+            uint32_t sampled = uptime;
             EstimateCoilTemp();
+            g.watts = getNext(g.curTemp, sampled);
 
+#ifdef PROFILING
+            beforeTunePid = uptime;
+#endif
+            // < 1ms ave
+            if (uptime + 1 < nextFire) {
+                if (s.tunePids) {
+                    if (1) {
+                             writeUsb("%ld,%ld,%ld,%ld,%ld,%ld,%ld\r\n",
+                                      I.P, I.Error,
+                                      I.I, I.AveError,
+                                      I.D, I.DiffError,
+                                      g.watts);
+                    }
+                }
+            }
+#ifdef PROFILING
+            afterTunePid = uptime;
+#endif
+
+/*
             if (!pidactive) {
                 if (s.targetTemperature - g.curTemp >= s.pidSwitch) {
                     g.watts = s.initWatts;
@@ -327,7 +345,7 @@ void tempFire() {
                     pidactive = 1;
                 }
             }
-
+*/
             /*  TODO: Maybe make this baseRes dependant
             // Don't allow firing > 1 ohm in temp mode.
             if (g.atomInfo.resistance > 1000) {
@@ -372,38 +390,24 @@ void tempFire() {
                 Atomizer_SetOutputVoltage(g.volts);
             }
 
-            Atomizer_ReadInfo(&g.atomInfo);
-            EstimateCoilTemp();
 
-            // Remove || 1 once pid is tuned for it
-            if (now < uptime || 1)
-                g.watts = getNext(g.curTemp);
 
-            if (g.watts < 0)
-                g.watts = 1000;
-
-            if (g.watts > 100000)
-                g.watts = 1000;
-
-            if (g.watts > MAXWATTS)
-                g.watts = MAXWATTS;
 
         }
 
 #ifdef PROFILING
         afterFire = beforeScreenUpdate = uptime;
 #endif
-
-        prline = now - last >= 10;
-        now = last;
         // 7ms ave
-        if (1) {// Update Screen Interval
-            updateScreen(&g);
+        if (uptime + 7 < nextFire) {
+            if (1) {// Update Screen Interval
+                updateScreen(&g);
 
-            if (s.stealthMode) {
-                /* GROSS hack to fix stealthmode */
-                uint32_t b = uptime;
-                do {;} while (b == uptime);
+                if (s.stealthMode) {
+                    /* GROSS hack to fix stealthmode */
+                    uint32_t b = uptime;
+                    do {;} while (b == uptime);
+                }
             }
         }
 
@@ -411,36 +415,22 @@ void tempFire() {
         afterScreenUpdate = beforeDumpPid = uptime;
 #endif
         // <1ms ave
-        if (1 || prline) {
-            if (s.dumpPids) {
-                 char buff[63];
-                 siprintf(buff, "PID,%ld,%d,%ld,%d\r\n",
-                          s.targetTemperature,
-                          g.curTemp,
-                          g.watts,
-                      g.atomInfo.resistance);
-                 USB_VirtualCOM_SendString(buff);
+        if (uptime + 1 < nextFire) {
+            if (1) { // dumpPids interval
+                if (s.dumpPids) {
+                     char buff[63];
+                     siprintf(buff, "PID,%ld,%d,%ld,%d\r\n",
+                              s.targetTemperature,
+                              g.curTemp,
+                              g.watts,
+                          g.atomInfo.resistance);
+                     USB_VirtualCOM_SendString(buff);
+                 }
              }
         }
 
 #ifdef PROFILING
-        afterDumpPid = beforeTunePid = uptime;
-#endif
-
-        // < 1ms ave
-        if (s.tunePids) {
-            if (prline) {
-                     writeUsb(UPTIME ",%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%lu\r\n",
-                              UPTIMEVAL, I.targetTemp, g.curTemp,
-                              I.P, I.Error,
-                              I.I, I.AveError,
-                              I.D, I.DiffError,
-                              g.watts);
-            }
-        }
-
-#ifdef PROFILING
-        afterTunePid = uptime;
+        afterDumpPid = uptime;
         writeUsb(UPTIME"\t"UPTIME"\t"UPTIME"\t"UPTIME"\r\n",
                                              TIMEFMT(afterFire - beforeFire),
                                              TIMEFMT(afterScreenUpdate - beforeScreenUpdate),

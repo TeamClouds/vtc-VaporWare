@@ -32,8 +32,8 @@
 #define MINPID 0
 #define MAXPID 30000
 // TODO: Move these to material struct
-#define DEFPIDP 17000
-#define DEFPIDI 5500
+#define DEFPIDP 20000
+#define DEFPIDI 1700
 #define DEFPIDD 0
 
 // Temp mode watts (and wattage mode default)
