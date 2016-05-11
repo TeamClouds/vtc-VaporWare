@@ -22,8 +22,11 @@ struct IntPID {
     int32_t Max;
     int32_t Min;
     int32_t P;
+    int32_t Error;
     int32_t I;
+    int32_t AveError;
     int32_t D;
+    int32_t DiffError;
     int32_t initWatts;
     int32_t Rave;
     int32_t Hist[HISTLEN];
@@ -209,7 +212,7 @@ void initPid() {
     I.P = s.pidP;
     I.I = s.pidI;
     I.D = s.pidD;
-    
+
     I.Max = MAXWATTS;
     I.Min = MINWATTS;
 
@@ -230,60 +233,28 @@ uint32_t count = 0;
 uint32_t samples = 0;
 int8_t curSign = 1;
 
-// Curently runs at about 132hz
 int32_t getNext(int32_t c_temp) {
-    int32_t error = I.targetTemp - c_temp;
-    int32_t aveError;
-    int32_t diffError;
+    I.Error = I.targetTemp - c_temp;
+
     samples++;
     freqNow = uptime;
 
-    if (s.tunePids) {
-        if (!atTemp && error <= 0) {
-            atTemp = uptime;
-            char buff[64];
-            siprintf(buff, "INFO," UPTIME ",At Temp\r\n", (atTemp - start)/100, (atTemp - start)%100);
-            USB_VirtualCOM_SendString(buff);
-        }
-    }
-
     int j = I.HIndex - 1;
     j = (j < 0) ? HISTLEN : j;
-    I.Hist[I.HIndex] = error;
-    I.Rave = I.Rave + error;
+    I.Hist[I.HIndex] = I.Error;
+    I.Rave = I.Rave + I.Error;
     I.Rave = I.Rave - I.Hist[j];
     I.HIndex = (I.HIndex + 1) % HISTLEN;
 
-    aveError = I.Rave;
-    diffError = I.Perror - error;
-    I.Perror = error;
+    I.AveError = I.Rave;
+    I.DiffError = I.Perror - I.Error;
+    I.Perror = I.Error;
 
-    int32_t next = error * I.P / 100 +
-               aveError * I.I / 100 +
-                   diffError * I.D / 100;
+    return I.Error * I.P / 100 +
+           I.AveError * I.I / 100 +
+           I.DiffError * I.D / 100;
 
-    if (s.tunePids) {
-        if (prline) {
-                 char buff[63];
-                 siprintf(buff, UPTIME ",%ld,%ld,%lu,%ld,%ld,%ld,%ld,%ld,%ld,%ld\r\n",
-                          UPTIMEVAL,
-                          I.targetTemp,
-                          c_temp,
-                          g.watts, 
-                          I.P,
-                          error,
-                          I.I,
-                          aveError,
-                          I.D,
-                      diffError,
-                          g.watts + next
-                 );
-                 USB_VirtualCOM_SendString(buff);
-        }
-    }
 
-    // TODO: there needs to be 'scaling' to scale dT to dW    
-    return next;
 }
 
 void tempInit() {
@@ -291,8 +262,13 @@ void tempInit() {
     // from another mode that changes our watts.
 }
 
+int8_t timerIndex = -1;
 void tempFire() {
+    if (timerIndex == -1)
+        timerIndex = requestTimerSlot();
+
     uint16_t newVolts;
+    uint8_t refreshPid = 1;
 
     setTarget(s.targetTemperature);
     initPid();
@@ -301,114 +277,189 @@ void tempFire() {
     atTemp = 0;
     uint32_t last = uptime;
     uint32_t now;
+
+#ifdef PROFILING
+    uint32_t beforeFire, afterFire,
+             beforeScreenUpdate, afterScreenUpdate,
+             beforeDumpPid, afterDumpPid,
+             beforeTunePid, afterTunePid;
+    uint32_t FireAve = 0, ScreenAve = 0, DumpPidAve = 0, TunePidAve = 0;
+    uint32_t loopCnt = 0;
+#endif
+
+    requestTimer(timerIndex, TimerHighRes);
+    waitForFasterTimer(TimerHighRes);
+
+#ifdef PROFILING
+    writeUsb("Fire\tScreen\tDumpPid\tTunePid\r\n");
+#endif
+
     while (gv.fireButtonPressed) {
         now = uptime;
-        
-        if (!Atomizer_IsOn() && g.atomInfo.resistance != 0
-            && Atomizer_GetError() == OK) {
-            // Power on
-            Atomizer_Control(1);
-        }
 
-        // Update info
-        // If resistance is zero voltage will be zero
-        Atomizer_ReadInfo(&g.atomInfo);
-        EstimateCoilTemp();
+#ifdef PROFILING
+        loopCnt++;
+        beforeFire = uptime;
+#endif
+        // < 1ms
+        if (refreshPid) {
 
-        if (!pidactive) {
-            if (s.targetTemperature - g.curTemp >= s.pidSwitch) {
-                g.watts = s.initWatts;
-            } else {
-                if (s.dumpPids) {
-                    char b[63];
-                    siprintf(b, "INFO,Switching to PID %ld %d\r\n", s.targetTemperature, g.curTemp);
-                    USB_VirtualCOM_SendString(b);
-                }
-                pidactive = 1;
+            if (!Atomizer_IsOn() && g.atomInfo.resistance != 0
+                && Atomizer_GetError() == OK) {
+                // Power on
+                Atomizer_Control(1);
             }
-        }
-    // Don't allow firing > 1 ohm in temp mode.
-/*  TODO: Maybe make this baseRes dependant
-    if (g.atomInfo.resistance > 1000) {
-        g.watts = 0;
-    } */
 
-        if (g.watts < 0)
-            g.watts = 1000;
+            // Update info
+            // If resistance is zero voltage will be zero
+            Atomizer_ReadInfo(&g.atomInfo);
+            EstimateCoilTemp();
 
-        if (g.watts > 100000) // Pid probably went c-razy on us, so drop watts.
-            g.watts = 1000;
-
-        if (g.watts > MAXWATTS)
-            g.watts = MAXWATTS;
-           
-
-        newVolts = wattsToVolts(g.watts, g.atomInfo.resistance);
-
-        if (newVolts != g.volts) {
-            if (Atomizer_IsOn()) {
-                // Update output voltage to correct res variations:
-                // If the new voltage is lower, we only correct it in
-                // 10mV steps, otherwise a flake res reading might
-                // make the voltage plummet to zero and stop.
-                // If the new voltage is higher, we push it up by 100mV
-                // to make it hit harder on TC coils, but still keep it
-                // under control.
-                if (newVolts < g.volts) {
-                    newVolts = g.volts - (g.volts >= 10 ? 10 : 0);
+            if (!pidactive) {
+                if (s.targetTemperature - g.curTemp >= s.pidSwitch) {
+                    g.watts = s.initWatts;
                 } else {
-                    newVolts = g.volts + 100;
+                    if (s.dumpPids) {
+                        char b[63];
+                        siprintf(b, "INFO,Switching to PID %ld %d\r\n", s.targetTemperature, g.curTemp);
+                        USB_VirtualCOM_SendString(b);
+                    }
+                    pidactive = 1;
                 }
             }
 
-            if (newVolts > MAXVOLTS) {
-                newVolts = MAXVOLTS;
+            /*  TODO: Maybe make this baseRes dependant
+            // Don't allow firing > 1 ohm in temp mode.
+            if (g.atomInfo.resistance > 1000) {
+                g.watts = 0;
+            }
+            */
+
+            if (g.watts < 0)
+                g.watts = 1000;
+
+            if (g.watts > 100000) // Pid probably went c-razy on us, so drop watts.
+                g.watts = 1000;
+
+            if (g.watts > MAXWATTS)
+                g.watts = MAXWATTS;
+
+
+            newVolts = wattsToVolts(g.watts, g.atomInfo.resistance);
+
+            if (newVolts != g.volts) {
+                if (Atomizer_IsOn()) {
+                    // Update output voltage to correct res variations:
+                    // If the new voltage is lower, we only correct it in
+                    // 10mV steps, otherwise a flake res reading might
+                    // make the voltage plummet to zero and stop.
+                    // If the new voltage is higher, we push it up by 100mV
+                    // to make it hit harder on TC coils, but still keep it
+                    // under control.
+                    if (newVolts < g.volts) {
+                        newVolts = g.volts - (g.volts >= 10 ? 10 : 0);
+                    } else {
+                        newVolts = g.volts + 100;
+                    }
+                }
+
+                if (newVolts > MAXVOLTS) {
+                    newVolts = MAXVOLTS;
+                }
+
+                g.volts = newVolts;
+
+                Atomizer_SetOutputVoltage(g.volts);
             }
 
-            g.volts = newVolts;
+            Atomizer_ReadInfo(&g.atomInfo);
+            EstimateCoilTemp();
 
-            Atomizer_SetOutputVoltage(g.volts);
+            // Remove || 1 once pid is tuned for it
+            if (now < uptime || 1)
+                g.watts = getNext(g.curTemp);
+
+            if (g.watts < 0)
+                g.watts = 1000;
+
+            if (g.watts > 100000)
+                g.watts = 1000;
+
+            if (g.watts > MAXWATTS)
+                g.watts = MAXWATTS;
+
         }
 
-        Atomizer_ReadInfo(&g.atomInfo);
-        EstimateCoilTemp();
-
-        // Remove || 1 once pid is tuned for it
-        if (now < uptime || 1)
-            g.watts = getNext(g.curTemp);
-
-        if (g.watts < 0)
-            g.watts = 1000;
-
-        if (g.watts > 100000)
-            g.watts = 1000;
-
-        if (g.watts > MAXWATTS)
-            g.watts = MAXWATTS;
+#ifdef PROFILING
+        afterFire = beforeScreenUpdate = uptime;
+#endif
 
         prline = now - last >= 10;
         now = last;
+        // 7ms ave
+        if (1) {// Update Screen Interval
+            updateScreen(&g);
 
+            if (s.stealthMode) {
+                /* GROSS hack to fix stealthmode */
+                uint32_t b = uptime;
+                do {;} while (b == uptime);
+            }
+        }
+
+#ifdef PROFILING
+        afterScreenUpdate = beforeDumpPid = uptime;
+#endif
+        // <1ms ave
         if (1 || prline) {
             if (s.dumpPids) {
                  char buff[63];
                  siprintf(buff, "PID,%ld,%d,%ld,%d\r\n",
-                          s.targetTemperature, 
+                          s.targetTemperature,
                           g.curTemp,
                           g.watts,
                       g.atomInfo.resistance);
                  USB_VirtualCOM_SendString(buff);
              }
-
-             updateScreen(&g);
-
-             if (s.stealthMode) {
-                /* GROSS hack to fix stealthmode */
-                uint32_t b = uptime;
-                do {;} while (b == uptime);
-             }
         }
+
+#ifdef PROFILING
+        afterDumpPid = beforeTunePid = uptime;
+#endif
+
+        // < 1ms ave
+        if (s.tunePids) {
+            if (prline) {
+                     writeUsb(UPTIME ",%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%lu\r\n",
+                              UPTIMEVAL, I.targetTemp, g.curTemp,
+                              I.P, I.Error,
+                              I.I, I.AveError,
+                              I.D, I.DiffError,
+                              g.watts);
+            }
+        }
+
+#ifdef PROFILING
+        afterTunePid = uptime;
+        writeUsb(UPTIME"\t"UPTIME"\t"UPTIME"\t"UPTIME"\r\n",
+                                             TIMEFMT(afterFire - beforeFire),
+                                             TIMEFMT(afterScreenUpdate - beforeScreenUpdate),
+                                             TIMEFMT(afterDumpPid - beforeDumpPid),
+                                             TIMEFMT(afterTunePid - beforeTunePid));
+        FireAve += afterFire - beforeFire;
+        ScreenAve += afterScreenUpdate - beforeScreenUpdate;
+        DumpPidAve += afterDumpPid - beforeDumpPid;
+        TunePidAve += afterTunePid - beforeTunePid;
+#endif
     }
+#ifdef PROFILING
+    writeUsb(UPTIME"\t"UPTIME"\t"UPTIME"\t"UPTIME"\r\n",
+                                             TIMEFMT(FireAve / loopCnt),
+                                             TIMEFMT(ScreenAve / loopCnt),
+                                             TIMEFMT(DumpPidAve / loopCnt),
+                                             TIMEFMT(TunePidAve / loopCnt));
+#endif
+    requestTimer(timerIndex, TimerIdle);
 
     if (Atomizer_IsOn())
         Atomizer_Control(0);
