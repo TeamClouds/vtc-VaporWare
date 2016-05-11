@@ -66,9 +66,9 @@ struct buttonHandler editButtonHandler = {
     .flags = LEFT_HOLD_EVENT | RIGHT_HOLD_EVENT,
     .fire_handler = &editSelect,
     .left_handler = &editLeft,
-    .leftUpdateInterval = 10,
+    .leftUpdateInterval = 100,
     .right_handler = &editRight,
-    .rightUpdateInterval = 10,
+    .rightUpdateInterval = 100,
 };
 
 void menuLeft(uint8_t state, uint32_t duration) {
