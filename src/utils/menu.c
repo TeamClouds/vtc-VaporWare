@@ -200,7 +200,7 @@ void editLeft(uint8_t state, uint32_t duration) {
     struct menuItem *MI = &menuItems[mIndex];
     
     if (state == BUTTON_PRESS ||
-        ((duration > 30) && state & BUTTON_HELD)) {
+        ((duration > 300) && state & BUTTON_HELD)) {
         mg->ItemValues[mIndex] -= MI->editStep;
         if (mg->ItemValues[mIndex] < MI->editMin) {
             mg->ItemValues[mIndex] = MI->editMin;
@@ -214,7 +214,7 @@ void editRight(uint8_t state, uint32_t duration) {
     struct menuItem *MI = &menuItems[mIndex];
     
     if (state == BUTTON_PRESS ||
-        ((duration > 30) && state & BUTTON_HELD)) {
+        ((duration > 300) && state & BUTTON_HELD)) {
         mg->ItemValues[mIndex] += MI->editStep;
         if (mg->ItemValues[mIndex] > MI->editMax) {
             mg->ItemValues[mIndex] = MI->editMax;
