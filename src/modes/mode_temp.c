@@ -202,6 +202,7 @@ void initPid() {
     I.LastTime = 0;
     I.Perror = 0;
     I.DiffError = 0;
+
     I.P = s.pidP;
     I.I = s.pidI;
     I.D = s.pidD;
@@ -232,12 +233,13 @@ uint32_t getNext(int32_t CurrentTemp, uint32_t Time) {
 
     if (I.LastTime) {
         Integration = I.Perror + I.Error;
-        Integration *= (Time - I.LastTime);
+        //Integration *= (Time - I.LastTime)
         Integration /= 2; // Average of Perror and Error
-        Integration /= 50; //
         I.AveError += Integration;
-        I.DiffError = (I.Error - I.Perror) * 50/(Time - I.LastTime);
+        I.DiffError = (I.Error - I.Perror);
+        //I.DiffError /= (Time - I.LastTime)
     }
+
     I.Perror = I.Error;
     I.LastTime = Time;
     int32_t next = I.Error * I.P / 100 +
@@ -245,7 +247,7 @@ uint32_t getNext(int32_t CurrentTemp, uint32_t Time) {
                    I.DiffError * I.D / 100;
 
     if (next < 0)
-        return 0;
+        return 1000;
 
     return next;
 
@@ -268,7 +270,7 @@ void tempFire() {
     setTarget(s.targetTemperature);
     initPid();
 
-    uint16_t newVolts;
+    uint16_t newVolts = g.volts;
     int pidactive = 0;
     start = uptime;
     atTemp = 0;
@@ -334,17 +336,21 @@ void tempFire() {
             afterTunePid = uptime;
 #endif
 
-
-            if (!pidactive) {
-                if (s.targetTemperature - g.curTemp >= s.pidSwitch) {
-                    g.watts = s.initWatts;
-                } else {
-                    if (s.dumpPids) {
-                        char b[63];
-                        siprintf(b, "INFO,Switching to PID %ld %d\r\n", s.targetTemperature, g.curTemp);
-                        USB_VirtualCOM_SendString(b);
+            // While the coil is 'cold', bad things can happen if you try to
+            // Push it too hard.  Don't consider kicking it up until we've at
+            // least reached 150C
+            if (g.curTemp > 150) {
+                if (!pidactive) {
+                    if (s.targetTemperature - g.curTemp >= s.pidSwitch) {
+                        g.watts = s.initWatts;
+                    } else {
+                        if (s.dumpPids) {
+                            char b[63];
+                            siprintf(b, "INFO,Switching to PID %ld %d\r\n", s.targetTemperature, g.curTemp);
+                            USB_VirtualCOM_SendString(b);
+                        }
+                        pidactive = 1;
                     }
-                    pidactive = 1;
                 }
             }
 
@@ -355,7 +361,7 @@ void tempFire() {
             }
             */
 
-            if (g.watts < 0)
+            if (g.watts <= 1000)
                 g.watts = 1000;
 
             if (g.watts > 100000) // Pid probably went c-razy on us, so drop watts.
@@ -364,38 +370,40 @@ void tempFire() {
             if (g.watts > MAXWATTS)
                 g.watts = MAXWATTS;
 
-
             newVolts = wattsToVolts(g.watts, g.atomInfo.resistance);
+        }
 
-            if (newVolts != g.volts) {
-                if (Atomizer_IsOn()) {
-                    // Update output voltage to correct res variations:
-                    // If the new voltage is lower, we only correct it in
-                    // 10mV steps, otherwise a flake res reading might
-                    // make the voltage plummet to zero and stop.
-                    // If the new voltage is higher, we push it up by 100mV
-                    // to make it hit harder on TC coils, but still keep it
-                    // under control.
-                    if (newVolts < g.volts) {
-                        newVolts = g.volts - (g.volts >= 10 ? 10 : 0);
-                    } else {
-                        newVolts = g.volts + 100;
-                    }
+
+
+        if (newVolts != g.volts) {
+            uint16_t tNewVolts = newVolts;
+
+            if (Atomizer_IsOn()) {
+                // Update output voltage to correct res variations:
+                // If the new voltage is lower, we only correct it in
+                // 10mV steps, otherwise a flake res reading might
+                // make the voltage plummet to zero and stop.
+                // If the new voltage is higher, we push it up by 100mV
+                // to make it hit harder on TC coils, but still keep it
+                // under control.
+                if (tNewVolts < g.volts) {
+                    uint16_t dV = (g.volts - tNewVolts);
+                    tNewVolts = g.volts - ( dV >= 75 ? 75 : dV);
+                } else {
+                    uint16_t dV = (tNewVolts - g.volts);
+                    tNewVolts = g.volts + ( dV >= 75 ? 75 : dV);
                 }
-
-                if (newVolts > MAXVOLTS) {
-                    newVolts = MAXVOLTS;
-                }
-
-                g.volts = newVolts;
-
-                Atomizer_SetOutputVoltage(g.volts);
             }
 
+            if (tNewVolts > MAXVOLTS) {
+                tNewVolts = MAXVOLTS;
+            }
 
+            g.volts = tNewVolts;
 
-
+            Atomizer_SetOutputVoltage(g.volts);
         }
+
 
 #ifdef PROFILING
         afterFire = beforeScreenUpdate = uptime;
