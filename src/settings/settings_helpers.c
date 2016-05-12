@@ -271,9 +271,9 @@ void vsetLockSet(uint8_t vsetLock) {
 
 void fadeInTimeSet(uint8_t fadeInTime) {
     if (fadeInTime > MAXFADE) {
-        s.fadeInTime = FADEINTIME * 10;
+        s.fadeInTime = FADEINTIME;
     } else if (fadeInTime < MINFADE) {
-        s.fadeInTime = FADEINTIME * 10;
+        s.fadeInTime = FADEINTIME;
     } else {
         s.fadeInTime = fadeInTime * 10;
     }
@@ -283,9 +283,9 @@ void fadeInTimeSet(uint8_t fadeInTime) {
 
 void fadeOutTimeSet(uint8_t fadeOutTime) {
     if (fadeOutTime > MAXFADE) {
-        s.fadeOutTime = FADEOUTTIME * 10;
+        s.fadeOutTime = FADEOUTTIME;
     } else if (fadeOutTime < MINFADE) {
-        s.fadeOutTime = FADEOUTTIME * 10;
+        s.fadeOutTime = FADEOUTTIME;
     } else {
         s.fadeOutTime = fadeOutTime * 10;
     }
