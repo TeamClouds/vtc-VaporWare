@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 void printNumber(char *buff, uint32_t temperature) {
-    siprintf(buff, "%lu", temperature);
+    siprintf(buff, "%" PRIu32, temperature);
 }
 
 void getPercent(char *buff, uint8_t percent) {
@@ -15,9 +16,9 @@ void getString(char *buff, char *state) {
 }
 
 void getFloating(char *buff, uint32_t floating) {
-    siprintf(buff, "%lu.%02lu", floating / 1000, floating % 1000 / 10);
+    siprintf(buff, "%"PRIu32".%02"PRIu32, floating / 1000, floating % 1000 / 10);
 }
 
 void getFloatingTenth(char *buff, uint32_t floating) {
-    siprintf(buff, "%lu.%01lu", floating / 1000, floating % 1000 / 100);
+    siprintf(buff, "%"PRIu32".%01"PRIu32, floating / 1000, floating % 1000 / 100);
 }

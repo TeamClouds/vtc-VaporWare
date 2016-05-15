@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 #include <Atomizer.h>
 #include <Display.h>
@@ -24,7 +25,7 @@ void updateInitWatts(int32_t newWatts) {
 }
 
 void formatWatts(int32_t value, char *formatted) {
-    siprintf(formatted, "%lu.%02lu", value / 1000, value % 1000 / 10);
+    siprintf(formatted, "%"PRIu32".%02"PRIu32, value / 1000, value % 1000 / 10);
 }
 
 int32_t getPidSwitchDefault() {
@@ -36,7 +37,7 @@ void updatePidSwitch(int32_t newpidswitch) {
 }
 
 void formatNumber(int32_t value, char *formatted) {
-    siprintf(formatted, "%ld", value);
+    siprintf(formatted, "%"PRId32, value);
 }
 
 int32_t getPDefault() {
@@ -346,7 +347,7 @@ void tempFire() {
                     } else {
                         if (s.dumpPids) {
                             char b[63];
-                            siprintf(b, "INFO,Switching to PID %ld %d\r\n", s.targetTemperature, g.curTemp);
+                            siprintf(b, "INFO,Switching to PID %" PRId32 " %d\r\n", s.targetTemperature, g.curTemp);
                             USB_VirtualCOM_SendString(b);
                         }
                         pidactive = 1;
@@ -429,7 +430,7 @@ void tempFire() {
             if (1) { // dumpPids interval
                 if (s.dumpPids) {
                      char buff[63];
-                     siprintf(buff, "PID,%ld,%d,%ld,%d\r\n",
+                     siprintf(buff, "PID,%"PRId32",%d,%"PRIu32",%d\r\n",
                               s.targetTemperature,
                               g.curTemp,
                               g.watts,

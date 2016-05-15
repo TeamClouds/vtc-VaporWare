@@ -19,6 +19,7 @@
  */
 #include <stdio.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -80,7 +81,7 @@ int32_t getScreenBrightnessDefault() {
 
 void formatBrightnessNumber(int32_t value, char *formatted) {
     Display_SetContrast((char*)value);
-    siprintf(formatted, "%lu", value);
+    siprintf(formatted, "%" PRId32, value);
 }
 
 void updateScreenBrightness(int32_t value) {
@@ -119,7 +120,7 @@ void showInfo(void) {
         Display_PutText(10, 60, Display_GetType() == DISPLAY_SSD1327 ? "1327" : "1306", FONT_SMALL);
 
         Display_PutText(0, 75, "Uptime", FONT_SMALL);
-        siprintf(buff, "%lu", uptime / 1000);
+        siprintf(buff, "%" PRIu32, uptime / 1000);
         Display_PutText(10,85, buff, FONT_SMALL);
 
         Display_Update();
@@ -297,7 +298,7 @@ void formatFixedPoint(int32_t value, int32_t divisor, char *formatted) {
     if(divisor == 0)
         siprintf(formatted, "infin");
     else
-        siprintf(formatted, "%ld.%03ld", value/divisor, value % divisor);
+        siprintf(formatted, "%"PRId32".%03"PRId32, value/divisor, value % divisor);
 }
 
 void formatThousandths(int32_t value, char *formatted) {
@@ -305,7 +306,7 @@ void formatThousandths(int32_t value, char *formatted) {
 }
 
 void formatINT(int32_t value, char *formatted) {
-    siprintf(formatted, "%ld", value);
+    siprintf(formatted, "%"PRId32, value);
 }
 
 int32_t getTCRDefault() {
