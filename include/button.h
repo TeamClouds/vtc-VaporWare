@@ -41,7 +41,8 @@ struct buttonHandler {
     uint32_t rightRepeatTimeout;
     uint8_t rightRepeatCount;
     uint32_t rightUpdateInterval;
-    
+
+    struct buttonHandler *stashedHandler;
 };
 
 void initHandlers();

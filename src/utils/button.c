@@ -37,7 +37,6 @@ struct buttonGlobals {
     volatile uint32_t buttonTimerExpires;
 
     struct buttonHandler *currentHandler;
-    struct buttonHandler *stashedHandler;
 } bg = { };
 
 
@@ -290,16 +289,17 @@ void setHandler(struct buttonHandler *b) {
 
 void switchHandler(struct buttonHandler *b) {
     bg.buttonTimerExpires = 0;
-    bg.stashedHandler = bg.currentHandler;
+    b->stashedHandler = bg.currentHandler;
     bg.currentHandler = b;
     validateHandlers(bg.currentHandler);
     cleanupVariables();
 }
 
 void returnHandler(void) {
+    struct buttonHandler *tempHandler = bg.currentHandler;
     bg.buttonTimerExpires = 0;
-    bg.currentHandler = bg.stashedHandler;
-    bg.stashedHandler = NULL;
+    bg.currentHandler = bg.currentHandler->stashedHandler;
+    tempHandler->stashedHandler = NULL;
     validateHandlers(bg.currentHandler);
     cleanupVariables();
 }
