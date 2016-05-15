@@ -18,9 +18,20 @@ struct timerData {
     uint32_t newTimerStep;
     volatile uint16_t curTimerInt;
     volatile uint16_t newTimerInt;
-    uint8_t ourTimer;
+    int8_t ourTimer;
     volatile uint8_t ourSlot;
-} td = {0};
+} td = {
+    .timerSlots = {0},
+    .timerSlotsUsed = 0,
+    .curTimerFreq = 0,
+    .newTimerFreq = 0,
+    .curTimerStep = 0,
+    .newTimerStep = 0,
+    .curTimerInt = 0,
+    .newTimerInt = 0,
+    .ourTimer = -1,
+    .ourSlot = 0,
+};
 
 void uptimeTimer(uint32_t param) {
     uptime += td.curTimerStep;
