@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 
 #include <Button.h>
 #include <TimerUtils.h>
@@ -33,9 +34,10 @@ struct buttonGlobals {
     volatile uint8_t callRightCallback;
     volatile uint8_t callRightRepeatCallback;
 
-    uint8_t buttonHandlerIndex;
     volatile uint32_t buttonTimerExpires;
 
+    /* These variables need to be persisted across state clears */
+    uint8_t buttonHandlerIndex;
     struct buttonHandler *currentHandler;
 } bg = { };
 
@@ -249,20 +251,11 @@ void dummyHandler(uint8_t a, uint32_t b) {}
 void dummyRepeatHandler() {}
 
 void cleanupVariables() {
-    bg.fireTimeout = 0;
-    bg.leftTimeout = 0;
-    bg.rightTimeout = 0;
-
-    bg.fireCount = 0;
-    bg.leftCount = 0;
-    bg.rightCount = 0;
-
-    bg.fireNext = 0;
-    bg.leftNext = 0;
-    bg.rightNext = 0;
-
-    bg.buttonTimerExpires = 0;
-    gv.buttonEvent = 0;
+    uint8_t temp_buttonHandlerIndex = bg.buttonHandlerIndex;
+    struct buttonHandler *temp_currentHandler = bg.currentHandler;
+    memset(&bg, 0, sizeof(struct buttonGlobals));
+    bg.buttonHandlerIndex = temp_buttonHandlerIndex;
+    bg.currentHandler = temp_currentHandler;
 }
 
 void validateHandlers(struct buttonHandler *b) {
@@ -281,25 +274,22 @@ void validateHandlers(struct buttonHandler *b) {
 }
 
 void setHandler(struct buttonHandler *b) {
-    bg.buttonTimerExpires = 0;
+    cleanupVariables();
     bg.currentHandler = b;
     validateHandlers(bg.currentHandler);
-    cleanupVariables();
 }
 
 void switchHandler(struct buttonHandler *b) {
-    bg.buttonTimerExpires = 0;
+    cleanupVariables();
     b->stashedHandler = bg.currentHandler;
     bg.currentHandler = b;
     validateHandlers(bg.currentHandler);
-    cleanupVariables();
 }
 
 void returnHandler(void) {
+    cleanupVariables();
     struct buttonHandler *tempHandler = bg.currentHandler;
-    bg.buttonTimerExpires = 0;
     bg.currentHandler = bg.currentHandler->stashedHandler;
     tempHandler->stashedHandler = NULL;
     validateHandlers(bg.currentHandler);
-    cleanupVariables();
 }
