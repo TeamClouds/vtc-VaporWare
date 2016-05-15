@@ -21,6 +21,7 @@ OBJS = \
     font/Font_Medium.o \
     font/Font_Small.o \
     src/utils/helper.o \
+    src/display/atomizer_query.o \
     src/display/display_helper.o \
     src/display/display.o \
     src/settings/settings.o \

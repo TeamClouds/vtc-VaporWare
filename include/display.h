@@ -4,7 +4,8 @@
 #include "globals.h"
 #include "display_helper.h"
 
-void updateScreen(struct globals *g);
+void updateScreen();
+void displayCharging();
 void getString(char *buff, char *state);
 void showMenu();
 

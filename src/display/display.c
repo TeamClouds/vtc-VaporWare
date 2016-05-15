@@ -58,73 +58,13 @@ uint8_t* getBatteryIcon() {
     }
 }
 
-void updateScreen(struct globals *g) {
-    if (s.stealthMode)
-        return;
-
-    uint32_t now = uptime;
-    uint32_t targetBrightness = s.screenBrightness;
-
-    char buff[9];
-
-    if (g->screenFadeInTime == 0) {
-        g->screenFadeInTime = now + s.fadeInTime;
-    }
-
-    int chargeScreen = (g->charging && !g->pauseScreenOff && (g->screenOffTime < now));
-
-    if (!g->pauseScreenOff && s.fadeOutTime >= g->screenOffTime - now && g->screenOffTime >= now) {
-
-        // fade out if timing out
-        g->currentBrightness = (((g->screenOffTime - now) * 1000 / s.fadeOutTime) * targetBrightness) / 1000;
-
-    } else if (!chargeScreen && g->screenFadeInTime != 0 && now <= g->screenFadeInTime) {
-
-        // fade in
-        uint32_t startTime = g->screenFadeInTime - s.fadeInTime;
-        g->currentBrightness = (((now - startTime) * 1000 / s.fadeInTime) * targetBrightness) / 1000;
-
-    } else if (chargeScreen) {
-
-        g->currentBrightness = 40;
-
-    }
-
-    bool needBrightness = g->currentBrightness <= targetBrightness;
-    if (needBrightness && !chargeScreen) {
-        // update animation time left
-        g->screenFadeInTime = now +
-                (s.fadeInTime - (((g->currentBrightness * 1000 / targetBrightness) * s.fadeInTime) / 1000));
-
-    }
-
-    Display_SetContrast(g->currentBrightness);
+void setupScreen() {
+    g.nextRefresh = uptime + 60;
+    Display_SetOn(1);
+    Display_Clear();
+    Display_SetInverted(s.invertDisplay);
 
     uint8_t atomizerOn = Atomizer_IsOn();
-
-    if (!atomizerOn) {
-	    g->batteryPercent = Battery_VoltageToPercent(
-            Battery_IsPresent()? Battery_GetVoltage() : 0);
-    }
-
-    if (chargeScreen) {
-        Display_Clear();
-        // update the battery percent all the time if
-        // we are charging
-        getPercent(buff, g->batteryPercent);
-        uint8_t size = strlen(buff);
-    	Display_PutPixels(20, 20, getBatteryIcon(), battery_width, battery_height);
-
-        Display_PutText((DISPLAY_WIDTH/2)-((12*size)/2),
-            (DISPLAY_HEIGHT/2)-12, buff, FONT_LARGE);
-        Display_Update();
-        if (g->screenFadeInTime != 0) {
-            g->screenFadeInTime = 0;
-        }
-        return;
-    }
-
-    Display_SetInverted(s.invertDisplay);
 
     if (s.flipOnVape) {
         if (atomizerOn) {
@@ -137,18 +77,75 @@ void updateScreen(struct globals *g) {
 	        }
         }
     }
+}
 
-    Display_Clear();
+void displayCharging() {
+	setupScreen();
+    char buff[9];
+    // update the battery percent all the time if
+    // we are charging
+    getPercent(buff, g.batteryPercent);
+    uint8_t size = strlen(buff);
+	Display_PutPixels(20, 20, getBatteryIcon(), battery_width, battery_height);
 
+    Display_PutText((DISPLAY_WIDTH/2)-((12*size)/2),
+        (DISPLAY_HEIGHT/2)-12, buff, FONT_LARGE);
+    Display_Update();
+    if (g.screenFadeInTime != 0) {
+        g.screenFadeInTime = 0;
+    }
+}
+
+void fadeInTransition() {
+    uint32_t now = uptime;
+    uint32_t targetBrightness = s.screenBrightness;
+    if (g.screenFadeInTime == 0) {
+        g.screenFadeInTime = now + s.fadeInTime;
+    }
+
+    int chargeScreen = (g.charging && !g.pauseScreenOff && (g.screenOffTime < now));
+
+    if (!g.pauseScreenOff && s.fadeOutTime >= g.screenOffTime - now && g.screenOffTime >= now) {
+
+        // fade out if timing out
+        g.currentBrightness = (((g.screenOffTime - now) * 1000 / s.fadeOutTime) * targetBrightness) / 1000;
+
+    } else if (!chargeScreen && g.screenFadeInTime != 0 && now <= g.screenFadeInTime) {
+
+        // fade in
+        uint32_t startTime = g.screenFadeInTime - s.fadeInTime;
+        g.currentBrightness = (((now - startTime) * 1000 / s.fadeInTime) * targetBrightness) / 1000;
+
+    } else if (chargeScreen) {
+
+        g.currentBrightness = 40;
+
+    }
+
+    bool needBrightness = g.currentBrightness <= targetBrightness;
+    if (needBrightness && !chargeScreen) {
+        // update animation time left
+        g.screenFadeInTime = now +
+                (s.fadeInTime - (((g.currentBrightness * 1000 / targetBrightness) * s.fadeInTime) / 1000));
+
+    }
+
+    Display_SetContrast(g.currentBrightness);
+}
+
+void updateScreen() {
+    if (s.stealthMode)
+        return;
+
+    setupScreen();
+    fadeInTransition();
+    uint8_t displayRes;
+    uint8_t atomizerOn = Atomizer_IsOn();
+
+    g.vapeModes[s.mode]->display(atomizerOn); // top display
     Display_PutLine(0, 30, 63, 30);
 
-    g->vapeModes[s.mode]->display(atomizerOn);
-
-	// battery
-	Display_PutPixels(0, 40, getBatteryIcon(), battery_width, battery_height);
-
-    getPercent(buff, g->batteryPercent);
-    Display_PutText(26, 45, buff, FONT_MEDIUM);
+    buildRow(40, getBatteryIcon(), getPercent, g.batteryPercent); // battery
 
     switch (Atomizer_GetError()) {
     case SHORT:
@@ -156,16 +153,13 @@ void updateScreen(struct globals *g) {
 		Display_PutPixels(20, 75, shortBIT, shortBIT_width, shortBIT_height);
     	break;
     default:
-    	Display_PutPixels(0, 70, ohm, ohm_width, ohm_height);
-
     	if (atomizerOn) {
-            getFloating(buff, g->atomInfo.resistance);
+        	displayRes = g.atomInfo.resistance;
     	} else {
-    	getFloating(buff, g->baseRes);
+    		displayRes = g.baseRes;
     	}
-    	Display_PutText(26, 75, buff, FONT_MEDIUM);
-        g->vapeModes[s.mode]->bottomDisplay(atomizerOn);
-
+        buildRow(70, ohm, getFloating, displayRes); // resistance
+        g.vapeModes[s.mode]->bottomDisplay(atomizerOn); // bottom row
     }
 
     Display_Update();

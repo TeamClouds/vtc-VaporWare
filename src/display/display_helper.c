@@ -2,6 +2,9 @@
 #include <string.h>
 #include <stdint.h>
 #include <inttypes.h>
+#include <Display.h>
+
+#include "font/font_vaporware.h"
 
 void printNumber(char *buff, uint32_t temperature) {
     siprintf(buff, "%" PRIu32, temperature);
@@ -21,4 +24,12 @@ void getFloating(char *buff, uint32_t floating) {
 
 void getFloatingTenth(char *buff, uint32_t floating) {
     siprintf(buff, "%"PRIu32".%01"PRIu32, floating / 1000, floating % 1000 / 100);
+}
+
+void buildRow(uint8_t y, uint8_t* icon, void (*parsingCallback)(char* buff, uint32_t value), uint32_t value) {
+    char buff[9];
+    Display_PutPixels(0, y, icon, 24, 24);
+
+    parsingCallback(buff, value);
+    Display_PutText(26, y+5, buff, FONT_MEDIUM);
 }
