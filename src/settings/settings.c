@@ -80,7 +80,7 @@ int32_t getScreenBrightnessDefault() {
 }
 
 void formatBrightnessNumber(int32_t value, char *formatted) {
-    Display_SetContrast((char*)value);
+    Display_SetContrast(value & 0xFF);
     siprintf(formatted, "%" PRId32, value);
 }
 
@@ -505,7 +505,7 @@ int load_settings(void) {
 
 
 void showMenu() {
-    Display_SetContrast((char *) s.screenBrightness);
+    Display_SetContrast(s.screenBrightness);
     runMenu(&settingsMenu);
     if (g.settingsChanged == 1) {
         writeSettings();

@@ -98,7 +98,7 @@ void updateScreen(struct globals *g) {
 
     }
 
-    Display_SetContrast((char *)  g->currentBrightness);
+    Display_SetContrast(g->currentBrightness);
 
     uint8_t atomizerOn = Atomizer_IsOn();
 
