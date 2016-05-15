@@ -20,6 +20,7 @@ OBJS = \
     font/Font_Large.o \
     font/Font_Medium.o \
     font/Font_Small.o \
+    images/images.o \
     src/utils/helper.o \
     src/display/atomizer_query.o \
     src/display/display_helper.o \
