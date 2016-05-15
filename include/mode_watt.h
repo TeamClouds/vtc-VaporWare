@@ -10,8 +10,6 @@ void wattDown(void);
 void wattDisplay(uint8_t atomizerOn);
 void wattBottomDisplay(uint8_t atomizerOn);
 
-extern struct menuDefinition wattSettings;
-
 struct vapeMode variableWattage = {
     .index = 0,
     .controlType = WATT_CONTROL,

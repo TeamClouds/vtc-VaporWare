@@ -19,40 +19,40 @@ enum {
 struct menuDefinition;
 
 struct menuItem {
-    uint8_t type;
+    const uint8_t type;
     const char *label;
-    int (*hidden)(void);
+    int (*const hidden)(void);
 
     /* ACTION */
-    void (*actionCallback)(void);
+    void (*const actionCallback)(void);
 
     /* SELECT */
-    char *(*items)[];
-    uint8_t *count;
-    uint8_t (*getDefaultCallback)();
-    char *(*getValueCallback)(uint8_t index);
-    void (*selectCallback)(uint16_t index);
+    const char *(*const items)[];
+    const uint8_t *const count;
+    uint8_t (*const getDefaultCallback)();
+    char *(*const getValueCallback)(uint8_t index);
+    void (*const selectCallback)(uint16_t index);
 
     /* TOGGLE */
-    uint8_t *isSet;
-    char on[5];
-    char off[5];
-    void (*toggleCallback)(uint8_t on);
+    const uint8_t *isSet;
+    const char on[5];
+    const char off[5];
+    void (*const toggleCallback)(uint8_t on);
 
     /* EDIT */
-    int32_t editMin;
-    int32_t editMax;
-    int32_t (*getEditStart)();
-    int32_t editStep;
-    void (*editFormat)(int32_t value, char *formatted);
-    void (*editCallback)(int32_t);
+    const int32_t editMin;
+    const int32_t editMax;
+    int32_t (*const getEditStart)();
+    const int32_t editStep;
+    void (*const editFormat)(int32_t value, char *formatted);
+    void (*const editCallback)(int32_t);
 
     /* SPACE */
-    uint8_t rows;
+    const uint8_t rows;
 
     /* SUBMENU */
-    struct menuDefinition *subMenu;
-    void (*getMenuDef)(struct menuItem *this);
+    const struct menuDefinition *subMenu;
+    const struct menuDefinition *const (*const getMenuDef)(const struct menuItem *this);
 };
 
 // Per layer of menu.  Could bump as high as 255, but wastes memory
@@ -62,9 +62,9 @@ enum {
 };
 
 struct menuDefinition {
-    const char *name;
+    const char * const name;
     const Font_Info_t *font;
-    uint8_t flags;
+    const uint8_t flags;
 
     const char cursor[2];
     const char prev_sel[2];
@@ -72,12 +72,13 @@ struct menuDefinition {
     const char less_sel[2];
     const char more_sel[2];
 
-    struct menuItem (*menuItems)[];
+    const struct menuItem (*const menuItems)[];
 };
 
 
-void runSubMenu(struct menuDefinition *menuDef);
-void runMenu(struct menuDefinition *menuDef);
+void runSubMenu(const struct menuDefinition *menuDef);
+void runMenu(const struct menuDefinition *menuDef);
+
 void refreshMenu();
 
 #endif

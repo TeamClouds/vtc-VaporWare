@@ -64,7 +64,7 @@ void setD(int32_t d) {
     pidDSet(d);
 }
 
-struct menuItem dragonItems[] = {
+const struct menuItem dragonItems[] = {
     {
         .type = EDIT,
         .label = "P",
@@ -114,7 +114,7 @@ struct menuItem dragonItems[] = {
     }
 };
 
-struct menuDefinition dragonMenu = {
+const struct menuDefinition dragonMenu = {
         .name = "Display Settings",
         .font = FONT_SMALL,
         .cursor = "*",
@@ -125,7 +125,7 @@ struct menuDefinition dragonMenu = {
         .menuItems = &dragonItems,
 };
 
-struct menuItem tempSettingsOptions[] = {
+const struct menuItem tempSettingsOptions[] = {
     {
         .type = EDIT,
         .label = "Watts",
@@ -170,7 +170,7 @@ struct menuItem tempSettingsOptions[] = {
     }
 };
 
-struct menuDefinition tempSettings = {
+const struct menuDefinition tempSettings = {
     .name = "Display Settings",
     .font = FONT_SMALL,
     .cursor = "*",

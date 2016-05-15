@@ -164,7 +164,7 @@ void flipSet(uint8_t a) {
 	flipOnVapeSet(a);
 }
 
-struct menuItem displaySubMenuItems[] = {
+const struct menuItem displaySubMenuItems[] = {
 	{
 	    .type = SELECT,
 	    .label = "Scale",
@@ -218,7 +218,7 @@ struct menuItem displaySubMenuItems[] = {
     }
 };
 
-struct menuDefinition displaySettingsMenu = {
+const struct menuDefinition displaySettingsMenu = {
     .name = "Display Settings",
     .font = FONT_SMALL,
     .cursor = "*",
@@ -229,15 +229,15 @@ struct menuDefinition displaySettingsMenu = {
     .menuItems = &displaySubMenuItems,
 };
 
-void showModeSettings(struct menuItem *MI) {
-	MI->subMenu = &(*g.vapeModes[s.mode]->vapeModeMenu);
+const struct menuDefinition *const showModeSettings(const struct menuItem *MI) {
+	return &(*g.vapeModes[s.mode]->vapeModeMenu);
 }
 
 int shouldHideMenu() {
 	return g.vapeModes[s.mode]->vapeModeMenu == NULL;
 }
 
-struct menuItem advancedMenuItems[] = {
+const struct menuItem advancedMenuItems[] = {
     {
         .type = ACTION,
         .label = "Reboot",
@@ -281,7 +281,7 @@ struct menuItem advancedMenuItems[] = {
 };
 
 
-struct menuDefinition advancedMenu = {
+const struct menuDefinition advancedMenu = {
     .name = "Advanced Settings",
     .font = FONT_SMALL,
     .cursor = "*",
@@ -358,7 +358,7 @@ void updateBaseFromUser(uint16_t index) {
     baseFromUserSet(index);
 }
 
-struct menuItem dragonMenuItems[] = {
+const struct menuItem dragonMenuItems[] = {
     {
         .type = EDIT,
         .label = "TCR",
@@ -406,7 +406,7 @@ struct menuItem dragonMenuItems[] = {
     }
 };
 
-struct menuDefinition TheDragonning = {
+const struct menuDefinition TheDragonning = {
     .name = "Dragon Mode On",
     .font = FONT_SMALL,
     .cursor = "*",
@@ -417,11 +417,11 @@ struct menuDefinition TheDragonning = {
     .menuItems = &dragonMenuItems,
 };
 
-void showAdvanced(struct menuItem *MI) {
+const struct menuDefinition *const showAdvanced(const struct menuItem *MI) {
     if (Button_GetState() & BUTTON_MASK_RIGHT) {
-        MI->subMenu = &TheDragonning;
+        return &TheDragonning;
     } else {
-        MI->subMenu = &advancedMenu;
+        return &advancedMenu;
     }
 }
 
@@ -483,7 +483,7 @@ struct menuItem settingsMenuItems[] = {
     }
 };
 
-struct menuDefinition settingsMenu = {
+const struct menuDefinition settingsMenu = {
     .name = "Settings",
     .font = FONT_SMALL,
     .cursor = "*",

@@ -10,8 +10,6 @@ void voltDown(void);
 void voltDisplay(uint8_t atomizerOn);
 void voltBottomDisplay(uint8_t atomizerOn);
 
-extern struct menuDefinition voltSettings;
-
 struct vapeMode variableVoltage = {
     .index = 1,
     .controlType = VOLT_CONTROL,

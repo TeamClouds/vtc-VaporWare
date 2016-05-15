@@ -26,7 +26,7 @@ struct menuGlobals {
     uint8_t selectIndexToMD[MAXMENUITEMS];
     int32_t ItemValues[MAXMENUITEMS];
     uint8_t ItemLoaded[MAXMENUITEMS];
-    struct menuDefinition *MD;
+    const struct menuDefinition *MD;
 };
 
 struct menuGlobals *mg;
@@ -45,7 +45,7 @@ struct buttonHandler menuButtonHandler = {
 void selectLeft(uint8_t state, uint32_t duration);
 void selectRight(uint8_t state, uint32_t duration);
 void selectSelect(uint8_t state, uint32_t duration);
-void doSelectEdit(struct menuItem *MI);
+void doSelectEdit(const struct menuItem *MI);
 
 struct buttonHandler selectButtonHandler = {
     .name = "selectButtonHandler",
@@ -59,7 +59,7 @@ void toggleSelect();
 void editLeft(uint8_t state, uint32_t duration);
 void editRight(uint8_t state, uint32_t duration);
 void editSelect(uint8_t state, uint32_t duration);
-void doEditEdit(struct menuItem *MI);
+void doEditEdit(const struct menuItem *MI);
 
 struct buttonHandler editButtonHandler = {
     .name = "menuButtonHandler",
@@ -95,8 +95,9 @@ void menuRight(uint8_t state, uint32_t duration) {
 void menuSelect(uint8_t state, uint32_t duration) {
     struct menuGlobals *t;
     uint8_t mIndex = mg->selectIndexToMD[mg->selectIndex];
-    struct menuItem *menuItems = *(mg->MD->menuItems);
-    struct menuItem *MI = &menuItems[mIndex];
+    const struct menuItem *menuItems = *(mg->MD->menuItems);
+    const struct menuItem *MI = &menuItems[mIndex];
+    const struct menuDefinition *def;
 
     if (state == BUTTON_PRESS) {
         switch (MI->type) {
@@ -127,13 +128,16 @@ void menuSelect(uint8_t state, uint32_t duration) {
                 break;
             case SUBMENU:
                 if (MI->getMenuDef != NULL)
-                    MI->getMenuDef(MI);
+                    def = MI->getMenuDef(MI);
+                else if (MI->subMenu != NULL)
+                    def = MI->subMenu;
+                else
+                    break;
                 t = mg;
-                runSubMenu(MI->subMenu);
+                runSubMenu(def);
                 mg = t;
                 break;
         }
-
     }
     refreshMenu();
 }
@@ -141,8 +145,8 @@ void menuSelect(uint8_t state, uint32_t duration) {
 
 void selectLeft(uint8_t state, uint32_t duration) {
     uint8_t mIndex = mg->selectIndexToMD[mg->selectIndex];
-    struct menuItem *menuItems = *(mg->MD->menuItems);
-    struct menuItem *MI = &menuItems[mIndex];
+    const struct menuItem *menuItems = *(mg->MD->menuItems);
+    const struct menuItem *MI = &menuItems[mIndex];
 
 skip:
     if (state == BUTTON_PRESS) {
@@ -158,8 +162,8 @@ skip:
 
 void selectRight(uint8_t state, uint32_t duration) {
     uint8_t mIndex = mg->selectIndexToMD[mg->selectIndex];
-    struct menuItem *menuItems = *(mg->MD->menuItems);
-    struct menuItem *MI = &menuItems[mIndex];
+    const struct menuItem *menuItems = *(mg->MD->menuItems);
+    const struct menuItem *MI = &menuItems[mIndex];
 
 skip:
     if (state == BUTTON_PRESS) {
@@ -177,7 +181,7 @@ void selectSelect(uint8_t state, uint32_t duration) {
         mg->editOpen = EDITCLOSED;
 }
 
-void doSelectEdit(struct menuItem *MI) {
+void doSelectEdit(const struct menuItem *MI) {
     mg->editOpen = SELECTOPEN;
     while (mg->editOpen) {
         if (gv.buttonEvent) {
@@ -195,8 +199,8 @@ void toggleSelect() {
 
 void editLeft(uint8_t state, uint32_t duration) {
     uint8_t mIndex = mg->selectIndexToMD[mg->selectIndex];
-    struct menuItem *menuItems = *(mg->MD->menuItems);
-    struct menuItem *MI = &menuItems[mIndex];
+    const struct menuItem *menuItems = *(mg->MD->menuItems);
+    const struct menuItem *MI = &menuItems[mIndex];
 
     if (state == BUTTON_PRESS ||
         ((duration > 300) && state & BUTTON_HELD)) {
@@ -209,8 +213,8 @@ void editLeft(uint8_t state, uint32_t duration) {
 
 void editRight(uint8_t state, uint32_t duration) {
     uint8_t mIndex = mg->selectIndexToMD[mg->selectIndex];
-    struct menuItem *menuItems = *(mg->MD->menuItems);
-    struct menuItem *MI = &menuItems[mIndex];
+    const struct menuItem *menuItems = *(mg->MD->menuItems);
+    const struct menuItem *MI = &menuItems[mIndex];
 
     if (state == BUTTON_PRESS ||
         ((duration > 300) && state & BUTTON_HELD)) {
@@ -226,7 +230,7 @@ void editSelect(uint8_t state, uint32_t duration) {
         mg->editOpen = EDITCLOSED;
 }
 
-void doEditEdit(struct menuItem *MI){
+void doEditEdit(const struct menuItem *MI){
     mg->editOpen = EDITOPEN;
     while (mg->editOpen) {
         if (gv.buttonEvent) {
@@ -236,7 +240,7 @@ void doEditEdit(struct menuItem *MI){
     }
 }
 
-int8_t getItemHeight(struct menuItem *MI, const Font_Info_t *font) {
+int8_t getItemHeight(const struct menuItem *MI, const Font_Info_t *font) {
     uint8_t rowHeight = font->height;
     int used = 0;
     if (MI->type != LINE &&
@@ -265,7 +269,7 @@ int8_t getItemHeight(struct menuItem *MI, const Font_Info_t *font) {
 }
 
 void drawMenuItem(uint8_t index, uint8_t y, uint8_t x, uint8_t x2, const Font_Info_t *font) {
-    struct menuItem *MI = &((*(mg->MD->menuItems))[index]);
+    const struct menuItem *MI = &((*(mg->MD->menuItems))[index]);
     char buff[63];
     char *label;
     uint8_t rowHeight = font->height;
@@ -306,7 +310,7 @@ void drawMenuItem(uint8_t index, uint8_t y, uint8_t x, uint8_t x2, const Font_In
 }
 
 void refreshMenu() {
-    struct menuItem *MI;
+    const struct menuItem *MI;
     int i = 0;
 
     while ((MI = &((*(mg->MD->menuItems))[i]))->type != END)
@@ -337,8 +341,8 @@ void drawMenu() {
 
     uint8_t findEnd = 0;
 
-    struct menuItem *menuItems = *(mg->MD->menuItems);
-    struct menuItem *MI;
+    const struct menuItem *menuItems = *(mg->MD->menuItems);
+    const struct menuItem *MI;
 
     Display_Clear();
 
@@ -430,7 +434,7 @@ void drawMenu() {
     Display_Update();
 }
 
-void runSubMenu(struct menuDefinition *menuDef) {
+void runSubMenu(const struct menuDefinition *menuDef) {
     Display_SetOn(1);
     struct menuGlobals _mg = {0};
     mg = &_mg;
@@ -447,7 +451,7 @@ void runSubMenu(struct menuDefinition *menuDef) {
     }
 }
 
-void runMenu(struct menuDefinition *menuDef) {
+void runMenu(const struct menuDefinition *menuDef) {
     //while (USB_VirtualCOM_GetAvailableSize() == 0){;}
     switchHandler(&menuButtonHandler);
     runSubMenu(menuDef);

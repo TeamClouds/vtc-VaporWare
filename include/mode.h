@@ -25,7 +25,7 @@ struct vapeMode {
     void (*decrease) (void);
     void (*display) (uint8_t atomizerOn);
     void (*bottomDisplay) (uint8_t atomizerOn);
-    struct menuDefinition *vapeModeMenu;
+    const struct menuDefinition *vapeModeMenu;
 };
 
 void addVapeMode(struct vapeMode *vm);
