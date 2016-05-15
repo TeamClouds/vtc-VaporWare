@@ -7,9 +7,12 @@
 #include "settings.h"
 
 void materialIndexSet(uint32_t materialIndex) {
-    if (materialIndex < 0) {
-        s.materialIndex = DEFAULTMATERIAL;
-    } else if (materialIndex >= vapeMaterialsCount) {
+    /* IF materialIndex is ever converted to signed for some reason
+     * Uncomment this block */
+    //if (materialIndex < 0) {
+    //    s.materialIndex = DEFAULTMATERIAL;
+    //} else
+    if (materialIndex >= vapeMaterialsCount) {
         s.materialIndex = DEFAULTMATERIAL;
     } else if (vapeMaterialList[materialIndex].name[0] == '\0') {
         /* Somehow we got to the sentinal, things are probably about to get bad */
@@ -26,9 +29,11 @@ void materialIndexSet(uint32_t materialIndex) {
 }
 
 void modeSet(uint8_t mode) {
-    if (mode < 0) {
-        s.mode = DEFAULTMODE;
-    } else if (mode >= g.modeCount) {
+    /* If mode is ever converted to signed, uncomment */
+    //if (mode < 0) {
+    //    s.mode = DEFAULTMODE;
+    //} else
+    if (mode >= g.modeCount) {
         /* This is currently 'not perfect' as vapemodes is a larger
            array than we use.  Point to cleanup */
         s.mode = DEFAULTMODE;
@@ -62,9 +67,11 @@ void screenTimeoutSet(uint16_t screenTimeout) {
 
 void tempScaleTypeIndexSet(uint8_t tempScaleTypeIndex) {
     // tempScales currently live in the settings struct.
-    if (tempScaleTypeIndex < 0) {
-        s.tempScaleTypeIndex = DEFAULTTEMPSCALE;
-    } else if (tempScaleTypeIndex >= tempScaleCount) {
+    // if tempScaleTypeIndex is ever made signed, uncomment
+    //if (tempScaleTypeIndex < 0) {
+    //    s.tempScaleTypeIndex = DEFAULTTEMPSCALE;
+    //} else
+    if (tempScaleTypeIndex >= tempScaleCount) {
         s.tempScaleTypeIndex = DEFAULTTEMPSCALE;
     } else if (tempScaleType[tempScaleTypeIndex].display[0] == '\0') {
         s.tempScaleTypeIndex = DEFAULTTEMPSCALE;
