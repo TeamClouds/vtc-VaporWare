@@ -31,3 +31,12 @@ void addVapeMode(struct vapeMode *vm) {
 
     g.vapeModes[vm->index] = vm;
 }
+
+struct vapeMode THEMAX = {
+        .name = "\0",
+        .index = MAX_CONTROL,
+};
+
+static void __attribute__((constructor)) registerSentinelMode(void) {
+    addVapeMode(&THEMAX);
+}

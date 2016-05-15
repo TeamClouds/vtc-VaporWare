@@ -40,10 +40,6 @@
 #include "variabletimer.h"
 
 #include "mode.h"
-#include "mode_watt.h"
-#include "mode_volt.h"
-#include "mode_temp.h"
-
 
 inline void screenOn() {
     if (!s.stealthMode)
@@ -229,18 +225,8 @@ int main() {
     setHandler(&mainButtonHandler);
     Atomizer_SetBaseUpdateCallback(newReading);
 
-    addVapeMode(&variableVoltage);
-    addVapeMode(&variableWattage);
-    addVapeMode(&variableTemp);
 
     load_settings();
-
-    struct vapeMode THEMAX = {
-        .name = "\0",
-        .index = MAX_CONTROL,
-    };
-
-    addVapeMode(&THEMAX);
 
     setVapeMode(s.mode);
 

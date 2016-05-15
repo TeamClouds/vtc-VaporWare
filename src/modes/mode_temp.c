@@ -518,3 +518,22 @@ void tempBottomDisplay(uint8_t atomizerOn) {
     }
     Display_PutText(26, 105, buff, FONT_MEDIUM);
 }
+
+struct vapeMode variableTemp = {
+    .index = 2,
+    .controlType = TEMP_CONTROL,
+    .name = "Temp",
+    .supportedMaterials = NICKEL | TITANIUM | STAINLESS,
+    .init = &tempInit,
+    .fire = &tempFire,
+    .increase = &tempUp,
+    .decrease = &tempDown,
+    .maxSetting = 600,
+    .display = &tempDisplay,
+    .bottomDisplay = &tempBottomDisplay,
+    .vapeModeMenu = &tempSettings,
+};
+
+static void __attribute__((constructor)) registerTempMode(void) {
+    addVapeMode(&variableTemp);
+}

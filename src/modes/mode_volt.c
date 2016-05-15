@@ -71,3 +71,21 @@ void voltBottomDisplay(uint8_t atomizerOn) {
     printNumber(buff, CToDisplay(g.curTemp));
     Display_PutText(24, 107, buff, FONT_MEDIUM);
 }
+
+struct vapeMode variableVoltage = {
+    .index = 1,
+    .controlType = VOLT_CONTROL,
+    .name = "Voltage",
+    .supportedMaterials = KANTHAL | NICKEL | TITANIUM | STAINLESS,
+    .fire = &voltFire,
+    .init = &voltInit,
+    .increase = &voltUp,
+    .decrease = &voltDown,
+    .maxSetting = ATOMIZER_MAX_VOLTS,
+    .display = &voltDisplay,
+    .bottomDisplay = &voltBottomDisplay,
+};
+
+static void __attribute__((constructor)) registerVoltMode(void) {
+    addVapeMode(&variableVoltage);
+}
