@@ -19,7 +19,7 @@ void getString(char *buff, char *state) {
 }
 
 void getFloating(char *buff, uint32_t floating) {
-    siprintf(buff, "%"PRIu32".%02"PRIu32, floating / 1000, floating % 1000 / 10);
+    siprintf(buff, "%"PRIu32".%02"PRIu32, floating / 1000, (floating % 1000)/10);
 }
 
 void getFloatingTenth(char *buff, uint32_t floating) {

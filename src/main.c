@@ -178,7 +178,7 @@ int main() {
         Display_Clear();
         Display_SetOn(0);
     } else if (!s.stealthMode && (g.nextRefresh < uptime) && ((g.screenOffTime < uptime) && g.charging)) {
-    	displayCharging();
+        displayCharging();
     } else if (!s.stealthMode && (g.nextRefresh < uptime) && (g.screenOffTime >= uptime)) {
         updateScreen();
     } else if (gv.sleeping) {

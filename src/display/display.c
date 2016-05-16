@@ -139,7 +139,7 @@ void updateScreen() {
 
     setupScreen();
     fadeInTransition();
-    uint8_t displayRes;
+    uint16_t displayRes;
     uint8_t atomizerOn = Atomizer_IsOn();
 
     g.vapeModes[s.mode]->display(atomizerOn); // top display
@@ -154,9 +154,9 @@ void updateScreen() {
     	break;
     default:
     	if (atomizerOn) {
-        	displayRes = g.atomInfo.resistance;
+            displayRes = g.atomInfo.resistance;
     	} else {
-    		displayRes = g.baseRes;
+            displayRes = g.baseRes;
     	}
         buildRow(70, ohm, getFloating, displayRes); // resistance
         g.vapeModes[s.mode]->bottomDisplay(atomizerOn); // bottom row
