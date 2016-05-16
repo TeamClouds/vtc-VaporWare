@@ -177,12 +177,10 @@ int main() {
     } else if (s.stealthMode) {
         Display_Clear();
         Display_SetOn(0);
-    } else if (!s.stealthMode && (g.nextRefresh < uptime)) {
-        if (g.charging && !g.pauseScreenOff && g.screenOffTime < uptime) {
-        	displayCharging();
-        } else {
-            updateScreen();
-        }
+    } else if (!s.stealthMode && (g.nextRefresh < uptime) && ((g.screenOffTime < uptime) && g.charging)) {
+    	displayCharging();
+    } else if (!s.stealthMode && (g.nextRefresh < uptime) && (g.screenOffTime >= uptime)) {
+        updateScreen();
     } else if (gv.sleeping) {
         gv.sleeping = 0;
     } else if ((g.screenOffTime < uptime) && !g.charging) {
