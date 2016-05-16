@@ -70,7 +70,7 @@ void fire(uint8_t status, uint32_t held) {
     }
     screenOn();
     screenOff();
-    
+
 }
 
 void left(uint8_t status, uint32_t held) {
@@ -80,7 +80,7 @@ void left(uint8_t status, uint32_t held) {
     if (!s.vsetLock && ((status & BUTTON_PRESS) ||
         ((held > 300) && status & BUTTON_HELD)))
         __down();
-    else 
+    else
         screenOff();
 }
 
@@ -93,12 +93,18 @@ void right(uint8_t status, uint32_t held) {
         screenOff();
 }
 
+void launchMenu() {
+    showMenu();
+    screenOn();
+    screenOff();
+}
+
 struct buttonHandler mainButtonHandler = {
     .name = "mainButtons",
     .flags = LEFT_HOLD_EVENT | RIGHT_HOLD_EVENT | FIRE_REPEAT,
 
     .fire_handler = &fire,
-    .fire_repeated = &showMenu,
+    .fire_repeated = &launchMenu,
     .fireRepeatCount = 3,
     .fireRepeatTimeout = 300,
 
@@ -237,7 +243,7 @@ int main() {
     addVapeMode(&THEMAX);
 
     setVapeMode(s.mode);
-    
+
     screenOn();
     screenOff();
 
@@ -262,7 +268,7 @@ int main() {
     }
 
     if (gv.buttonEvent) {
-        
+
         handleButtonEvents();
         gv.buttonEvent = 0;
     }
