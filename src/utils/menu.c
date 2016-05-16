@@ -82,7 +82,7 @@ void menuLeft(uint8_t state, uint32_t duration) {
 }
 
 void menuRight(uint8_t state, uint32_t duration) {
-    
+
     if (state == BUTTON_REL) {
         if (mg->selectIndex + 1 > mg->menuItemCount - 1) {
             mg->selectIndex = 0;
@@ -93,50 +93,49 @@ void menuRight(uint8_t state, uint32_t duration) {
 }
 
 void menuSelect(uint8_t state, uint32_t duration) {
-    if (state == BUTTON_REL)
-        return;
-    
     struct menuGlobals *t;
     uint8_t mIndex = mg->selectIndexToMD[mg->selectIndex];
     struct menuItem *menuItems = *(mg->MD->menuItems);
     struct menuItem *MI = &menuItems[mIndex];
-    
-    returnHandler();
-    switch (MI->type) {
-        case ACTION:
-            MI->actionCallback();
-            break;
-        case SELECT:
-            switchHandler(&selectButtonHandler);
-            doSelectEdit(MI);
-            MI->selectCallback(mg->ItemValues[mIndex]);
-            returnHandler();
-            break;
-        case TOGGLE:
-            toggleSelect();
-            MI->toggleCallback(mg->ItemValues[mIndex]);
-            break;
-        case EDIT:
-            switchHandler(&editButtonHandler);
-            doEditEdit(MI);
-            MI->editCallback(mg->ItemValues[mIndex]);
-            returnHandler();
-            break;
-        case EXITMENU:
-            mg->menuOpen = 0;
-            break;
-        case SUBMENU:
-            if (MI->getMenuDef != NULL)
-                MI->getMenuDef(MI);
-            t = mg;
-            runMenu(MI->subMenu);
-            mg = t;
-            break;
+
+    if (state == BUTTON_PRESS) {
+        switch (MI->type) {
+            case ACTION:
+                MI->actionCallback();
+                break;
+            case SELECT:
+                switchHandler(&selectButtonHandler);
+                doSelectEdit(MI);
+                MI->selectCallback(mg->ItemValues[mIndex]);
+                returnHandler();
+                break;
+            case TOGGLE:
+                toggleSelect();
+                MI->toggleCallback(mg->ItemValues[mIndex]);
+                break;
+            case EDIT:
+                switchHandler(&editButtonHandler);
+                doEditEdit(MI);
+                MI->editCallback(mg->ItemValues[mIndex]);
+                returnHandler();
+                break;
+        }
+    } else if (state == BUTTON_REL) {
+        switch (MI->type) {
+            case EXITMENU:
+                mg->menuOpen = 0;
+                break;
+            case SUBMENU:
+                if (MI->getMenuDef != NULL)
+                    MI->getMenuDef(MI);
+                t = mg;
+                runSubMenu(MI->subMenu);
+                mg = t;
+                break;
+        }
 
     }
     refreshMenu();
-    switchHandler(&menuButtonHandler);
-
 }
 
 
@@ -161,13 +160,13 @@ void selectRight(uint8_t state, uint32_t duration) {
     uint8_t mIndex = mg->selectIndexToMD[mg->selectIndex];
     struct menuItem *menuItems = *(mg->MD->menuItems);
     struct menuItem *MI = &menuItems[mIndex];
-    
+
 skip:
     if (state == BUTTON_PRESS) {
         mg->ItemValues[mIndex]++;
         if (mg->ItemValues[mIndex] >= *MI->count) {
             mg->ItemValues[mIndex] = 0;
-        } 
+        }
     }
     if (MI->getValueCallback(mg->ItemValues[mIndex])[0] == '\0')
         goto skip;
@@ -198,13 +197,13 @@ void editLeft(uint8_t state, uint32_t duration) {
     uint8_t mIndex = mg->selectIndexToMD[mg->selectIndex];
     struct menuItem *menuItems = *(mg->MD->menuItems);
     struct menuItem *MI = &menuItems[mIndex];
-    
+
     if (state == BUTTON_PRESS ||
         ((duration > 300) && state & BUTTON_HELD)) {
         mg->ItemValues[mIndex] -= MI->editStep;
         if (mg->ItemValues[mIndex] < MI->editMin) {
             mg->ItemValues[mIndex] = MI->editMin;
-        } 
+        }
     }
 }
 
@@ -212,13 +211,13 @@ void editRight(uint8_t state, uint32_t duration) {
     uint8_t mIndex = mg->selectIndexToMD[mg->selectIndex];
     struct menuItem *menuItems = *(mg->MD->menuItems);
     struct menuItem *MI = &menuItems[mIndex];
-    
+
     if (state == BUTTON_PRESS ||
         ((duration > 300) && state & BUTTON_HELD)) {
         mg->ItemValues[mIndex] += MI->editStep;
         if (mg->ItemValues[mIndex] > MI->editMax) {
             mg->ItemValues[mIndex] = MI->editMax;
-        } 
+        }
     }
 }
 
@@ -309,7 +308,7 @@ void drawMenuItem(uint8_t index, uint8_t y, uint8_t x, uint8_t x2, const Font_In
 void refreshMenu() {
     struct menuItem *MI;
     int i = 0;
-    
+
     while ((MI = &((*(mg->MD->menuItems))[i]))->type != END)
     {
         switch (MI->type) {
@@ -324,7 +323,7 @@ void refreshMenu() {
                 break;
             default:
                 mg->ItemValues[i] = 0;
-                break;    
+                break;
         }
         i++;
     }
@@ -357,7 +356,7 @@ void drawMenu() {
                     break;
                 default:
                     mg->ItemValues[menuIndex] = 0;
-                    break;    
+                    break;
             }
             mg->ItemLoaded[menuIndex] = 1;
         }
@@ -393,7 +392,7 @@ void drawMenu() {
         uint8_t negFind = 0;
         rowStart = 128; // Bottom of screen
         while ((MI = &menuItems[menuIndex])->type != STARTBOTTOM) {
-            
+
             if (menuIndex == mg->selectIndexToMD[mg->selectIndex] && mg->editOpen)
                 valOffset = 0;
             else
@@ -431,8 +430,7 @@ void drawMenu() {
     Display_Update();
 }
 
-void runMenu(struct menuDefinition *menuDef) {
-    //while (USB_VirtualCOM_GetAvailableSize() == 0){;}
+void runSubMenu(struct menuDefinition *menuDef) {
     Display_SetOn(1);
     struct menuGlobals _mg = {0};
     mg = &_mg;
@@ -440,13 +438,18 @@ void runMenu(struct menuDefinition *menuDef) {
     mg->selectIndex = 0;
     mg->menuOpen = 1;
     mg->MD = menuDef;
-    switchHandler(&menuButtonHandler);
+
     while (mg->menuOpen) {
         if (gv.buttonEvent) {
             handleButtonEvents();
         }
         drawMenu();
     }
+}
 
+void runMenu(struct menuDefinition *menuDef) {
+    //while (USB_VirtualCOM_GetAvailableSize() == 0){;}
+    switchHandler(&menuButtonHandler);
+    runSubMenu(menuDef);
     returnHandler();
 }

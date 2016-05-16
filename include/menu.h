@@ -76,7 +76,7 @@ struct menuDefinition {
 };
 
 
-
+void runSubMenu(struct menuDefinition *menuDef);
 void runMenu(struct menuDefinition *menuDef);
 void refreshMenu();
 
