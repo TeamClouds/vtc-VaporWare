@@ -35,6 +35,7 @@
 #include "dataflash.h"
 #include "debug.h"
 #include "display.h"
+#include "display_helper.h"
 #include "globals.h"
 #include "helper.h"
 #include "menu.h"
@@ -50,6 +51,34 @@ uint8_t getTypeDefault() {
     return s.materialIndex;
 }
 
+uint8_t getModeDefault() {
+    return s.mode;
+}
+
+uint8_t getScaleDefault() {
+    return s.tempScaleTypeIndex;
+}
+
+uint8_t getBaseFromUserDefault() {
+    return s.baseFromUser;
+}
+
+int32_t getScreenBrightnessDefault() {
+    return s.screenBrightness;
+}
+
+int32_t getTCRDefault() {
+    return s.tcr;
+}
+
+int32_t getBaseTempDefault() {
+    return s.baseTemp;
+}
+
+int32_t getBaseResDefault() {
+    return s.baseRes;
+}
+
 char *getTypeString(uint8_t index) {
     return vapeMaterialList[index].name;
 }
@@ -57,10 +86,6 @@ char *getTypeString(uint8_t index) {
 void updateType(uint16_t index) {
     materialIndexSet(index);
     refreshMenu();
-}
-
-uint8_t getModeDefault() {
-    return s.mode;
 }
 
 char *getModeString(uint8_t index) {
@@ -75,13 +100,9 @@ void updateMode(uint16_t index) {
     modeSet(index);
 }
 
-int32_t getScreenBrightnessDefault() {
-    return s.screenBrightness;
-}
-
-void formatBrightnessNumber(int32_t value, char *formatted) {
+void formatBrightnessNumber(char *formatted, int32_t value) {
     Display_SetContrast(value & 0xFF);
-    siprintf(formatted, "%" PRId32, value);
+    printNumber(formatted, value);
 }
 
 void updateScreenBrightness(int32_t value) {
@@ -90,10 +111,6 @@ void updateScreenBrightness(int32_t value) {
 
 char *getScaleString(uint8_t index) {
     return tempScaleType[index].display;
-}
-
-uint8_t getScaleDefault() {
-    return s.tempScaleTypeIndex;
 }
 
 void updateScale(uint16_t index) {
@@ -139,6 +156,47 @@ void factoryReset() {
     reboot();
 }
 
+const struct menuDefinition *const showModeSettings(const struct menuItem *MI) {
+	return &(*g.vapeModes[s.mode]->vapeModeMenu);
+}
+
+int shouldHideMenu() {
+	return g.vapeModes[s.mode]->vapeModeMenu == NULL;
+}
+
+void saveTCR(int32_t value) {
+    if (value < 0) {
+        /* don't set a default if it's invalid, somehow */
+        return;
+    }
+    tcrSet(value & 0xFFFF);
+}
+
+void saveTemp(int32_t value) {
+    baseFromUserSet(USERSET);
+    baseTempSet(value & 0xFFFF);
+}
+
+void saveBaseRes(int32_t value) {
+    baseFromUserSet(USERSET);
+    baseResSet(value & 0xFFFF);
+}
+
+char *fromUserStrings[] = {
+    "Auto",
+    "Set",
+    "Lock",
+};
+uint8_t fromUserStringsCount = 3;
+
+char *getBaseFromUserString(uint8_t index) {
+    return fromUserStrings[index];
+}
+
+void updateBaseFromUser(uint16_t index) {
+    baseFromUserSet(index);
+}
+
 #ifdef WITHFLASHDAMAGESUPPORT
 void invalidateDataFlash() {
     if(!(Button_GetState() & BUTTON_MASK_RIGHT))
@@ -164,41 +222,37 @@ void flipSet(uint8_t a) {
 	flipOnVapeSet(a);
 }
 
-const struct menuItem displaySubMenuItems[] = {
-	{
-	    .type = SELECT,
-	    .label = "Scale",
-        .count = &tempScaleCount,
-        .getDefaultCallback = &getScaleDefault,
-	    .getValueCallback = &getScaleString,
-	    .selectCallback = &updateScale,
-	},
+const struct menuItem dragonMenuItems[] = {
     {
         .type = EDIT,
-        .label = "Brightness",
-        .editMin = 0,
-        .editMax = 255,
-        .getEditStart = &getScreenBrightnessDefault,
-        .editCallback = &updateScreenBrightness,
-        .editStep = 10,
-        .editFormat = &formatBrightnessNumber
+        .label = "TCR",
+        .editMin = TCRMIN,
+        .editMax = TCRMAX,
+        .getEditStart = &getTCRDefault,
+        .editStep = 1,
+        .editFormat = &printNumber,
+        .editCallback = &saveTCR,
     },
-	{
-	    .type = TOGGLE,
-	    .label = "FlipVape",
-	    .on = "On",
-	    .off = "Off",
-	    .isSet = &s.flipOnVape,
-	    .toggleCallback = &flipSet,
-	},
-	{
-	    .type = TOGGLE,
-	    .label = "Invert",
-	    .on = "On",
-	    .off = "Off",
-	    .isSet = &s.invertDisplay,
-	    .toggleCallback = &invertSet,
-	},
+    {
+        .type = EDIT,
+        .label = "B.Temp",
+        .editMin = BTEMPMIN,
+        .editMax = BTEMPMAX,
+        .getEditStart = &getBaseTempDefault,
+        .editStep = 1,
+        .editFormat = &printNumber,
+        .editCallback = &saveTemp,
+    },
+    {
+        .type = EDIT,
+        .label = "B.Res",
+        .editMin = 50,
+        .editMax = 3450,
+        .getEditStart = &getBaseResDefault,
+        .editStep = 5,
+        .editFormat = &formatThousandths,
+        .editCallback = &saveBaseRes
+    },
     {
         .type = STARTBOTTOM,
     },
@@ -218,24 +272,96 @@ const struct menuItem displaySubMenuItems[] = {
     }
 };
 
-const struct menuDefinition displaySettingsMenu = {
-    .name = "Display Settings",
+const struct menuDefinition TheDragonning = {
+    .name = "Dragons",
     .font = FONT_SMALL,
     .cursor = "*",
     .prev_sel = "<",
     .next_sel = ">",
     .less_sel = "-",
     .more_sel = "+",
-    .menuItems = &displaySubMenuItems,
+    .menuItems = &dragonMenuItems,
 };
 
-const struct menuDefinition *const showModeSettings(const struct menuItem *MI) {
-	return &(*g.vapeModes[s.mode]->vapeModeMenu);
-}
+const struct menuItem coilMenuItems[] = {
+    {
+        .type = SELECT,
+        .label = "Type",
+        .count = &vapeMaterialsCount,
+        .getDefaultCallback = &getTypeDefault,
+        .getValueCallback = &getTypeString,
+        .selectCallback = &updateType,
+    },
+    {
+        .type = SELECT,
+        .label = "Res.",
+        .count = &fromUserStringsCount,
+        .getDefaultCallback = &getBaseFromUserDefault,
+        .getValueCallback = &getBaseFromUserString,
+        .selectCallback = &updateBaseFromUser,
+    },
+    {
+        .type = STARTBOTTOM,
+    },
+    {
+        .type = LINE,
+    },
+    {
+        .type = SPACE,
+        .rows = 2,
+    },
+    {
+        .type = SUBMENU,
+        .label = "Dragons",
+        .subMenu = &TheDragonning,
+    },
+    {
+        .type = EXITMENU,
+        .label = "Back",
+    },
+    {
+        .type = END,
+    }
+};
 
-int shouldHideMenu() {
-	return g.vapeModes[s.mode]->vapeModeMenu == NULL;
-}
+
+const struct menuItem modeMenuItems[] = {
+    {
+        .type = SELECT,
+        .label = "Mode",
+        .count = &g.modeCount,
+        .getDefaultCallback = &getModeDefault,
+        .getValueCallback = &getModeString,
+        .selectCallback = &updateMode,
+    },
+    {
+        .type = STARTBOTTOM,
+    },
+	{
+		.type = SUBMENU,
+		.label = "Options",
+		.getMenuDef = &showModeSettings,
+		.hidden = &shouldHideMenu,
+	},
+    {
+        .type = SPACE,
+        .rows = 2,
+    },
+    {
+        .type = LINE,
+    },
+    {
+        .type = SPACE,
+        .rows = 2,
+    },
+    {
+        .type = EXITMENU,
+        .label = "Back",
+    },
+    {
+        .type = END,
+    }
+};
 
 const struct menuItem advancedMenuItems[] = {
     {
@@ -280,122 +406,50 @@ const struct menuItem advancedMenuItems[] = {
     }
 };
 
-
-const struct menuDefinition advancedMenu = {
-    .name = "Advanced Settings",
-    .font = FONT_SMALL,
-    .cursor = "*",
-    .prev_sel = "<",
-    .next_sel = ">",
-    .less_sel = "-",
-    .more_sel = "+",
-    .menuItems = &advancedMenuItems,
-
-};
-
-/* Will always show 3 decimals, todo: make the '3' a param */
-void formatFixedPoint(int32_t value, int32_t divisor, char *formatted) {
-    if(divisor == 0)
-        siprintf(formatted, "infin");
-    else
-        siprintf(formatted, "%"PRId32".%03"PRId32, value/divisor, value % divisor);
-}
-
-void formatThousandths(int32_t value, char *formatted) {
-    formatFixedPoint(value, 1000, formatted);
-}
-
-void formatINT(int32_t value, char *formatted) {
-    siprintf(formatted, "%"PRId32, value);
-}
-
-int32_t getTCRDefault() {
-    return s.tcr;
-}
-
-int32_t getBaseTempDefault() {
-    return s.baseTemp;
-}
-
-int32_t getBaseResDefault() {
-    return s.baseRes;
-}
-
-void saveTCR(int32_t value) {
-    if (value < 0) {
-        /* don't set a default if it's invalid, somehow */
-        return;
-    }
-    tcrSet(value & 0xFFFF);
-}
-
-void saveTemp(int32_t value) {
-    baseFromUserSet(USERSET);
-    baseTempSet(value & 0xFFFF);
-}
-
-void saveBaseRes(int32_t value) {
-    baseFromUserSet(USERSET);
-    baseResSet(value & 0xFFFF);
-}
-
-char *fromUserStrings[] = {
-    "AutoRes",
-    "UserSet",
-    "UserLock",
-};
-uint8_t fromUserStringsCount = 3;
-
-uint8_t getBaseFromUserDefault() {
-    return s.baseFromUser;
-}
-
-char *getBaseFromUserString(uint8_t index) {
-    return fromUserStrings[index];
-}
-
-void updateBaseFromUser(uint16_t index) {
-    baseFromUserSet(index);
-}
-
-const struct menuItem dragonMenuItems[] = {
+const struct menuItem displaySubMenuItems[] = {
+	{
+	    .type = SELECT,
+	    .label = "Scale",
+        .count = &tempScaleCount,
+        .getDefaultCallback = &getScaleDefault,
+	    .getValueCallback = &getScaleString,
+	    .selectCallback = &updateScale,
+	},
     {
         .type = EDIT,
-        .label = "TCR",
-        .editMin = TCRMIN,
-        .editMax = TCRMAX,
-        .getEditStart = &getTCRDefault,
-        .editStep = 1,
-        .editFormat = &formatINT,
-        .editCallback = &saveTCR,
+        .label = "Brightness",
+        .editMin = 0,
+        .editMax = 255,
+        .getEditStart = &getScreenBrightnessDefault,
+        .editCallback = &updateScreenBrightness,
+        .editStep = 10,
+        .editFormat = &formatBrightnessNumber
+    },
+	{
+	    .type = TOGGLE,
+	    .label = "FlipVape",
+	    .on = "On",
+	    .off = "Off",
+	    .isSet = &s.flipOnVape,
+	    .toggleCallback = &flipOnVapeSet,
+	},
+	{
+	    .type = TOGGLE,
+	    .label = "Invert",
+	    .on = "On",
+	    .off = "Off",
+	    .isSet = &s.invertDisplay,
+	    .toggleCallback = &invertDisplaySet,
+	},
+    {
+        .type = STARTBOTTOM,
     },
     {
-        .type = SELECT,
-        .label = "ResType",
-        .count = &fromUserStringsCount,
-        .getDefaultCallback = &getBaseFromUserDefault,
-        .getValueCallback = &getBaseFromUserString,
-        .selectCallback = &updateBaseFromUser,
+        .type = LINE,
     },
     {
-        .type = EDIT,
-        .label = "B.Temp",
-        .editMin = BTEMPMIN,
-        .editMax = BTEMPMAX,
-        .getEditStart = &getBaseTempDefault,
-        .editStep = 1,
-        .editFormat = &formatINT,
-        .editCallback = &saveTemp,
-    },
-    {
-        .type = EDIT,
-        .label = "B.Res",
-        .editMin = 50,
-        .editMax = 3450,
-        .getEditStart = &getBaseResDefault,
-        .editStep = 5,
-        .editFormat = &formatThousandths,
-        .editCallback = &saveBaseRes
+        .type = SPACE,
+        .rows = 2,
     },
     {
         .type = EXITMENU,
@@ -406,48 +460,60 @@ const struct menuItem dragonMenuItems[] = {
     }
 };
 
-const struct menuDefinition TheDragonning = {
-    .name = "Dragon Mode On",
+const struct menuDefinition displaySettingsMenu = {
+    .name = "Display Settings",
     .font = FONT_SMALL,
     .cursor = "*",
     .prev_sel = "<",
     .next_sel = ">",
     .less_sel = "-",
     .more_sel = "+",
-    .menuItems = &dragonMenuItems,
+    .menuItems = &displaySubMenuItems,
 };
 
-const struct menuDefinition *const showAdvanced(const struct menuItem *MI) {
-    if (Button_GetState() & BUTTON_MASK_RIGHT) {
-        return &TheDragonning;
-    } else {
-        return &advancedMenu;
-    }
-}
+const struct menuDefinition modeMenu = {
+    .name = "Mode",
+    .font = FONT_SMALL,
+    .cursor = "*",
+    .prev_sel = "<",
+    .next_sel = ">",
+    .less_sel = "-",
+    .more_sel = "+",
+    .menuItems = &modeMenuItems,
+};
 
+const struct menuDefinition coilMenu = {
+    .name = "Coil",
+    .font = FONT_SMALL,
+    .cursor = "*",
+    .prev_sel = "<",
+    .next_sel = ">",
+    .less_sel = "-",
+    .more_sel = "+",
+    .menuItems = &coilMenuItems,
+};
 
-struct menuItem settingsMenuItems[] = {
-    {
-        .type = SELECT,
-        .label = "Type",
-        .count = &vapeMaterialsCount,
-        .getDefaultCallback = &getTypeDefault,
-        .getValueCallback = &getTypeString,
-        .selectCallback = &updateType,
-    },
-    {
-        .type = SELECT,
-        .label = "Mode",
-        .count = &g.modeCount,
-        .getDefaultCallback = &getModeDefault,
-        .getValueCallback = &getModeString,
-        .selectCallback = &updateMode,
-    },
+const struct menuDefinition advancedMenu = {
+    .name = "Advanced Settings",
+    .font = FONT_SMALL,
+    .cursor = "*",
+    .prev_sel = "<",
+    .next_sel = ">",
+    .less_sel = "-",
+    .more_sel = "+",
+    .menuItems = &advancedMenuItems,
+};
+
+const struct menuItem settingsMenuItems[] = {
 	{
 		.type = SUBMENU,
-		.label = "Mode Settings",
-		.getMenuDef = &showModeSettings,
-		.hidden = &shouldHideMenu,
+		.label = "Coil",
+		.subMenu = &coilMenu,
+	},
+	{
+		.type = SUBMENU,
+		.label = "Mode",
+		.subMenu = &modeMenu,
 	},
 	{
 		.type = SUBMENU,
@@ -472,7 +538,7 @@ struct menuItem settingsMenuItems[] = {
     {
         .type = SUBMENU,
         .label = "Advnced",
-        .getMenuDef = &showAdvanced,
+        .subMenu = &advancedMenu,
     },
     {
         .type = EXITMENU,
@@ -502,7 +568,6 @@ int load_settings(void) {
 
     return 1;
 }
-
 
 void showMenu() {
     Display_SetContrast(s.screenBrightness);

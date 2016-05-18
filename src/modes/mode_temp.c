@@ -7,6 +7,7 @@
 #include <USB_VirtualCOM.h>
 
 #include "display.h"
+#include "display_helper.h"
 #include "debug.h"
 #include "font/font_vaporware.h"
 #include "globals.h"
@@ -24,20 +25,12 @@ void updateInitWatts(int32_t newWatts) {
     initWattsSet(newWatts);
 }
 
-void formatWatts(int32_t value, char *formatted) {
-    siprintf(formatted, "%"PRIu32".%02"PRIu32, value / 1000, value % 1000 / 10);
-}
-
 int32_t getPidSwitchDefault() {
     return s.pidSwitch;
 }
 
 void updatePidSwitch(int32_t newpidswitch) {
     pidSwitchSet(newpidswitch);
-}
-
-void formatNumber(int32_t value, char *formatted) {
-    siprintf(formatted, "%"PRId32, value);
 }
 
 int32_t getPDefault() {
@@ -73,7 +66,7 @@ const struct menuItem dragonItems[] = {
         .getEditStart = &getPDefault,
         .editCallback = &setP,
         .editStep = 100,
-        .editFormat = &formatNumber
+        .editFormat = &printNumber
     },
     {
         .type = EDIT,
@@ -83,7 +76,7 @@ const struct menuItem dragonItems[] = {
         .getEditStart = &getIDefault,
         .editCallback = &setI,
         .editStep = 100,
-        .editFormat = &formatNumber
+        .editFormat = &printNumber
     },
     {
         .type = EDIT,
@@ -93,7 +86,7 @@ const struct menuItem dragonItems[] = {
         .getEditStart = &getDDefault,
         .editCallback = &setD,
         .editStep = 100,
-        .editFormat = &formatNumber
+        .editFormat = &printNumber
     },
     {
         .type = STARTBOTTOM,
@@ -134,7 +127,7 @@ const struct menuItem tempSettingsOptions[] = {
         .getEditStart = &getInitWattsDefault,
         .editCallback = &updateInitWatts,
         .editStep = 100,
-        .editFormat = &formatWatts,
+        .editFormat = &getFloating,
     },
     {
         .type = EDIT,
@@ -144,7 +137,7 @@ const struct menuItem tempSettingsOptions[] = {
         .getEditStart = &getPidSwitchDefault,
         .editCallback = &updatePidSwitch,
         .editStep = 10,
-        .editFormat = &formatNumber,
+        .editFormat = &printNumber,
     },
     {
         .type = STARTBOTTOM,

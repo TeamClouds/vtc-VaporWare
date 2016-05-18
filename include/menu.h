@@ -44,7 +44,7 @@ struct menuItem {
     const int32_t editMax;
     int32_t (*const getEditStart)();
     const int32_t editStep;
-    void (*const editFormat)(int32_t value, char *formatted);
+    void (*const editFormat)(char *formatted, int32_t value);
     void (*const editCallback)(int32_t);
 
     /* SPACE */
