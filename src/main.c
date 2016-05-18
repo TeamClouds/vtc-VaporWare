@@ -113,6 +113,63 @@ struct buttonHandler mainButtonHandler = {
 
 };
 
+#ifdef ATYDEBUG
+void drawError() {
+
+    if (Display_IsFlipped()) {
+        Display_Flip();
+    }
+
+    Display_Clear();
+    char buff[10];
+    switch(gv.sawError) {
+        case OK: siprintf(buff, "OK"); break;
+        case SHORT: siprintf(buff, "SHORT"); break;
+        case OPEN: siprintf(buff, "OPEN"); break;
+        case WEAK_BATT: siprintf(buff, "WEAK_BATT"); break;
+        case OVER_TEMP: siprintf(buff, "OVER_TEMP"); break;
+        default: siprintf(buff, "UNKNOWN"); break;
+    }
+
+    Display_PutText(0, 0,  buff, FONT_SMALL);
+
+    Display_Update();
+}
+
+void errorButton(uint8_t status, uint32_t held) {
+    gv.sawError = OK;
+    g.ignoreNextAtty = 1;
+    Atomizer_Unlock();
+}
+
+struct buttonHandler errorPromptHandler = {
+    .name = "attyPrompt",
+    .flags = 0,
+    .fire_handler = &errorButton,
+    .left_handler = &errorButton,
+    .right_handler = &errorButton,
+};
+
+void showUserError() {
+    do {;} while (Button_GetState());
+
+    switchHandler(&errorPromptHandler);
+    while (gv.sawError) {
+        if (gv.buttonEvent) {
+            handleButtonEvents();
+            gv.buttonEvent = 0;
+        }
+        drawError();
+    }
+    do {;} while (Button_GetState());
+    returnHandler();
+}
+
+void atomizerError(uint8_t errorNum) {
+    gv.sawError = errorNum;
+}
+#endif
+
 int main() {
     int i = 0;
     Communication_Init();
@@ -124,6 +181,10 @@ int main() {
     setHandler(&mainButtonHandler);
     Atomizer_SetBaseUpdateCallback(newReading);
 
+#ifdef ATYDEBUG
+    Atomizer_SetErrorLock(1);
+    Atomizer_SetErrorCallback(&atomizerError);
+#endif
 
     load_settings();
 
@@ -151,6 +212,20 @@ int main() {
     if ((s.dumpPids || s.tunePids) && !g.charging)
                 s.dumpPids = s.tunePids = 0;
 
+    if (gv.buttonEvent) {
+        handleButtonEvents();
+        gv.buttonEvent = 0;
+    }
+
+#ifdef ATYDEBUG
+    if (gv.sawError) {
+        screenOn();
+        showUserError();
+        screenOn();
+        screenOff();
+    }
+#endif
+
     if (g.askUser) {
         screenOn();
         askUserAboutTheAttomizer();
@@ -158,11 +233,6 @@ int main() {
         screenOff();
     }
 
-    if (gv.buttonEvent) {
-
-        handleButtonEvents();
-        gv.buttonEvent = 0;
-    }
     if (g.pauseScreenOff)
         screenOn();
 

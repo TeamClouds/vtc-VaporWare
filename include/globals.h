@@ -38,6 +38,7 @@ struct globals {
     uint8_t freqSettingsChanged;
     uint32_t writeSettingsAt;
     uint32_t sysSleepAt;
+    uint8_t ignoreNextAtty;
 };
 extern struct globals g;
 
@@ -50,6 +51,7 @@ struct globalVols {
     volatile uint32_t saveSettings;
     volatile uint8_t buttonEvent;
     volatile uint8_t sleeping;
+    volatile uint8_t sawError;
 };
 
 extern volatile struct globalVols gv;
