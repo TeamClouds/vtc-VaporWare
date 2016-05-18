@@ -138,7 +138,7 @@ void drawError() {
 
 void errorButton(uint8_t status, uint32_t held) {
     gv.sawError = OK;
-    g.ignoreNextAtty = 1;
+    g.ignoreNextAttyUntil = ATOMIZERGONEAFTER + uptime;
     Atomizer_Unlock();
 }
 
@@ -166,6 +166,11 @@ void showUserError() {
 }
 
 void atomizerError(uint8_t errorNum) {
+    if (errorNum == OPEN && g.ignoreNextAttyUntil) {
+        Atomizer_Unlock();
+        return;
+    }
+
     gv.sawError = errorNum;
 }
 #endif
@@ -234,6 +239,9 @@ int main() {
     }
 
     if (g.pauseScreenOff)
+        screenOn();
+
+    if (Atomizer_GetError())
         screenOn();
 
     if (g.settingsChanged && uptime > g.writeSettingsAt) {

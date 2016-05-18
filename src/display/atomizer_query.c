@@ -24,6 +24,13 @@ uint8_t newReading(uint16_t oldRes, uint8_t oldTemp, uint16_t *newRes, uint8_t *
     if (oldRes == 0 && gv.fireButtonPressed)
         return 1;
 
+    if (g.ignoreNextAttyUntil > uptime) {
+        g.ignoreNextAttyUntil = 0;
+        return 1;
+    } else {
+        g.ignoreNextAttyUntil = 0;
+    }
+
     if (oldRes == 0 && g.baseFromUser == USERSET) {
         g.baseFromUser = USERLOCK;
 

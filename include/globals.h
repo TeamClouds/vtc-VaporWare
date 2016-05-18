@@ -38,7 +38,7 @@ struct globals {
     uint8_t freqSettingsChanged;
     uint32_t writeSettingsAt;
     uint32_t sysSleepAt;
-    uint8_t ignoreNextAtty;
+    uint32_t ignoreNextAttyUntil;
 };
 extern struct globals g;
 

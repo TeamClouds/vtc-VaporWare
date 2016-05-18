@@ -1,5 +1,9 @@
 #ifndef __DEFAULTS_H
 #define __DEFAULTS_H
+
+// Milliseconds
+#define ATOMIZERGONEAFTER 3000
+
 // 10/second 0.5-60s range, 3s default
 #define SCREENMINTIMEOUT 50
 #define SCREENMAXTIMEOUT 6000
