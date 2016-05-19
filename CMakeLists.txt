@@ -1,13 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(vtc-VaporWare)
 
-set(INCDIRS "-I$ENV{EVICSDK}/include \
-    -I$ENV{EVICSDK}/nuvoton-sdk/Library/CMSIS/Include \
-    -I$ENV{EVICSDK}/nuvoton-sdk/Library/Device/Nuvoton/M451Series/Include \
-    -I$ENV{EVICSDK}/nuvoton-sdk/Library/StdDriver/inc")
-
 set(ARMGCC "/usr/local/Cellar/gcc-arm-none-eabi/20151219")
-set(CMAKE_C_FLAGS "-I$ENV{EVICSDK}/include/ -I-I$ENV{EVICSDK}/. ${INCDIRS} -c -fshort-enums -Wall -mcpu=cortex-m4 -mthumb -Os -fdata-sections -ffunction-sections")
 set(CMAKE_ASM_COMPILER "${ARMGCC}/bin/arm-none-eabi-as")
 set(CMAKE_C_COMPILER "${ARMGCC}/bin/arm-none-eabi-gcc")
 set(CMAKE_AR "${ARMGCC}/bin/arm-none-eabi-ar")
@@ -16,15 +10,17 @@ set(CMAKE_LINKER ${ARMGCC}/bin/arm-none-eabi-ld)
 
 set(CMAKE_C_FLAGS_DEBUG "")
 set(CMAKE_C_FLAGS_RELEASE "")
-set(CMAKE_C_FLAGS_MINSIZEREL  "")
+set(CMAKE_C_FLAGS_MINSIZEREL "")
 set(CMAKE_ASM_FLAGS_DEBUG "")
-set(CMAKE_ASM_FLAGS_MINSIZEREL  "")
-set(CMAKE_ASM_FLAGS_RELEASE  "")
+set(CMAKE_ASM_FLAGS_MINSIZEREL "")
+set(CMAKE_ASM_FLAGS_RELEASE "")
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I$ENV{EVICSDK}/include/ -I$ENV{EVICSDK}/ -I. -Werror -c -fshort-enums -Wall -mcpu=cortex-m4 -mthumb -Os -fdata-sections -ffunction-sections")
 
 # git tag
 execute_process(
-        COMMAND shell git describe --abbrev=4 --dirty --always --tags
-        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        COMMAND git describe --abbrev=4 --dirty --always --tags
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         OUTPUT_VARIABLE GIT_VERSION
         ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE
 )
@@ -64,24 +60,25 @@ set(SOURCE_FILES
         src/main.c
         )
 
-set(TARGET atomizer)
-
-# get a full list of objects
-set(OBJS "")
-set(NOWAT "")
-foreach (FILENAME ${SOURCE_FILES})
-    set(NOWAT "${NOWAT} ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${TARGET}.dir/${FILENAME}.o")
-endforeach (FILENAME)
-
 # build
+set(TARGET atomizer)
 add_executable(${TARGET} ${SOURCE_FILES})
-add_dependencies(${TARGET} libevicsdk)
+target_link_libraries(${TARGET} evicsdk)
+add_dependencies(${TARGET} evicsdk)
+
+# create output bin dir
+add_custom_command(
+        TARGET atomizer PRE_LINK
+        COMMAND mkdir -p ${CMAKE_CURRENT_SOURCE_DIR}/bin
+        COMMENT "creating bin dir"
+        VERBATIM
+)
 
 # link
 set(LIBDIRS "-L${ARMGCC}/arm-none-eabi/lib/ -L${ARMGCC}/lib/gcc/arm-none-eabi/5.2.1/ -L$ENV{EVICSDK}/lib/")
-set(LDSCRIPT "$ENV{EVICSDK}/linker/linker.ld")
-set(LINKFLAGS "${LIBDIRS} -nostdlib  -nostartfiles -T${LDSCRIPT} -gc-sections -o ${PROJECT_SOURCE_DIR}/bin/atomizer.elf")
-set(CMAKE_C_LINK_EXECUTABLE "${CMAKE_LINKER} ${NOWAT} ${LINKFLAGS}")
+set(LDSCRIPT $ENV{EVICSDK}/linker/linker.ld)
+set(LINKFLAGS "${LIBDIRS} -nostdlib  -nostartfiles -T${LDSCRIPT} -gc-sections")
+set(CMAKE_C_LINK_EXECUTABLE "${CMAKE_LINKER} <OBJECTS> ${LINKFLAGS} -o ${PROJECT_SOURCE_DIR}/bin/atomizer.elf")
 
 # convert and encrypt to a flashable binary
 add_custom_command(
