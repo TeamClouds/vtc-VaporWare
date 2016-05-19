@@ -17,42 +17,58 @@ enum {
 };
 
 struct menuDefinition;
+struct menuItem;
 
-struct menuItem {
-    const uint8_t type;
-    const char *label;
-    int (*const hidden)(void);
-
-    /* ACTION */
+struct actionMenuItem {
     void (*const actionCallback)(void);
+};
 
-    /* SELECT */
+struct selectMenuItem {
     const char *(*const items)[];
     const uint8_t *const count;
     uint8_t (*const getDefaultCallback)();
     char *(*const getValueCallback)(uint8_t index);
     void (*const selectCallback)(uint16_t index);
+};
 
-    /* TOGGLE */
+struct toggleMenuItem {
     const uint8_t *isSet;
     const char on[5];
     const char off[5];
     void (*const toggleCallback)(uint8_t on);
+};
 
-    /* EDIT */
+struct editMenuItem {
     const int32_t editMin;
     const int32_t editMax;
     int32_t (*const getEditStart)();
     const int32_t editStep;
     void (*const editFormat)(char *formatted, int32_t value);
     void (*const editCallback)(int32_t);
+};
 
-    /* SPACE */
+struct spaceMenuItem {
     const uint8_t rows;
+};
 
-    /* SUBMENU */
+struct subMenuMenuItem {
     const struct menuDefinition *subMenu;
     const struct menuDefinition *const (*const getMenuDef)(const struct menuItem *this);
+};
+
+struct menuItem {
+    const uint8_t type;
+    const char *label;
+    int (*const hidden)(void);
+
+    union {
+        struct actionMenuItem action;
+        struct selectMenuItem select;
+        struct toggleMenuItem toggle;
+        struct editMenuItem edit;
+        struct spaceMenuItem space;
+        struct subMenuMenuItem submenu;
+    } Item;
 };
 
 // Per layer of menu.  Could bump as high as 255, but wastes memory

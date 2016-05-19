@@ -61,32 +61,32 @@ const struct menuItem dragonItems[] = {
     {
         .type = EDIT,
         .label = "P",
-        .editMin = MINPID,
-        .editMax = MAXPID,
-        .getEditStart = &getPDefault,
-        .editCallback = &setP,
-        .editStep = 100,
-        .editFormat = &printNumber
+        .Item.edit.editMin = MINPID,
+        .Item.edit.editMax = MAXPID,
+        .Item.edit.getEditStart = &getPDefault,
+        .Item.edit.editCallback = &setP,
+        .Item.edit.editStep = 100,
+        .Item.edit.editFormat = &printNumber
     },
     {
         .type = EDIT,
         .label = "I",
-        .editMin = MINPID,
-        .editMax = MAXPID,
-        .getEditStart = &getIDefault,
-        .editCallback = &setI,
-        .editStep = 100,
-        .editFormat = &printNumber
+        .Item.edit.editMin = MINPID,
+        .Item.edit.editMax = MAXPID,
+        .Item.edit.getEditStart = &getIDefault,
+        .Item.edit.editCallback = &setI,
+        .Item.edit.editStep = 100,
+        .Item.edit.editFormat = &printNumber
     },
     {
         .type = EDIT,
         .label = "D",
-        .editMin = MINPID,
-        .editMax = MAXPID,
-        .getEditStart = &getDDefault,
-        .editCallback = &setD,
-        .editStep = 100,
-        .editFormat = &printNumber
+        .Item.edit.editMin = MINPID,
+        .Item.edit.editMax = MAXPID,
+        .Item.edit.getEditStart = &getDDefault,
+        .Item.edit.editCallback = &setD,
+        .Item.edit.editStep = 100,
+        .Item.edit.editFormat = &printNumber
     },
     {
         .type = STARTBOTTOM,
@@ -96,7 +96,7 @@ const struct menuItem dragonItems[] = {
     },
     {
         .type = SPACE,
-        .rows = 2,
+        .Item.space.rows = 2,
     },
     {
         .type = EXITMENU,
@@ -122,22 +122,22 @@ const struct menuItem tempSettingsOptions[] = {
     {
         .type = EDIT,
         .label = "Watts",
-        .editMin = MINWATTS,
-        .editMax = MAXWATTS,
-        .getEditStart = &getInitWattsDefault,
-        .editCallback = &updateInitWatts,
-        .editStep = 100,
-        .editFormat = &getFloating,
+        .Item.edit.editMin = MINWATTS,
+        .Item.edit.editMax = MAXWATTS,
+        .Item.edit.getEditStart = &getInitWattsDefault,
+        .Item.edit.editCallback = &updateInitWatts,
+        .Item.edit.editStep = 100,
+        .Item.edit.editFormat = &getFloating,
     },
     {
         .type = EDIT,
         .label = "PID Switch",
-        .editMin = STEMPMIN,
-        .editMax = STEMPMAX,
-        .getEditStart = &getPidSwitchDefault,
-        .editCallback = &updatePidSwitch,
-        .editStep = 10,
-        .editFormat = &printNumber,
+        .Item.edit.editMin = STEMPMIN,
+        .Item.edit.editMax = STEMPMAX,
+        .Item.edit.getEditStart = &getPidSwitchDefault,
+        .Item.edit.editCallback = &updatePidSwitch,
+        .Item.edit.editStep = 10,
+        .Item.edit.editFormat = &printNumber,
     },
     {
         .type = STARTBOTTOM,
@@ -147,12 +147,12 @@ const struct menuItem tempSettingsOptions[] = {
     },
     {
         .type = SPACE,
-        .rows = 2,
+        .Item.space.rows = 2,
     },
     {
         .type = SUBMENU,
         .label = "Dragons",
-        .subMenu = &dragonMenu,
+        .Item.submenu.subMenu = &dragonMenu,
     },
     {
         .type = EXITMENU,

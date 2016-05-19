@@ -226,32 +226,32 @@ const struct menuItem dragonMenuItems[] = {
     {
         .type = EDIT,
         .label = "TCR",
-        .editMin = TCRMIN,
-        .editMax = TCRMAX,
-        .getEditStart = &getTCRDefault,
-        .editStep = 1,
-        .editFormat = &printNumber,
-        .editCallback = &saveTCR,
+        .Item.edit.editMin = TCRMIN,
+        .Item.edit.editMax = TCRMAX,
+        .Item.edit.getEditStart = &getTCRDefault,
+        .Item.edit.editStep = 1,
+        .Item.edit.editFormat = &printNumber,
+        .Item.edit.editCallback = &saveTCR,
     },
     {
         .type = EDIT,
         .label = "B.Temp",
-        .editMin = BTEMPMIN,
-        .editMax = BTEMPMAX,
-        .getEditStart = &getBaseTempDefault,
-        .editStep = 1,
-        .editFormat = &printNumber,
-        .editCallback = &saveTemp,
+        .Item.edit.editMin = BTEMPMIN,
+        .Item.edit.editMax = BTEMPMAX,
+        .Item.edit.getEditStart = &getBaseTempDefault,
+        .Item.edit.editStep = 1,
+        .Item.edit.editFormat = &printNumber,
+        .Item.edit.editCallback = &saveTemp,
     },
     {
         .type = EDIT,
         .label = "B.Res",
-        .editMin = 50,
-        .editMax = 3450,
-        .getEditStart = &getBaseResDefault,
-        .editStep = 5,
-        .editFormat = &formatThousandths,
-        .editCallback = &saveBaseRes
+        .Item.edit.editMin = 50,
+        .Item.edit.editMax = 3450,
+        .Item.edit.getEditStart = &getBaseResDefault,
+        .Item.edit.editStep = 5,
+        .Item.edit.editFormat = &formatThousandths,
+        .Item.edit.editCallback = &saveBaseRes
     },
     {
         .type = STARTBOTTOM,
@@ -261,7 +261,7 @@ const struct menuItem dragonMenuItems[] = {
     },
     {
         .type = SPACE,
-        .rows = 2,
+        .Item.space.rows = 2,
     },
     {
         .type = EXITMENU,
@@ -287,18 +287,18 @@ const struct menuItem coilMenuItems[] = {
     {
         .type = SELECT,
         .label = "Type",
-        .count = &vapeMaterialsCount,
-        .getDefaultCallback = &getTypeDefault,
-        .getValueCallback = &getTypeString,
-        .selectCallback = &updateType,
+        .Item.select.count = &vapeMaterialsCount,
+        .Item.select.getDefaultCallback = &getTypeDefault,
+        .Item.select.getValueCallback = &getTypeString,
+        .Item.select.selectCallback = &updateType,
     },
     {
         .type = SELECT,
         .label = "Res.",
-        .count = &fromUserStringsCount,
-        .getDefaultCallback = &getBaseFromUserDefault,
-        .getValueCallback = &getBaseFromUserString,
-        .selectCallback = &updateBaseFromUser,
+        .Item.select.count = &fromUserStringsCount,
+        .Item.select.getDefaultCallback = &getBaseFromUserDefault,
+        .Item.select.getValueCallback = &getBaseFromUserString,
+        .Item.select.selectCallback = &updateBaseFromUser,
     },
     {
         .type = STARTBOTTOM,
@@ -308,12 +308,12 @@ const struct menuItem coilMenuItems[] = {
     },
     {
         .type = SPACE,
-        .rows = 2,
+        .Item.space.rows = 2,
     },
     {
         .type = SUBMENU,
         .label = "Dragons",
-        .subMenu = &TheDragonning,
+        .Item.submenu.subMenu = &TheDragonning,
     },
     {
         .type = EXITMENU,
@@ -329,10 +329,10 @@ const struct menuItem modeMenuItems[] = {
     {
         .type = SELECT,
         .label = "Mode",
-        .count = &g.modeCount,
-        .getDefaultCallback = &getModeDefault,
-        .getValueCallback = &getModeString,
-        .selectCallback = &updateMode,
+        .Item.select.count = &g.modeCount,
+        .Item.select.getDefaultCallback = &getModeDefault,
+        .Item.select.getValueCallback = &getModeString,
+        .Item.select.selectCallback = &updateMode,
     },
     {
         .type = STARTBOTTOM,
@@ -340,19 +340,19 @@ const struct menuItem modeMenuItems[] = {
 	{
 		.type = SUBMENU,
 		.label = "Options",
-		.getMenuDef = &showModeSettings,
+		.Item.submenu.getMenuDef = &showModeSettings,
 		.hidden = &shouldHideMenu,
 	},
     {
         .type = SPACE,
-        .rows = 2,
+        .Item.space.rows = 2,
     },
     {
         .type = LINE,
     },
     {
         .type = SPACE,
-        .rows = 2,
+        .Item.space.rows = 2,
     },
     {
         .type = EXITMENU,
@@ -367,23 +367,23 @@ const struct menuItem advancedMenuItems[] = {
     {
         .type = ACTION,
         .label = "Reboot",
-        .actionCallback = &reboot,
+        .Item.action.actionCallback = &reboot,
     },
     {
         .type = ACTION,
         .label = "F.Reset",
-        .actionCallback = &factoryReset,
+        .Item.action.actionCallback = &factoryReset,
     },
 #ifdef WITHFLASHDAMAGESUPPORT
     {
         .type = ACTION,
         .label = "Inv.Fla",
-        .actionCallback = &invalidateDataFlash,
+        .Item.action.actionCallback = &invalidateDataFlash,
     },
     {
         .type = ACTION,
         .label = "Era.Fla",
-        .actionCallback = &eraseDataFlash,
+        .Item.action.actionCallback = &eraseDataFlash,
     },
 #endif
 
@@ -395,7 +395,7 @@ const struct menuItem advancedMenuItems[] = {
     },
     {
         .type = SPACE,
-        .rows = 2,
+        .Item.space.rows = 2,
     },
     {
         .type = EXITMENU,
@@ -410,36 +410,36 @@ const struct menuItem displaySubMenuItems[] = {
 	{
 	    .type = SELECT,
 	    .label = "Scale",
-        .count = &tempScaleCount,
-        .getDefaultCallback = &getScaleDefault,
-	    .getValueCallback = &getScaleString,
-	    .selectCallback = &updateScale,
+        .Item.select.count = &tempScaleCount,
+        .Item.select.getDefaultCallback = &getScaleDefault,
+	    .Item.select.getValueCallback = &getScaleString,
+	    .Item.select.selectCallback = &updateScale,
 	},
     {
         .type = EDIT,
         .label = "Brightness",
-        .editMin = 0,
-        .editMax = 255,
-        .getEditStart = &getScreenBrightnessDefault,
-        .editCallback = &updateScreenBrightness,
-        .editStep = 10,
-        .editFormat = &formatBrightnessNumber
+        .Item.edit.editMin = 0,
+        .Item.edit.editMax = 255,
+        .Item.edit.getEditStart = &getScreenBrightnessDefault,
+        .Item.edit.editCallback = &updateScreenBrightness,
+        .Item.edit.editStep = 10,
+        .Item.edit.editFormat = &formatBrightnessNumber
     },
 	{
 	    .type = TOGGLE,
 	    .label = "FlipVape",
-	    .on = "On",
-	    .off = "Off",
-	    .isSet = &s.flipOnVape,
-	    .toggleCallback = &flipOnVapeSet,
+	    .Item.toggle.on = "On",
+	    .Item.toggle.off = "Off",
+	    .Item.toggle.isSet = &s.flipOnVape,
+	    .Item.toggle.toggleCallback = &flipOnVapeSet,
 	},
 	{
 	    .type = TOGGLE,
 	    .label = "Invert",
-	    .on = "On",
-	    .off = "Off",
-	    .isSet = &s.invertDisplay,
-	    .toggleCallback = &invertDisplaySet,
+	    .Item.toggle.on = "On",
+	    .Item.toggle.off = "Off",
+	    .Item.toggle.isSet = &s.invertDisplay,
+	    .Item.toggle.toggleCallback = &invertDisplaySet,
 	},
     {
         .type = STARTBOTTOM,
@@ -449,7 +449,7 @@ const struct menuItem displaySubMenuItems[] = {
     },
     {
         .type = SPACE,
-        .rows = 2,
+        .Item.space.rows = 2,
     },
     {
         .type = EXITMENU,
@@ -508,17 +508,17 @@ const struct menuItem settingsMenuItems[] = {
 	{
 		.type = SUBMENU,
 		.label = "Coil",
-		.subMenu = &coilMenu,
+		.Item.submenu.subMenu = &coilMenu,
 	},
 	{
 		.type = SUBMENU,
 		.label = "Mode",
-		.subMenu = &modeMenu,
+		.Item.submenu.subMenu = &modeMenu,
 	},
 	{
 		.type = SUBMENU,
 		.label = "Display",
-		.subMenu = &displaySettingsMenu,
+		.Item.submenu.subMenu = &displaySettingsMenu,
 	},
     {
         .type = STARTBOTTOM,
@@ -528,17 +528,17 @@ const struct menuItem settingsMenuItems[] = {
     },
     {
         .type = SPACE,
-        .rows = 2,
+        .Item.space.rows = 2,
     },
     {
         .type = ACTION,
         .label = "Info",
-        .actionCallback = &showInfo,
+        .Item.action.actionCallback = &showInfo,
     },
     {
         .type = SUBMENU,
         .label = "Advnced",
-        .subMenu = &advancedMenu,
+        .Item.submenu.subMenu = &advancedMenu,
     },
     {
         .type = EXITMENU,

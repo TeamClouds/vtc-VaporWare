@@ -102,22 +102,22 @@ void menuSelect(uint8_t state, uint32_t duration) {
     if (state == BUTTON_PRESS) {
         switch (MI->type) {
             case ACTION:
-                MI->actionCallback();
+                MI->Item.action.actionCallback();
                 break;
             case SELECT:
                 switchHandler(&selectButtonHandler);
                 doSelectEdit(MI);
-                MI->selectCallback(mg->ItemValues[mIndex]);
+                MI->Item.select.selectCallback(mg->ItemValues[mIndex]);
                 returnHandler();
                 break;
             case TOGGLE:
                 toggleSelect();
-                MI->toggleCallback(mg->ItemValues[mIndex]);
+                MI->Item.toggle.toggleCallback(mg->ItemValues[mIndex]);
                 break;
             case EDIT:
                 switchHandler(&editButtonHandler);
                 doEditEdit(MI);
-                MI->editCallback(mg->ItemValues[mIndex]);
+                MI->Item.edit.editCallback(mg->ItemValues[mIndex]);
                 returnHandler();
                 break;
         }
@@ -127,10 +127,10 @@ void menuSelect(uint8_t state, uint32_t duration) {
                 mg->menuOpen = 0;
                 break;
             case SUBMENU:
-                if (MI->getMenuDef != NULL)
-                    def = MI->getMenuDef(MI);
-                else if (MI->subMenu != NULL)
-                    def = MI->subMenu;
+                if (MI->Item.submenu.getMenuDef != NULL)
+                    def = MI->Item.submenu.getMenuDef(MI);
+                else if (MI->Item.submenu.subMenu != NULL)
+                    def = MI->Item.submenu.subMenu;
                 else
                     break;
                 t = mg;
@@ -151,12 +151,12 @@ void selectLeft(uint8_t state, uint32_t duration) {
 skip:
     if (state == BUTTON_PRESS) {
         if (mg->ItemValues[mIndex] - 1 < 0) {
-            mg->ItemValues[mIndex] = *MI->count - 1;
+            mg->ItemValues[mIndex] = *MI->Item.select.count - 1;
         }  else {
             mg->ItemValues[mIndex]--;
         }
     }
-    if (MI->getValueCallback(mg->ItemValues[mIndex])[0] == '\0')
+    if (MI->Item.select.getValueCallback(mg->ItemValues[mIndex])[0] == '\0')
         goto skip;
 }
 
@@ -168,11 +168,11 @@ void selectRight(uint8_t state, uint32_t duration) {
 skip:
     if (state == BUTTON_PRESS) {
         mg->ItemValues[mIndex]++;
-        if (mg->ItemValues[mIndex] >= *MI->count) {
+        if (mg->ItemValues[mIndex] >= *MI->Item.select.count) {
             mg->ItemValues[mIndex] = 0;
         }
     }
-    if (MI->getValueCallback(mg->ItemValues[mIndex])[0] == '\0')
+    if (MI->Item.select.getValueCallback(mg->ItemValues[mIndex])[0] == '\0')
         goto skip;
 }
 
@@ -204,9 +204,9 @@ void editLeft(uint8_t state, uint32_t duration) {
 
     if (state == BUTTON_PRESS ||
         ((duration > 300) && state & BUTTON_HELD)) {
-        mg->ItemValues[mIndex] -= MI->editStep;
-        if (mg->ItemValues[mIndex] < MI->editMin) {
-            mg->ItemValues[mIndex] = MI->editMin;
+        mg->ItemValues[mIndex] -= MI->Item.edit.editStep;
+        if (mg->ItemValues[mIndex] < MI->Item.edit.editMin) {
+            mg->ItemValues[mIndex] = MI->Item.edit.editMin;
         }
     }
 }
@@ -218,9 +218,9 @@ void editRight(uint8_t state, uint32_t duration) {
 
     if (state == BUTTON_PRESS ||
         ((duration > 300) && state & BUTTON_HELD)) {
-        mg->ItemValues[mIndex] += MI->editStep;
-        if (mg->ItemValues[mIndex] > MI->editMax) {
-            mg->ItemValues[mIndex] = MI->editMax;
+        mg->ItemValues[mIndex] += MI->Item.edit.editStep;
+        if (mg->ItemValues[mIndex] > MI->Item.edit.editMax) {
+            mg->ItemValues[mIndex] = MI->Item.edit.editMax;
         }
     }
 }
@@ -259,7 +259,7 @@ int8_t getItemHeight(const struct menuItem *MI, const Font_Info_t *font) {
             used += 1;
             break;
         case SPACE:
-            used += MI->rows;
+            used += MI->Item.space.rows;
             break;
 
         default:
@@ -284,18 +284,18 @@ void drawMenuItem(uint8_t index, uint8_t y, uint8_t x, uint8_t x2, const Font_In
     }
     switch(MI->type) {
         case SELECT:
-            label = MI->getValueCallback(mg->ItemValues[index]);
+            label = MI->Item.select.getValueCallback(mg->ItemValues[index]);
             Display_PutText(x2, y + used, label, font);
             break;
         case TOGGLE:
             if (mg->ItemValues[index]) {
-                Display_PutText(x2, y + used, MI->on, font);
+                Display_PutText(x2, y + used, MI->Item.toggle.on, font);
             } else {
-                Display_PutText(x2, y + used, MI->off, font);
+                Display_PutText(x2, y + used, MI->Item.toggle.off, font);
             }
             break;
         case EDIT:
-            MI->editFormat(buff, mg->ItemValues[index]);
+            MI->Item.edit.editFormat(buff, mg->ItemValues[index]);
             Display_PutText(x2, y + used, buff, font);
             break;
         case LINE:
@@ -317,13 +317,13 @@ void refreshMenu() {
     {
         switch (MI->type) {
             case SELECT:
-                mg->ItemValues[i] = MI->getDefaultCallback();
+                mg->ItemValues[i] = MI->Item.select.getDefaultCallback();
                 break;
             case TOGGLE:
-                mg->ItemValues[i] = !!*MI->isSet;
+                mg->ItemValues[i] = !!*MI->Item.toggle.isSet;
                 break;
             case EDIT:
-                mg->ItemValues[i] = MI->getEditStart();
+                mg->ItemValues[i] = MI->Item.edit.getEditStart();
                 break;
             default:
                 mg->ItemValues[i] = 0;
@@ -350,13 +350,13 @@ void drawMenu() {
         if (mg->ItemLoaded[menuIndex] == 0) {
             switch (MI->type) {
                 case SELECT:
-                    mg->ItemValues[menuIndex] = MI->getDefaultCallback();
+                    mg->ItemValues[menuIndex] = MI->Item.select.getDefaultCallback();
                     break;
                 case TOGGLE:
-                    mg->ItemValues[menuIndex] = !!*MI->isSet;
+                    mg->ItemValues[menuIndex] = !!*MI->Item.toggle.isSet;
                     break;
                 case EDIT:
-                    mg->ItemValues[menuIndex] = MI->getEditStart();
+                    mg->ItemValues[menuIndex] = MI->Item.edit.getEditStart();
                     break;
                 default:
                     mg->ItemValues[menuIndex] = 0;
