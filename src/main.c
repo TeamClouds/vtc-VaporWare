@@ -136,6 +136,8 @@ void drawError() {
     Display_Update();
 }
 
+void nullButton(uint8_t status, uint32_t held) {}
+
 void errorButton(uint8_t status, uint32_t held) {
     gv.sawError = OK;
     g.ignoreNextAttyUntil = ATOMIZERGONEAFTER + uptime;
@@ -145,7 +147,7 @@ void errorButton(uint8_t status, uint32_t held) {
 struct buttonHandler errorPromptHandler = {
     .name = "attyPrompt",
     .flags = 0,
-    .fire_handler = &errorButton,
+    .fire_handler = &nullButton,
     .left_handler = &errorButton,
     .right_handler = &errorButton,
 };
