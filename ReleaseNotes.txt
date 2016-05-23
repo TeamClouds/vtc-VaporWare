@@ -2,16 +2,17 @@
 
 eVic-VTC-VaporWare by TeamClouds
 
-This is a fully[1] open source[2] firmware for the eVic-VTC (and maybe others).  It is built
-off of the evic-sdk[2].  Big thanks go out to: ReservedField, Bane^, gxcreator, and kfazz
+This is a fully[1] open source[2][3] firmware for the eVic-VTC (and maybe others).  It is built
+off of the evic-sdk[4].  Big thanks go out to: ReservedField, Bane^, gxcreator, and kfazz
 for all of the effort they put forth in making of the sdk, as well as the features they
 added at our request to help make this firmware what it is.
 
-[1] Our firmware is fully open source, and the evic-sdk is fully open source.  They both
-    depend on the nuvotron-sdk, which is source available, but the license of that code
-    is not completely open source friendly.
-[2] https://github.com/TeamClouds/evic-sdk - examples/new_fw/
-[3] https://github.com/ReservedField/evic-sdk
+[1] Our firmware is fully open source, and our fork of the evic-sdk is fully open source.
+    They both depend on the nuvotron-sdk, which is source available, but the license of that
+    code is not completely open source friendly.
+[2] https://github.com/TeamClouds/vtc-VaporWare
+[3] https://github.com/TeamClouds/evic-sdk
+[4] https://github.com/ReservedField/evic-sdk
 
 TeamClouds:
 sebirdman - Founder of the project, lots of the UI work
@@ -27,14 +28,14 @@ V1-beta new features: (All of them are new in this release)
 Interface
 =========
 Fire button fires
-Left button lowers mode
-Right button increases mode
+Left button lowers mode setting
+Right button increases mode setting
 3 Fire Button Enter Settings
  - In Settings, Left navigates up, right navigates down
  - Fire button selects item to edit
 Info Screen
  - Press and hold for great justice.
- - Gittish of build is that weird hex at the end
+ - Gittish of build is that weird hex in the version (dev only)
 Long Press left/right repeats
 
 ======
@@ -68,7 +69,10 @@ System Sleep - Sleeps after 3 minutes of inactivity, or after
 
 * '.' character in Voltage/Wattage mode renders incorrectly
 * Slight overshoot when firing from cold in TC mode.
-
+* Occasional 'OPEN' errors will happen (may not be noticible except in debug builds)
+* If your target wattage (VW/VT mode only) causes your output to be approximatly your
+  current battery voltage, it may not fire.  Bump target up/down 1 increment to work
+  around this.
 
 *Outstanding Features*
 
@@ -84,15 +88,24 @@ Pid tunign per coil count
 - s0be needs to know if this is worth it
 
 Menus Explained:
- - Material Type
-   KA, NI, TI, SS
- - Vape Mode
+ - Coil
+   - Material Type
+     KA, NI, TI, SS
+   - Res.
+     Auto - Trust our approximation of the coil resistance
+     Lock - Trust our approximation of the coil resistance, but prompt for a change of
+            more than 10%
+     Set  - Set what the resistance should be, resets to 'Lock' mode if you remove the
+            atomizer
+   - Dragons
+     - TCR - Edit the TCR value
+     - B. Temp - Set what the ambient air temperature is in degrees C for the base res.
+     - B. Res - Set what the base resistance is, ignoring what the device reads.
+ - Mode
    Watt,Volt,Temp (NI,TI,SS only)
  - Mode Specific settings for Temp Mode
    - Watts - Initial Firing Watts - Only useful with next option
-   - Pid Switch - How close to the target temperature to switch to pid control
-                  (setting this value above targetTemp will basically disable 'Watts')
-                  ((WILL cause overshoot))
+   - Pid Switch - How close to the target temperature to switch to pid control(if less than 150)
    - Dragons
       P,I,D tuning values for the PID Algorithm used to control temperature
  - Display
@@ -104,19 +117,9 @@ Menus Explained:
  - Advanced:
    - Reboot - (Reboots, hold right while selecting this to enter LDROM mode)
    - Factory Reset
-   - (not in build)Inv.Fla - Invalidates the current flash settings, forcing a re-creation
+   - (debug build)Inv.Fla - Invalidates the current flash settings, forcing a re-creation
                              or re-upgrade.  Requires compile time flag to be set.
-   - (not in build)Era.Fla - Fully wipes dataflash
- - Advanced (hold right while selecting menu)
-   - TCR - Lets you edit the TCR value in use.  Resets on material change.
-   - ResType - What method is being used to find the base resistance
-     - AutoRes - Trust whatever the lowest resistance found by the SDK was.
-     - UserSet - User set the resistance, never prompt about a new one unless the
-                 Atomizer is removed.
-     - UserLock - Lock the current resistance unless a new one more than +/-10% is seen
-   - B.Temp - Air temp that B.Res is measured it, in Degrees C
-   - B.Res - Base Resistance, only used to calculate current coil temperature.  Changing
-             this will set ResType to UserSet.
+   - (debug build)Era.Fla - Fully wipes dataflash
 
 USB Control:
   The device shows up as a cdc_acm serial device.  Under linux and mac, it should just
@@ -147,6 +150,6 @@ USB Control:
        - Arg2 - Value
      s - No Arguments - Dumps the settings struct
      U - Reboots to LDROM mode.  if you're not holding right, it'll immediately
-         exit LDROM mode
+         exit LDROM mode unless an update program is prepared to attach to it.
 
 
