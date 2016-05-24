@@ -32,8 +32,7 @@ uint8_t newReading(uint16_t oldRes, uint8_t oldTemp, uint16_t *newRes, uint8_t *
     }
 
     if (oldRes == 0 && g.baseFromUser == USERSET) {
-        g.baseFromUser = USERLOCK;
-
+        baseFromUserSet(USERLOCK);
     }
 
     switch(g.baseFromUser) {

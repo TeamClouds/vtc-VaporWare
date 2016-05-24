@@ -37,9 +37,9 @@ void DFSettingsToGlobals(struct baseSettings_2 *b, struct freqSettings_2 *f, uin
     screenBrightnessSet(b->screenBrightness);
 
     if(f->baseFromUser) {
-        baseFromUserSet(f->baseFromUser);
         baseTempSet(f->baseTemp);
         baseResSet(f->baseRes);
+        baseFromUserSet(f->baseFromUser);
     }
 
     pidPSet(b->pidP);
