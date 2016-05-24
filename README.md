@@ -19,7 +19,7 @@ added at our request to help make this firmware what it is.
 - sebirdman - Founder of the project, lots of the UI work
 - s0be - codes all the low level stuff
 - romanbb - fonts, makes it build on mac, other UI work
-- Psycho13oy - QA.  Press button, get nicotine.
+- PsychoI3oy - QA.  Press button, get nicotine.
 
 ---
 #### Release notes:
