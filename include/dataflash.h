@@ -105,10 +105,7 @@ int defaultSettings();
 void makeDFInvalid();
 void eraseDF();
 #endif
-#define XSTR(x) STR(x)
-#define STR(x) #x
-#pragma message "Base Dataflash version " XSTR(BASE_VER)
-#pragma message "Freq Dataflash version " XSTR(FREQ_VER)
+
 #endif
 
 #if 0

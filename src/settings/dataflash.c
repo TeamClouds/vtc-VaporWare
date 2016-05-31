@@ -3,6 +3,12 @@
 #include <stdio.h>
 
 #include "dataflash.h"
+
+#define XSTR(x) STR(x)
+#define STR(x) #x
+#pragma message "Base Dataflash version " XSTR(BASE_VER)
+#pragma message "Freq Dataflash version " XSTR(FREQ_VER)
+
 #include "debug.h"
 #include "globals.h"
 #include "helper.h"
