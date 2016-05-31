@@ -89,8 +89,8 @@ void screenBrightnessSet(uint8_t brightness);
 void stealthModeSet(uint8_t stealthMode);
 void vsetLockSet(uint8_t vsetLock);
 
-void fadeInTimeSet(uint8_t fadeInTime);
-void fadeOutTimeSet(uint8_t fadeOutTime);
+void fadeInTimeSet(uint16_t fadeInTime);
+void fadeOutTimeSet(uint16_t fadeOutTime);
 void targetWattsSet(uint32_t targetWatts);
 void targetVoltsSet(uint16_t targetVolts);
 #endif

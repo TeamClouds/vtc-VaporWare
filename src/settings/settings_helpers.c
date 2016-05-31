@@ -54,11 +54,11 @@ void modeSet(uint8_t mode) {
 
 void screenTimeoutSet(uint16_t screenTimeout) {
     if (screenTimeout < SCREENMINTIMEOUT) {
-        s.screenTimeout = SCREENDEFAULTTIMEOUT * 10;
+        s.screenTimeout = SCREENDEFAULTTIMEOUT;
     } else if (screenTimeout > SCREENMAXTIMEOUT) {
-        s.screenTimeout = SCREENDEFAULTTIMEOUT * 10;
+        s.screenTimeout = SCREENDEFAULTTIMEOUT;
     } else {
-        s.screenTimeout = screenTimeout * 10;
+        s.screenTimeout = screenTimeout;
     }
 
     g.baseSettingsChanged = 1;
@@ -276,25 +276,25 @@ void vsetLockSet(uint8_t vsetLock) {
     }
 }
 
-void fadeInTimeSet(uint8_t fadeInTime) {
+void fadeInTimeSet(uint16_t fadeInTime) {
     if (fadeInTime > MAXFADE) {
         s.fadeInTime = FADEINTIME;
     } else if (fadeInTime < MINFADE) {
         s.fadeInTime = FADEINTIME;
     } else {
-        s.fadeInTime = fadeInTime * 10;
+        s.fadeInTime = fadeInTime;
     }
     g.baseSettingsChanged = 1;
     g.settingsChanged = 1;
 }
 
-void fadeOutTimeSet(uint8_t fadeOutTime) {
+void fadeOutTimeSet(uint16_t fadeOutTime) {
     if (fadeOutTime > MAXFADE) {
         s.fadeOutTime = FADEOUTTIME;
     } else if (fadeOutTime < MINFADE) {
         s.fadeOutTime = FADEOUTTIME;
     } else {
-        s.fadeOutTime = fadeOutTime * 10;
+        s.fadeOutTime = fadeOutTime;
     }
     g.baseSettingsChanged = 1;
     g.settingsChanged = 1;

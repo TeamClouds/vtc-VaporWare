@@ -43,8 +43,11 @@
 // NEVER CHANGE THIS NUMBER
 #define MYSTRUCT_FREQ_MAGIC 0x500
 
-#define BASE_VER 2
-#define FREQ_VER 2
+#define BASE_VER 3
+#define FREQ_VER 3
+
+#define BASE_UNSUPPORTED 2
+#define FREQ_UNSUPPORTED 2
 /*
    TODO for v3:
    screenBrightness: uint8_t
@@ -53,10 +56,68 @@
  */
 /*
  * NEVER EVER CHANGE THESE.  If something needs changed, copy/paste, re-name
- * and add an upgrade path.  
+ * and add an upgrade path.
+ */
+#define SETTINGS_V3 (MYSTRUCT_MAGIC + 3)
+struct baseSettings_3 {
+    int32_t pidP;
+    int32_t pidI;
+    int32_t pidD;
+    int32_t initWatts;
+    int32_t pidSwitch;
+    uint16_t screenTimeout;
+    uint16_t fadeInTime;
+    uint16_t fadeOutTime;
+    uint8_t materialIndex;
+    uint8_t tempScaleTypeIndex;
+    uint16_t tcr;
+    uint8_t flipOnVape;
+    uint8_t invertDisplay;
+    uint8_t screenBrightness;
+};
+
+
+
+#define FREQ_SETTINGS_V3 (MYSTRUCT_MAGIC + MYSTRUCT_FREQ_MAGIC + 3)
+struct freqSettings_3 {
+    int16_t displayTemperature;
+    int16_t targetTemperature;
+    uint32_t targetWatts;
+    uint16_t targetVolts;
+    uint8_t mode;
+    uint8_t baseFromUser;
+    int16_t baseTemp;
+    uint16_t baseRes;
+};
+
+
+#define SETTINGS_MAX SETTINGS_V3
+#define SETTINGS_VCNT (BASE_VER - BASE_UNSUPPORTED)
+
+#define FREQ_SETTINGS_MAX FREQ_SETTINGS_V3
+#define FREQ_SETTINGS_VCNT (FREQ_VER - FREQ_UNSUPPORTED)
+
+int readSettings();
+int writeSettings();
+int defaultSettings();
+
+#ifdef WITHFLASHDAMAGESUPPORT
+void makeDFInvalid();
+void eraseDF();
+#endif
+#define XSTR(x) STR(x)
+#define STR(x) #x
+#pragma message "Base Dataflash version " XSTR(BASE_VER)
+#pragma message "Freq Dataflash version " XSTR(FREQ_VER)
+#endif
+
+#if 0
+/*
+ * Versions Older than 2 suffered a dataflash bug.  The defines are left here
+ * only for posterity.  Upgrade paths have been removed
  */
 #define SETTINGS_V2 (MYSTRUCT_MAGIC + 2)
-struct baseSettings_2 {
+struct DONOTUSE_baseSettings_2 {
     uint32_t pidP;
     uint32_t pidI;
     uint32_t pidD;
@@ -74,7 +135,7 @@ struct baseSettings_2 {
 };
 
 #define SETTINGS_V1 (MYSTRUCT_MAGIC + 1)
-struct baseSettings_1 {
+struct DONOTUSE_baseSettings_1 {
     uint32_t pidP;
     uint32_t pidI;
     uint32_t pidD;
@@ -86,7 +147,7 @@ struct baseSettings_1 {
 };
 
 #define FREQ_SETTINGS_V2 (MYSTRUCT_MAGIC + MYSTRUCT_FREQ_MAGIC + 2)
-struct freqSettings_2 {
+struct DONOTUSE_freqSettings_2 {
     uint32_t displayTemperature;
     uint32_t targetTemperature;
     uint32_t targetWatts;
@@ -98,28 +159,9 @@ struct freqSettings_2 {
 };
 
 #define FREQ_SETTINGS_V1 (MYSTRUCT_MAGIC + MYSTRUCT_FREQ_MAGIC + 1)
-struct freqSettings_1 {
+struct DONOTUSE_freqSettings_1 {
     uint32_t displayTemperature;
     uint32_t targetTemperature;
     uint8_t mode;
 };
-
-#define SETTINGS_MAX SETTINGS_V2
-#define SETTINGS_VCNT (SETTINGS_MAX - MYSTRUCT_MAGIC + BASE_VER)
-
-#define FREQ_SETTINGS_MAX FREQ_SETTINGS_V2
-#define FREQ_SETTINGS_VCNT (FREQ_SETTINGS_MAX - MYSTRUCT_MAGIC - MYSTRUCT_FREQ_MAGIC + 1)
-
-int readSettings();
-int writeSettings();
-int defaultSettings();
-
-#ifdef WITHFLASHDAMAGESUPPORT
-void makeDFInvalid();
-void eraseDF();
-#endif
-#define XSTR(x) STR(x)
-#define STR(x) #x
-#pragma message "Base Dataflash version " XSTR(BASE_VER)
-#pragma message "Freq Dataflash version " XSTR(FREQ_VER)
 #endif

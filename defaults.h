@@ -4,10 +4,10 @@
 // Milliseconds
 #define ATOMIZERGONEAFTER 3000
 
-// 10/second 0.5-60s range, 3s default
-#define SCREENMINTIMEOUT 50
-#define SCREENMAXTIMEOUT 6000
-#define SCREENDEFAULTTIMEOUT 300
+// 1000/second 0.5-60s range, 3s default
+#define SCREENMINTIMEOUT 500
+#define SCREENMAXTIMEOUT 60000
+#define SCREENDEFAULTTIMEOUT 3000
 
 #define FADEOUTTIME 600
 #define FADEINTIME 500
