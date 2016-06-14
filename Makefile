@@ -6,6 +6,7 @@ GIT_VERSION := $(shell git describe --abbrev=4 --dirty --always --tags)
 
 CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
 CFLAGS += -Iinclude/
+CFLAGS += -Ispace/include/
 CFLAGS += -I.
 CFLAGS += -Werror
 
@@ -32,6 +33,13 @@ OBJS = \
     src/modes/mode_watt.o \
     src/modes/mode_volt.o \
     src/modes/mode_temp.o \
+    space/space_res.o \
+    space/game_globals.o \
+    space/alien.o \
+    space/levels/level.o \
+    space/levels/level1.o \
+    space/levels/level2.o \
+    space/game.o \
     src/main.o
 
 ifeq ($(ISDEV),"Yes, damange my device")

@@ -29,6 +29,7 @@
 #include <System.h>
 #include <USB_VirtualCOM.h>
 
+#include <game.h>
 #include "button.h"
 #include "communication.h"
 #include "dataflash.h"
@@ -224,6 +225,14 @@ int main() {
         gv.buttonEvent = 0;
     }
 
+    if (gv.spacinVaper) {
+        runSpace();
+        screenOff();
+        screenOn();
+        g.screenFadeInTime = 0;
+        gv.spacinVaper = 0;
+    }
+
 #ifdef ATYDEBUG
     if (gv.sawError) {
         screenOn();
@@ -253,6 +262,7 @@ int main() {
 
     if (gv.shouldShowMenu) {
         showMenu();
+        g.screenFadeInTime = 0;
         gv.shouldShowMenu = 0;
     } else if (s.stealthMode) {
         Display_Clear();

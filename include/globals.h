@@ -47,6 +47,7 @@ struct globalVols {
     volatile uint8_t fireButtonPressed;
     volatile uint8_t buttonCnt;
     volatile uint8_t shouldShowMenu;
+    volatile uint8_t spacinVaper;
     volatile uint8_t buttonRepeatTimer;
     volatile uint32_t saveSettings;
     volatile uint8_t buttonEvent;
