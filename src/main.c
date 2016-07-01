@@ -71,22 +71,26 @@ void fire(uint8_t status, uint32_t held) {
 }
 
 void left(uint8_t status, uint32_t held) {
-
-
     screenOn();
-    if (!s.vsetLock && ((status & BUTTON_PRESS) ||
+    if (!s.vsetLock){
+      if(((held > 1000) && status & BUTTON_HELD)){
+        __downFast();
+      }else if(((status & BUTTON_PRESS) ||
         ((held > 300) && status & BUTTON_HELD)))
         __down();
-    else
+    }else
         screenOff();
 }
 
 void right(uint8_t status, uint32_t held) {
     screenOn();
-    if (!s.vsetLock && ((status & BUTTON_PRESS) ||
+    if (!s.vsetLock){
+      if(((held > 1000) && status & BUTTON_HELD))
+          __upFast();
+      else if(((status & BUTTON_PRESS) ||
         ((held > 300) && status & BUTTON_HELD)))
-        __up();
-    else
+          __up();
+    }else
         screenOff();
 }
 

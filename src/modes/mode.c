@@ -10,7 +10,9 @@ void setVapeMode(int newMode) {
 
     __vape = g.vapeModes[newMode]->fire;
     __up = g.vapeModes[newMode]->increase;
+    __upFast = g.vapeModes[newMode]->increaseFast;
     __down = g.vapeModes[newMode]->decrease;
+    __downFast = g.vapeModes[newMode]->decreaseFast;
     if (g.vapeModes[newMode]->init) {
         __init = g.vapeModes[newMode]->init;
         __init();
