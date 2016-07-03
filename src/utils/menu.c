@@ -22,10 +22,10 @@ struct menuGlobals {
     uint8_t editOpen;
     uint8_t selectIndex;
     uint8_t menuItemCount;
-    uint8_t ItemOffsets[MAXMENUITEMS];
-    uint8_t selectIndexToMD[MAXMENUITEMS];
-    int32_t ItemValues[MAXMENUITEMS];
-    uint8_t ItemLoaded[MAXMENUITEMS];
+    uint8_t *ItemOffsets;
+    uint8_t *selectIndexToMD;
+    int32_t *ItemValues;
+    uint8_t *ItemLoaded;
     const struct menuDefinition *MD;
 };
 
@@ -93,7 +93,6 @@ void menuRight(uint8_t state, uint32_t duration) {
 }
 
 void menuSelect(uint8_t state, uint32_t duration) {
-    struct menuGlobals *t;
     uint8_t mIndex = mg->selectIndexToMD[mg->selectIndex];
     const struct menuItem *menuItems = *(mg->MD->menuItems);
     const struct menuItem *MI = &menuItems[mIndex];
@@ -133,9 +132,9 @@ void menuSelect(uint8_t state, uint32_t duration) {
                     def = MI->Item.submenu.subMenu;
                 else
                     break;
-                t = mg;
+
                 runSubMenu(def);
-                mg = t;
+
                 break;
         }
     }
@@ -270,7 +269,7 @@ int8_t getItemHeight(const struct menuItem *MI, const Font_Info_t *font) {
 
 void drawMenuItem(uint8_t index, uint8_t y, uint8_t x, uint8_t x2, const Font_Info_t *font) {
     const struct menuItem *MI = &((*(mg->MD->menuItems))[index]);
-    char buff[63];
+    char buff[20];
     char *label;
     uint8_t rowHeight = font->height;
     int used = 0;
@@ -436,8 +435,19 @@ void drawMenu() {
 
 void runSubMenu(const struct menuDefinition *menuDef) {
     Display_SetOn(1);
-    struct menuGlobals _mg = {0};
-    mg = &_mg;
+    struct menuGlobals *oldmg = mg;
+    uint8_t menuItemCount = 0;
+
+    mg = calloc(1, sizeof(struct menuGlobals));
+
+    do {
+        menuItemCount++;
+    } while ((*(menuDef->menuItems))[menuItemCount].type != END);
+
+    mg->ItemOffsets = calloc(menuItemCount, sizeof(uint8_t));
+    mg->selectIndexToMD = calloc(menuItemCount, sizeof(uint8_t));
+    mg->ItemValues = calloc(menuItemCount, sizeof(int32_t));
+    mg->ItemLoaded = calloc(menuItemCount, sizeof(uint8_t));
 
     mg->selectIndex = 0;
     mg->menuOpen = 1;
@@ -449,6 +459,12 @@ void runSubMenu(const struct menuDefinition *menuDef) {
         }
         drawMenu();
     }
+    free(mg->ItemOffsets);
+    free(mg->selectIndexToMD);
+    free(mg->ItemValues);
+    free(mg->ItemLoaded);
+    free(mg);
+    mg = oldmg;
 }
 
 void runMenu(const struct menuDefinition *menuDef) {

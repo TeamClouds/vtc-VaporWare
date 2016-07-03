@@ -71,8 +71,6 @@ struct menuItem {
     } Item;
 };
 
-// Per layer of menu.  Could bump as high as 255, but wastes memory
-#define MAXMENUITEMS 32
 enum {
     SHOWMENU,
 };
