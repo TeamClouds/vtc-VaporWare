@@ -42,4 +42,8 @@ ifeq ($(ATY_DEBUG),1)
 	CFLAGS += -DATYDEBUG=1
 endif
 
+ifeq ($(CC),"")
+	CFLAGS += -fstack-usage
+endif
+
 include $(EVICSDK)/make/Base.mk
