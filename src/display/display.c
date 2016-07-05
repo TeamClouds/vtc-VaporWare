@@ -143,9 +143,9 @@ void updateScreen() {
     uint8_t atomizerOn = Atomizer_IsOn();
 
     g.vapeModes[s.mode]->display(atomizerOn); // top display
-    Display_PutLine(0, 30, 63, 30);
+    Display_PutLine(0, 25, 63, 25);
 
-    buildRow(40, getBatteryIcon(), getPercent, g.batteryPercent); // battery
+//    buildRow(40, getBatteryIcon(), getPercent, g.batteryPercent); // battery
 
     switch (Atomizer_GetError()) {
     case SHORT:
@@ -158,7 +158,7 @@ void updateScreen() {
     	} else {
             displayRes = g.baseRes;
     	}
-        buildRow(70, ohm, getFloating, displayRes); // resistance
+        buildRow(75, ohm, getFloating, displayRes); // resistance
         g.vapeModes[s.mode]->bottomDisplay(atomizerOn); // bottom row
     }
 

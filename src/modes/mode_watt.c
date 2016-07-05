@@ -4,10 +4,13 @@
 #include <Display.h>
 
 #include "display.h"
+#include "display_helper.h"
 #include "font/font_vaporware.h"
 #include "globals.h"
+
 #include "settings.h"
 #include "helper.h"
+//#include "images/battery.h"
 #include "images/temperature.h"
 
 void wattInit() {
@@ -104,17 +107,24 @@ void wattDownFast() {
 void wattDisplay(uint8_t atomizerOn) {
     char buff[9];
     getFloatingTenth(buff, s.targetWatts);
-    Display_PutText(0, 5, buff, FONT_LARGE);
+    Display_PutText(0, 0, buff, FONT_LARGE);
     getString(buff, "W");
     Display_PutText(48, 2, buff, FONT_SMALL);
 }
 
 void wattBottomDisplay(uint8_t atomizerOn) {
     char buff[9];
-    Display_PutPixels(0, 100, tempImage, tempImage_width, tempImage_height);
+    getFloatingTenth(buff, wattsToVolts(s.targetWatts, g.atomInfo.resistance));
+    Display_PutText(15, 30, buff, FONT_MEDIUM);
+    getString(buff,"V");
+    Display_PutText(40,30,buff,FONT_MEDIUM);
 
+    Display_PutPixels(0, 50, tempImage, tempImage_width, tempImage_height);
     printNumber(buff, CToDisplay(g.curTemp));
-    Display_PutText(24, 107, buff, FONT_MEDIUM);
+    Display_PutText(26, 57, buff, FONT_MEDIUM);
+
+    //buildRow(100, getBatteryIcon(), getPercent, g.batteryPercent); // battery
+    buildItem(0, 100, 26, 107, getBatteryIcon(), getPercent, g.batteryPercent);
 }
 
 struct vapeMode variableWattage = {

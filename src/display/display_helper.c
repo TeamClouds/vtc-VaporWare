@@ -34,6 +34,14 @@ void buildRow(uint8_t y, uint8_t* icon, void (*parsingCallback)(char* buff, int3
     Display_PutText(26, y+5, buff, FONT_MEDIUM);
 }
 
+void buildItem(uint8_t x, uint8_t y, uint8_t x2, uint8_t y2, uint8_t* icon, void (*parsingCallback)(char* buff, int32_t value), uint32_t value){
+  char buff[9];
+  Display_PutPixels(x,y,icon, 24, 24);
+
+  parsingCallback(buff, value);
+  Display_PutText(x2, y2, buff, FONT_MEDIUM);
+}
+
 /* Will always show 3 decimals, todo: make the '3' a param */
 void formatFixedPoint(int32_t value, int32_t divisor, char *formatted) {
     if(divisor == 0)
