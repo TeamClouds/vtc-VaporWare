@@ -42,6 +42,14 @@
 
 #include "mode.h"
 
+#include <Thread.h>
+THREAD_MAIN_STACKSIZE(2048);
+
+void fire(uint8_t status, uint32_t held);
+void left(uint8_t status, uint32_t held);
+void right(uint8_t status, uint32_t held);
+void launchMenu();
+
 inline void screenOn() {
     if (!s.stealthMode)
         Display_SetOn(1);
@@ -54,6 +62,22 @@ inline void screenOn() {
 inline void screenOff() {
     g.pauseScreenOff = 0;
 }
+struct buttonHandler mainButtonHandler = {
+    .name = "mainButtons",
+    .flags = LEFT_HOLD_EVENT | RIGHT_HOLD_EVENT | FIRE_REPEAT,
+
+    .fire_handler = &fire,
+    .fire_repeated = &launchMenu,
+    .fireRepeatCount = 3,
+    .fireRepeatTimeout = 300,
+
+    .left_handler = &left,
+    .leftUpdateInterval = 100,
+
+    .right_handler = &right,
+    .rightUpdateInterval = 100,
+
+};
 
 void fire(uint8_t status, uint32_t held) {
 
@@ -74,10 +98,13 @@ void left(uint8_t status, uint32_t held) {
     screenOn();
     if (!s.vsetLock){
       if(((held > 1000) && status & BUTTON_HELD)){
-        __downFast();
-      }else if(((status & BUTTON_PRESS) ||
-        ((held > 300) && status & BUTTON_HELD)))
         __down();
+        mainButtonHandler.leftUpdateInterval = 2;
+      }else if(((status & BUTTON_PRESS) ||
+        ((held > 300) && status & BUTTON_HELD))){
+        __down();
+        mainButtonHandler.leftUpdateInterval = 100;
+      }
     }else
         screenOff();
 }
@@ -85,11 +112,14 @@ void left(uint8_t status, uint32_t held) {
 void right(uint8_t status, uint32_t held) {
     screenOn();
     if (!s.vsetLock){
-      if(((held > 1000) && status & BUTTON_HELD))
-          __upFast();
-      else if(((status & BUTTON_PRESS) ||
-        ((held > 300) && status & BUTTON_HELD)))
+      if(((held > 1000) && status & BUTTON_HELD)){
+          mainButtonHandler.rightUpdateInterval = 2;
           __up();
+      }else if(((status & BUTTON_PRESS) ||
+        ((held > 300) && status & BUTTON_HELD))){
+          __up();
+          mainButtonHandler.rightUpdateInterval = 100;
+        }
     }else
         screenOff();
 }
@@ -100,22 +130,6 @@ void launchMenu() {
     screenOff();
 }
 
-struct buttonHandler mainButtonHandler = {
-    .name = "mainButtons",
-    .flags = LEFT_HOLD_EVENT | RIGHT_HOLD_EVENT | FIRE_REPEAT,
-
-    .fire_handler = &fire,
-    .fire_repeated = &launchMenu,
-    .fireRepeatCount = 3,
-    .fireRepeatTimeout = 300,
-
-    .left_handler = &left,
-    .leftUpdateInterval = 100,
-
-    .right_handler = &right,
-    .rightUpdateInterval = 100,
-
-};
 
 #ifdef ATYDEBUG
 void drawError() {

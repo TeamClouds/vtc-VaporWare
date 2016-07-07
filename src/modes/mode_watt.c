@@ -77,26 +77,8 @@ void wattUp() {
     }
 }
 
-void wattUpFast(){
-  uint32_t tempWatts = s.targetWatts + 1000;
-  if (tempWatts <= MAXWATTS) {
-      targetWattsSet(tempWatts);
-  } else {
-      targetWattsSet(MAXWATTS);
-  }
-}
-
 void wattDown() {
     uint32_t tempWatts = s.targetWatts - 100;
-    if (tempWatts > MINWATTS) {
-        targetWattsSet(tempWatts);
-    } else {
-        targetWattsSet(MINWATTS);
-    }
-}
-
-void wattDownFast() {
-    uint32_t tempWatts = s.targetWatts - 1000;
     if (tempWatts > MINWATTS) {
         targetWattsSet(tempWatts);
     } else {
@@ -135,9 +117,7 @@ struct vapeMode variableWattage = {
     .init = &wattInit,
     .fire = &wattFire,
     .increase = &wattUp,
-    .increaseFast = &wattUpFast,
     .decrease = &wattDown,
-    .decreaseFast = &wattDownFast,
     .display = &wattDisplay,
     .bottomDisplay = &wattBottomDisplay,
 };

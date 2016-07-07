@@ -23,8 +23,6 @@ struct vapeMode {
     void (*fire) (void);
     void (*increase) (void);
     void (*decrease) (void);
-    void (*increaseFast) (void);
-    void (*decreaseFast) (void);
     void (*display) (uint8_t atomizerOn);
     void (*bottomDisplay) (uint8_t atomizerOn);
     const struct menuDefinition *vapeModeMenu;
@@ -38,6 +36,4 @@ void (*__init) (void);
 void (*__vape) (void);
 void (*__up) (void);
 void (*__down) (void);
-void (*__upFast) (void);
-void (*__downFast) (void);
 #endif
