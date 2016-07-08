@@ -2,7 +2,7 @@ TARGET = atomizer
 
 #ISDEV := "Yes, damange my device"
 GIT_VERSION := $(shell git describe --abbrev=4 --dirty --always --tags)
-ATY_DEBUG := 1
+#ATY_DEBUG := 1
 
 CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
 CFLAGS += -Iinclude/
