@@ -81,7 +81,6 @@ struct vapeMode variableVoltage = {
     .init = &voltInit,
     .increase = &voltUp,
     .decrease = &voltDown,
-    .maxSetting = ATOMIZER_MAX_VOLTS,
     .display = &voltDisplay,
     .bottomDisplay = &voltBottomDisplay,
 };

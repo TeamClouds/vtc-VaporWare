@@ -9,4 +9,6 @@ void displayCharging();
 void getString(char *buff, char *state);
 void showMenu();
 
+uint8_t* getBatteryIcon();
+
 #endif

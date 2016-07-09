@@ -36,5 +36,4 @@ void (*__init) (void);
 void (*__vape) (void);
 void (*__up) (void);
 void (*__down) (void);
-
 #endif

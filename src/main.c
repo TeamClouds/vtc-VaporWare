@@ -42,6 +42,8 @@
 
 #include "mode.h"
 
+struct buttonHandler mainButtonHandler;
+
 inline void screenOn() {
     if (!s.stealthMode)
         Display_SetOn(1);
@@ -71,23 +73,31 @@ void fire(uint8_t status, uint32_t held) {
 }
 
 void left(uint8_t status, uint32_t held) {
-
-
     screenOn();
-    if (!s.vsetLock && ((status & BUTTON_PRESS) ||
-        ((held > 300) && status & BUTTON_HELD)))
-        __down();
-    else
+    if (!s.vsetLock){
+      if(((status & BUTTON_PRESS) || ((held > 300) && status & BUTTON_HELD))){
+          if(held > 1000)
+              mainButtonHandler.leftUpdateInterval = 20;
+          __down();
+      }
+    }else{
         screenOff();
+        mainButtonHandler.leftUpdateInterval = 100;
+    }
 }
 
 void right(uint8_t status, uint32_t held) {
     screenOn();
-    if (!s.vsetLock && ((status & BUTTON_PRESS) ||
-        ((held > 300) && status & BUTTON_HELD)))
-        __up();
-    else
+    if (!s.vsetLock){
+      if(((status & BUTTON_PRESS) || ((held > 300) && status & BUTTON_HELD))){
+          if(held > 1000)
+              mainButtonHandler.rightUpdateInterval = 20;
+          __up();
+        }
+    }else{
         screenOff();
+        mainButtonHandler.rightUpdateInterval = 100;
+      }
 }
 
 void launchMenu() {
@@ -110,7 +120,6 @@ struct buttonHandler mainButtonHandler = {
 
     .right_handler = &right,
     .rightUpdateInterval = 100,
-
 };
 
 #ifdef ATYDEBUG
