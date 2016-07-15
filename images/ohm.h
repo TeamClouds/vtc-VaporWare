@@ -5,4 +5,7 @@
 
 extern  uint8_t ohm[];
 
+extern int ohm_width;
+extern int ohm_height;
+
 #endif
