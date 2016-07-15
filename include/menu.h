@@ -92,7 +92,7 @@ struct menuDefinition {
 
 void runSubMenu(const struct menuDefinition *menuDef);
 void runMenu(const struct menuDefinition *menuDef);
-
+void exitMenu();
 void refreshMenu();
 
 #endif
