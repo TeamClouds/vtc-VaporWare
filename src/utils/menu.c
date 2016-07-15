@@ -473,3 +473,7 @@ void runMenu(const struct menuDefinition *menuDef) {
     runSubMenu(menuDef);
     returnHandler();
 }
+
+void exitMenu() {
+    mg->menuOpen = 0;
+}

@@ -30,6 +30,7 @@
 #include <USB_VirtualCOM.h>
 #include <Dataflash.h>
 #include <SysInfo.h>
+#include <menu.h>
 
 #include "button.h"
 #include "dataflash.h"
@@ -157,6 +158,12 @@ void factoryReset() {
     defaultSettings();
     writeSettings();
     reboot();
+}
+
+void spacinVaper(void) {
+    Display_SetOn(1);
+    gv.spacinVaper = 1;
+    exitMenu();
 }
 
 const struct menuDefinition *const showModeSettings(const struct menuItem *MI) {
@@ -544,6 +551,15 @@ const struct menuItem settingsMenuItems[] = {
 		.label = "Display",
 		.Item.submenu.subMenu = &displaySettingsMenu,
 	},
+    {
+        .type = SPACE,
+        .Item.space.rows = 10,
+    },
+    {
+        .type = ACTION,
+        .label = "Space",
+        .Item.action.actionCallback = &spacinVaper,
+    },
     {
         .type = STARTBOTTOM,
     },
