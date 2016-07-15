@@ -9,9 +9,10 @@ static inline void writeUsb(const char *format, ...) {
     va_list args;
     va_start(args, format);
 
-    char buff[63] = {0};
-    vsiprintf(buff, format, args);
+    char *buff;
+    vasiprintf(&buff,format, args);
     USB_VirtualCOM_SendString(buff);
+    free(buff);
 
     va_end(args);
 }

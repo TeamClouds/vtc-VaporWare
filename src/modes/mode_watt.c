@@ -1,14 +1,17 @@
 #include <stdint.h>
+#include <stdio.h>
+#include <inttypes.h>
 
 #include <Atomizer.h>
 #include <Display.h>
 
 #include "display.h"
+#include "drawables.h"
 #include "font/font_vaporware.h"
 #include "globals.h"
 #include "settings.h"
 #include "helper.h"
-#include "images/temperature.h"
+
 
 void wattInit() {
     g.volts = wattsToVolts(s.targetWatts, g.atomInfo.resistance);
@@ -83,20 +86,12 @@ void wattDown() {
     }
 }
 
-void wattDisplay(uint8_t atomizerOn) {
-    char buff[9];
-    getFloatingTenth(buff, s.targetWatts);
-    Display_PutText(0, 5, buff, FONT_LARGE);
-    getString(buff, "W");
-    Display_PutText(48, 2, buff, FONT_SMALL);
+void wattGetText(char *buff, uint8_t len) {
+    sniprintf(buff, len, "%"PRIu32".%01"PRIu32"W", s.targetWatts / 1000, s.targetWatts % 1000 / 100);
 }
 
-void wattBottomDisplay(uint8_t atomizerOn) {
-    char buff[9];
-    Display_PutPixels(0, 100, tempImage, tempImage_width, tempImage_height);
-
-    printNumber(buff, CToDisplay(g.curTemp));
-    Display_PutText(24, 107, buff, FONT_MEDIUM);
+void wattGetAltText(char *buff, uint8_t len) {
+    printNumber(buff, len, CToDisplay(g.curTemp));
 }
 
 struct vapeMode variableWattage = {
@@ -109,8 +104,9 @@ struct vapeMode variableWattage = {
     .increase = &wattUp,
     .decrease = &wattDown,
     .maxSetting = 75000,
-    .display = &wattDisplay,
-    .bottomDisplay = &wattBottomDisplay,
+    .getAltDisplayText = &wattGetAltText,
+    .getDisplayText = &wattGetText,
+    .altIconDrawable = TEMPICON,
 };
 
 static void __attribute__((constructor)) registerWattMode(void) {

@@ -10,6 +10,7 @@
 *.lst
 *.elf
 *.bin
+*.su
 
 .DS_Store
 

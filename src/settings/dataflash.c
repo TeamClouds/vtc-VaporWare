@@ -139,8 +139,8 @@ void upgrade_freq_1_freq_2 (struct freqSettings_2 *f2, struct freqSettings_1 *f1
 #endif
 
 int defaultSettings() {
-    struct baseSettings_3 b = {};
-    struct freqSettings_3 f = {};
+    struct baseSettings_3 b = {0};
+    struct freqSettings_3 f = {0};
     default_base_3(&b);
     default_freq_3(&f);
     DFSettingsToGlobals(&b, &f, 0);
@@ -164,10 +164,10 @@ Dataflash_StructInfo_t freq_structInfo_v3 = {
 #define CURFREQSTRINFO freq_structInfo_v3
 
 int readSettings() {
-    struct baseSettings_3 base_v3 = {};
+    struct baseSettings_3 base_v3 = {0};
     default_base_3(&base_v3);
 
-    struct freqSettings_3 freq_v3 = {};
+    struct freqSettings_3 freq_v3 = {0};
     default_freq_3(&freq_v3);
 
 #define CURBASESTR base_v3

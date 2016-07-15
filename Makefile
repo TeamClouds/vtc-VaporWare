@@ -3,11 +3,16 @@ TARGET = atomizer
 #ISDEV := "Yes, damange my device"
 GIT_VERSION := $(shell git describe --abbrev=4 --dirty --always --tags)
 #ATY_DEBUG := 1
+#SHOWOVERFLOW := 1
 
 CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
 CFLAGS += -Iinclude/
 CFLAGS += -I.
 CFLAGS += -Werror
+CFLAGS += -Wpedantic
+
+#CFLAGS += -fstack-usage
+#LDFLAGS=-Map=whatever.map
 
 OBJS = \
     src/globals.o \
@@ -23,6 +28,12 @@ OBJS = \
     font/Font_Small.o \
     images/images.o \
     src/utils/helper.o \
+    src/display/drawables/battery_drawables.o \
+    src/display/drawables/atomizer_drawables.o \
+    src/display/drawables/modes_drawables.o \
+    src/display/drawables.o \
+    src/display/screens/charging_screen.o \
+    src/display/screens/main_screen.o \
     src/display/atomizer_query.o \
     src/display/display_helper.o \
     src/display/display.o \
@@ -40,6 +51,10 @@ endif
 
 ifeq ($(ATY_DEBUG),1)
 	CFLAGS += -DATYDEBUG=1
+endif
+
+ifeq ($(SHOWOVERFLOW),1)
+	CFLAGS += -DSHOWOVERFLOW=1
 endif
 
 include $(EVICSDK)/make/Base.mk
