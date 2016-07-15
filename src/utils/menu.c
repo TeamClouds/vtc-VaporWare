@@ -294,7 +294,7 @@ void drawMenuItem(uint8_t index, uint8_t y, uint8_t x, uint8_t x2, const Font_In
             }
             break;
         case EDIT:
-            MI->Item.edit.editFormat(buff, mg->ItemValues[index]);
+            MI->Item.edit.editFormat(buff, 20, mg->ItemValues[index]);
             Display_PutText(x2, y + used, buff, font);
             break;
         case LINE:

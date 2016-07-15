@@ -7,13 +7,13 @@
 #include <USB_VirtualCOM.h>
 
 #include "display.h"
+#include "drawables.h"
 #include "display_helper.h"
 #include "debug.h"
 #include "font/font_vaporware.h"
 #include "globals.h"
 #include "helper.h"
 #include "settings.h"
-#include "images/watts.h"
 #include "variabletimer.h"
 
 
@@ -339,9 +339,10 @@ void tempFire() {
                         g.watts = s.initWatts;
                     } else {
                         if (s.dumpPids) {
-                            char b[63];
-                            siprintf(b, "INFO,Switching to PID %" PRId32 " %d\r\n", s.targetTemperature, g.curTemp);
+                            char *b;
+                            asiprintf(&b, "INFO,Switching to PID %" PRId32 " %d\r\n", s.targetTemperature, g.curTemp);
                             USB_VirtualCOM_SendString(b);
+                            free(b);
                         }
                         pidactive = 1;
                     }
@@ -422,13 +423,14 @@ void tempFire() {
         if (uptime + 1 < nextFire) {
             if (1) { // dumpPids interval
                 if (s.dumpPids) {
-                     char buff[63];
-                     siprintf(buff, "PID,%"PRId32",%d,%"PRIu32",%d\r\n",
+                     char *buff;
+                     asiprintf(&buff, "PID,%"PRId32",%d,%"PRIu32",%d\r\n",
                               s.targetTemperature,
                               g.curTemp,
                               g.watts,
                           g.atomInfo.resistance);
                      USB_VirtualCOM_SendString(buff);
+                     free(buff);
                  }
              }
         }
@@ -484,33 +486,22 @@ void tempDown() {
     }
 }
 
-void tempDisplay(uint8_t atomizerOn) {
-    char buff[9];
-    if (atomizerOn) {
-        printNumber(buff, CToDisplay(g.curTemp));
+void tempGetText(char *buff, uint8_t len) {
+    if (Atomizer_IsOn()) {
+        printNumber(buff, len, CToDisplay(g.curTemp));
     } else {
-        printNumber(buff, s.displayTemperature);
+        printNumber(buff, len, s.displayTemperature);
     }
-    Display_PutText(0, 5, buff, FONT_LARGE);
-    getString(buff, (char *) tempScaleType[s.tempScaleTypeIndex].display);
-    Display_PutText(48, 2, buff, FONT_SMALL);
-
-    // Material
-    getString(buff, vapeMaterialList[s.materialIndex].name);
-    Display_PutText(48, 15, buff, FONT_SMALL);
 }
 
-void tempBottomDisplay(uint8_t atomizerOn) {
-    char buff[9];
-    Display_PutPixels(0, 100, watts, watts_width, watts_height);
-
-    if (atomizerOn) {
-        getFloating(buff, g.watts);
+void tempGetAltText(char *buff, uint8_t len) {
+    if (Atomizer_IsOn()) {
+        getFloating(buff, len, g.watts);
     } else {
-        getFloating(buff, s.initWatts);
+        getFloating(buff, len, s.initWatts);
     }
-    Display_PutText(26, 105, buff, FONT_MEDIUM);
 }
+
 
 struct vapeMode variableTemp = {
     .index = 2,
@@ -522,8 +513,9 @@ struct vapeMode variableTemp = {
     .increase = &tempUp,
     .decrease = &tempDown,
     .maxSetting = 600,
-    .display = &tempDisplay,
-    .bottomDisplay = &tempBottomDisplay,
+    .getAltDisplayText = &tempGetAltText,
+    .getDisplayText = &tempGetText,
+    .altIconDrawable = WATTICON,
     .vapeModeMenu = &tempSettings,
 };
 

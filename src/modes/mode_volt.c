@@ -1,9 +1,13 @@
 #include <stdint.h>
+#include <stdio.h>
+
+#include <inttypes.h>
 
 #include <Atomizer.h>
 #include <Display.h>
 
 #include "display.h"
+#include "drawables.h"
 #include "font/font_vaporware.h"
 #include "globals.h"
 #include "settings.h"
@@ -56,20 +60,12 @@ void voltDown() {
     }
 }
 
-void voltDisplay(uint8_t atomizerOn) {
-    char buff[9];
-    getFloatingTenth(buff, s.targetVolts);
-    Display_PutText(0, 5, buff, FONT_LARGE);
-    getString(buff, "V");
-    Display_PutText(48, 2, buff, FONT_SMALL);
+void voltGetText(char *buff, uint8_t len) {
+    sniprintf(buff, len, "%d.%01dV", s.targetVolts / 1000, s.targetVolts % 1000 / 100);
 }
 
-void voltBottomDisplay(uint8_t atomizerOn) {
-    char buff[9];
-    Display_PutPixels(0, 100, tempImage, tempImage_width, tempImage_height);
-
-    printNumber(buff, CToDisplay(g.curTemp));
-    Display_PutText(24, 107, buff, FONT_MEDIUM);
+void voltGetAltText(char *buff, uint8_t len) {
+    printNumber(buff, len, CToDisplay(g.curTemp));
 }
 
 struct vapeMode variableVoltage = {
@@ -82,8 +78,9 @@ struct vapeMode variableVoltage = {
     .increase = &voltUp,
     .decrease = &voltDown,
     .maxSetting = ATOMIZER_MAX_VOLTS,
-    .display = &voltDisplay,
-    .bottomDisplay = &voltBottomDisplay,
+    .getAltDisplayText = &voltGetAltText,
+    .getDisplayText = &voltGetText,
+    .altIconDrawable = TEMPICON,
 };
 
 static void __attribute__((constructor)) registerVoltMode(void) {

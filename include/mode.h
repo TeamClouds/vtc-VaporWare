@@ -23,8 +23,9 @@ struct vapeMode {
     void (*fire) (void);
     void (*increase) (void);
     void (*decrease) (void);
-    void (*display) (uint8_t atomizerOn);
-    void (*bottomDisplay) (uint8_t atomizerOn);
+    void (*getDisplayText) (char *text, uint8_t len);
+    void (*getAltDisplayText) (char *text, uint8_t len);
+    uint8_t altIconDrawable;
     const struct menuDefinition *vapeModeMenu;
 };
 

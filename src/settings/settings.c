@@ -100,9 +100,9 @@ void updateMode(uint16_t index) {
     modeSet(index);
 }
 
-void formatBrightnessNumber(char *formatted, int32_t value) {
+void formatBrightnessNumber(char *formatted, uint8_t len, int32_t value) {
     Display_SetContrast(value & 0xFF);
-    printNumber(formatted, value);
+    printNumber(formatted, len, value);
 }
 
 void updateScreenBrightness(int32_t value) {
@@ -118,7 +118,7 @@ void updateScale(uint16_t index) {
 }
 
 void showInfo(void) {
-    char buff[63];
+    char *buff;
     uint8_t hwVerMajor, hwVerMinor;
     hwVerMajor = gSysInfo.hwVersion / 100;
     hwVerMinor = gSysInfo.hwVersion % 100;
@@ -130,15 +130,18 @@ void showInfo(void) {
         Display_PutText(10, 10, GIT_VERSION, FONT_SMALL);
 
         Display_PutText(0, 25, "HW Ver", FONT_SMALL);
-        siprintf(buff, "%d.%02d", hwVerMajor, hwVerMinor);
+        asiprintf(&buff, "%d.%02d", hwVerMajor, hwVerMinor);
         Display_PutText(10, 35, buff, FONT_SMALL);
+        free(buff);
 
         Display_PutText(0, 50, "Display", FONT_SMALL);
         Display_PutText(10, 60, Display_GetType() == DISPLAY_SSD1327 ? "1327" : "1306", FONT_SMALL);
 
         Display_PutText(0, 75, "Uptime", FONT_SMALL);
-        siprintf(buff, "%" PRIu32, uptime / 1000);
+
+        asiprintf(&buff, "%" PRIu32, uptime / 1000);
         Display_PutText(10,85, buff, FONT_SMALL);
+        free(buff);
 
         Display_Update();
     }
@@ -211,6 +214,10 @@ void eraseDataFlash() {
 
     eraseDF();
 }
+
+void forceCrash() {
+    *((volatile uint8_t *) 0x2000FFFF) = 0;
+}
 #endif
 
 void invertSet(uint8_t a){
@@ -220,6 +227,10 @@ void invertSet(uint8_t a){
 
 void flipSet(uint8_t a) {
 	flipOnVapeSet(a);
+}
+
+void bordersSet(uint8_t a) {
+    g.showBorders = a;
 }
 
 const struct menuItem dragonMenuItems[] = {
@@ -385,6 +396,11 @@ const struct menuItem advancedMenuItems[] = {
         .label = "Era.Fla",
         .Item.action.actionCallback = &eraseDataFlash,
     },
+    {
+        .type = ACTION,
+        .label = "Crash",
+        .Item.action.actionCallback = &forceCrash,
+    },
 #endif
 
     {
@@ -441,6 +457,14 @@ const struct menuItem displaySubMenuItems[] = {
 	    .Item.toggle.isSet = &s.invertDisplay,
 	    .Item.toggle.toggleCallback = &invertDisplaySet,
 	},
+    {
+        .type = TOGGLE,
+        .label = "Borders",
+        .Item.toggle.on = "On",
+        .Item.toggle.off = "Off",
+        .Item.toggle.isSet = &g.showBorders,
+        .Item.toggle.toggleCallback = &bordersSet,
+    },
     {
         .type = STARTBOTTOM,
     },

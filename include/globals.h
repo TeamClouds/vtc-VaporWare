@@ -39,6 +39,7 @@ struct globals {
     uint32_t writeSettingsAt;
     uint32_t sysSleepAt;
     uint32_t ignoreNextAttyUntil;
+    uint8_t showBorders;
 };
 extern struct globals g;
 
