@@ -39,7 +39,7 @@ struct buttonGlobals {
     /* These variables need to be persisted across state clears */
     uint8_t buttonHandlerIndex;
     struct buttonHandler *currentHandler;
-} bg = { };
+} bg = {0};
 
 
 void handleButtonEvents() {
