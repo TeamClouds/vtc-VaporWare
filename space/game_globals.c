@@ -4,7 +4,7 @@
 #include "alien.h"
 
 struct game_globals gg = {
-        .levelCount = 3,
+        .levelCount = 2,
         .playerHealth = 3,
         .maxPlayerHealth = 3,
         .userScore = 0,
