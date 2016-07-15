@@ -144,6 +144,12 @@ void runSpace() {
                 // wait
             }
 
+            gg.playerHealth = 3;
+            gg.userScore = 0;
+            gg.alienDirection = 1;
+            gg.lastAlienShiftTime = 0;
+
+
             Display_Clear();
             gv.spacinVaper = 0;
             returnHandler();
