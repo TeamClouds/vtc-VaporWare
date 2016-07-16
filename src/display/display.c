@@ -189,6 +189,7 @@ uint8_t parseAttributes(uint8_t *items, struct layoutProperties *lp) {
             case ATTRLOCATION:
                 lp->X = items[count++];
                 lp->Y = items[count++];
+                lp->flags = ABSOLUTE;
                 break;
             case ATTRALIGN:
                 lp->flags |= items[count++];
@@ -435,14 +436,13 @@ uint8_t drawItems (uint8_t *items, struct layoutProperties *container) {
                 if (tempContainer->H)
                     object->H = tempContainer->H;
 
-                if (!tempContainer->X || !tempContainer->Y)
-                    calcObjectInLayout(layout, object);
 
-                if (tempContainer->X)
+                calcObjectInLayout(layout, object);
+
+                if (tempContainer->flags & ABSOLUTE) {
                     object->X = tempContainer->X;
-
-                if (tempContainer->Y)
                     object->Y = tempContainer->Y;
+                }
 
                 offset += drawItem(drawables[index], &items[offset], object);
                 break;

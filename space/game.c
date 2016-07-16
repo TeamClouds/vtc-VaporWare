@@ -156,7 +156,9 @@ void runSpace() {
             return;
         }
         if (gg.levels[currentLevel]->aliveAliens == 0) {
-            setLevel(++currentLevel);
+            if (currentLevel + 1 < gg.levelCount)
+                currentLevel++;
+            setLevel(currentLevel);
         }
 
         if (gv.buttonEvent) {
