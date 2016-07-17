@@ -8,6 +8,7 @@ GIT_VERSION := $(shell git describe --abbrev=4 --dirty --always --tags)
 CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
 CFLAGS += -Iinclude/
 CFLAGS += -Ispace/include/
+CFLAGS += -Ivaptris/include/
 CFLAGS += -I.
 CFLAGS += -Werror
 CFLAGS += -Wpedantic
@@ -51,6 +52,7 @@ OBJS = \
     space/levels/level1.o \
     space/levels/level2.o \
     space/game.o \
+    vaptris/vaptris.o \
     src/main.o
 
 ifeq ($(ISDEV),"Yes, damange my device")

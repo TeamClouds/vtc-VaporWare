@@ -44,6 +44,8 @@
 #include "font/font_vaporware.h"
 #include "variabletimer.h"
 
+#include "vaptris.h"
+
 void saveDefaultSettings();
 
 #define MAXOPTIONS 16
@@ -164,6 +166,10 @@ void spacinVaper(void) {
     Display_SetOn(1);
     gv.spacinVaper = 1;
     exitMenu();
+}
+
+void runVaptris(void) {
+    runvaptris();
 }
 
 const struct menuDefinition *const showModeSettings(const struct menuItem *MI) {
@@ -559,6 +565,11 @@ const struct menuItem settingsMenuItems[] = {
         .type = ACTION,
         .label = "Space",
         .Item.action.actionCallback = &spacinVaper,
+    },
+    {
+        .type = ACTION,
+        .label ="Vaptris",
+        .Item.action.actionCallback = &runVaptris,
     },
     {
         .type = STARTBOTTOM,
