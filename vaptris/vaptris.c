@@ -176,6 +176,7 @@ struct gameState {
     uint16_t rows;
     uint32_t score;
     uint8_t ltimer;
+    uint8_t quit;
 };
 
 struct gameState vaptrisState = { 0 };
@@ -202,6 +203,7 @@ void initVaptris() {
     vaptrisState.rows = 0;
     vaptrisState.level = 0;
     vaptrisState.score = 0;
+    vaptrisState.quit = 0;
     setVapeSpeed();
 }
 
@@ -278,7 +280,7 @@ void vaptrisMoveLeft(uint8_t status, uint32_t held) {
 }
 
 void vaptrisMoveRight(uint8_t status, uint32_t held) {
-    if ((status & (BUTTON_PRESS | BUTTON_HELD))) {
+    if ((status & (BUTTON_PRESS))) {
         vaptrisState.curX++;
         if (checkColission())
             vaptrisState.curX--;
@@ -286,7 +288,7 @@ void vaptrisMoveRight(uint8_t status, uint32_t held) {
 }
 
 void vaptrisRotate(uint8_t status, uint32_t held) {
-    if ((status & (BUTTON_PRESS | BUTTON_HELD))) {
+    if (status & (BUTTON_REL)) {
         vaptrisState.curRot++;
         vaptrisState.curRot %= 4;
         if (checkColission()) {
@@ -296,13 +298,18 @@ void vaptrisRotate(uint8_t status, uint32_t held) {
         vaptrisState.curW = widths[vaptrisState.curPiece];
         vaptrisState.curH = heights[vaptrisState.curPiece];
     }
-
+    if (status & BUTTON_HELD && held > 500) {
+        // Drop
+    }
+    if (status & BUTTON_HELD && held > 3000) {
+        vaptrisState.quit = 1;
+    }
 }
 
 
 struct buttonHandler vaptrisHandler = {
         .name = "mainButtons",
-        .flags = LEFT_HOLD_EVENT | RIGHT_HOLD_EVENT | FIRE_HOLD_EVENT,
+        .flags = FIRE_HOLD_EVENT,
 
         .fire_handler = &vaptrisRotate,
         .fireUpdateInterval = 150,
@@ -339,6 +346,9 @@ void runvaptris() {
             handleButtonEvents();
             gv.buttonEvent = 0;
         }
+
+        if (vaptrisState.quit)
+            goto gameover;
 
         if (uptime > nextstep) {
 
