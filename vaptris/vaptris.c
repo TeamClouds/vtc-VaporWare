@@ -171,7 +171,7 @@ struct gameState {
     uint8_t curH;
     uint8_t X0;
     uint8_t Y0;
-    uint8_t delay;
+    uint16_t delay;
     uint8_t level;
     uint16_t rows;
     uint32_t score;
@@ -182,7 +182,7 @@ struct gameState {
 struct gameState vaptrisState = { 0 };
 
 void setVapeSpeed() {
-    vaptrisState.delay = 5 * (11 - vaptrisState.level + 1) * 10;
+    vaptrisState.delay = 5 * (11 - vaptrisState.level + 1) * 10 / 4;
 }
 
 void setVapePiece(uint8_t piece) {
