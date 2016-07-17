@@ -288,7 +288,7 @@ void vaptrisMoveRight(uint8_t status, uint32_t held) {
 }
 
 void vaptrisRotate(uint8_t status, uint32_t held) {
-    if (status & (BUTTON_REL)) {
+    if (!status) {
         vaptrisState.curRot++;
         vaptrisState.curRot %= 4;
         if (checkColission()) {
